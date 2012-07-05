@@ -44,8 +44,8 @@ import datetime
 import json
 import cv
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as pyp
+#import matplotlib as mpl
+#import matplotlib.pyplot as pyp
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 import pdb
@@ -407,7 +407,7 @@ class AvoidanceLearningController(QtGui.QMainWindow):
 		self.startSaveFrameAction = QtGui.QAction('Start SaveFrames',self)
 		self.startSaveFrameAction.triggered.connect(self.startstopSavingFrames)
 		
-		self.startShockAction = QtGui.QAction('Shock Fish', self)
+		self.startShockAction = QtGui.QAction('Eating Fish', self)
 		self.startShockAction.triggered.connect(self.startShocks)
 		
 		#box to set threshold, nErode and nDilate
@@ -519,7 +519,7 @@ class AvoidanceLearningController(QtGui.QMainWindow):
 			self.statusBar().showMessage('Camera connected.')
 	
 	def connectToArduino(self):
-		portName, ok = QtGui.QInputDialog.getText(self, 'Arduino Port', 'Enter the arduino port:', text='/dev/tty.usbmodemfd121')
+		portName, ok = QtGui.QInputDialog.getText(self, 'Arduino Port', 'Enter the arduino port:', text='/dev/ttyACM0')
 		portName = str(portName)
 		ser = serial.Serial(port=portName, baudrate=cBaud, bytesize=8, parity='N', stopbits=1, timeout=1)
 		#ser.open()
@@ -821,8 +821,11 @@ class AvoidanceLearningController(QtGui.QMainWindow):
 	
 	def startstopSavingFrames(self):	
 		if self.bSavingFrames == False:	
+			print '1'
 			self.frameDir = QtGui.QFileDialog.getExistingDirectory(caption="Select directory to save frames:")
+			print '2'			
 			if self.frameDir=='': return
+			print '3'
 			self.frameDir = str(self.frameDir)		
 			self.startSaveFrameAction.setText('Stop SaveFrames')
 			self.bSavingFrames = True
@@ -912,6 +915,11 @@ class AvoidanceLearningController(QtGui.QMainWindow):
 
 	
 		#get experiment information
+
+		if self.fishImg == None:
+			self.statusBar().showMessage('Please collect image of fish.')
+			return
+
 		self.experDir = QtGui.QFileDialog.getExistingDirectory(caption="Select directory to save experimental data:",directory="/User/andalman/Documents/Stanford/Data/AvoidanceLearning")
 		if self.experDir=='': return
 		self.experDir = str(self.experDir)
