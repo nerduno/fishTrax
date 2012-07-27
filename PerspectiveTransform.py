@@ -4,7 +4,7 @@ import numpy as np
 # returns M such that warp_point(x,y,w)' = M * orig_point(x,y,1)'
 def getWarpMatrix(corners, target):
     mat = np.zeros((3,3))
-    cv.GetPerspectiveTransform(corners, target, mat)
+    cv.GetPerspectiveTransform(corners, target, cv.fromarray(mat))
     return mat
     
 # points: nparray where x is column 0, y in column 1
@@ -21,7 +21,7 @@ def warpPoints(points, warpMat):
 	
 def warpImage(image, corners, target):
     mat = cv.CreateMat(3, 3, cv.CV_32F)
-    cv.GetPerspectiveTransform(corners, target, mat)
+    cv.GetPerspectiveTransform(corners, target, cv.fromarray(mat))
     out = cv.CreateMat(height, width, cv.CV_8UC3)
     cv.WarpPerspective(image, out, mat, cv.CV_INTER_CUBIC)
     return out

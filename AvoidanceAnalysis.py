@@ -1,5 +1,5 @@
 import sys, os
-import pygame, math, random, time, logging, datetime, json, cv
+import math, random, time, logging, datetime, json, cv
 import numpy as np
 import scipy.stats as stats
 import matplotlib as mpl
@@ -16,7 +16,7 @@ def loadData(fishDir):
 		return None 
 	f = open(fishDir + os.sep + filelist[0])
 	jsonData = json.load(f)
-	f.close()
+	f.close()	
 	
 	#Clean up the tracking data and save it for other analysis.
 	arena_mm = [(0,0),(0,35),(80,35),(80,0)] #arena in mm.
