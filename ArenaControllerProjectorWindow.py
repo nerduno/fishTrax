@@ -8,6 +8,8 @@ import sys
 import PyQt4
 from PyQt4 import QtCore
 from PyQt4 import QtGui
+import traceback
+import ipdb
 
 class ArenaControllerProjectorWindow(QtGui.QWidget):
     projectorXres = 848
@@ -30,6 +32,8 @@ class ArenaControllerProjectorWindow(QtGui.QWidget):
             self.mainwindow.drawProjectorDisplay(painter)
         except:
             print 'ArenaControllerProjectorWindow:paintEvent failed'
-            print "Unexpected error:", sys.exc_info()[0]
+            traceback.print_exc()
+            QtCore.pyqtRemoveInputHook() 
+            ipdb.set_trace()
         finally:
             painter.end()

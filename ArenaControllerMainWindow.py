@@ -28,7 +28,7 @@ import math
 import random; random.seed()
 import time
 import serial
-import LabJackPython, u6
+#import LabJackPython, u6
 import logging
 import datetime
 import json
@@ -38,7 +38,7 @@ import numpy as np
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 import ipdb
-import AvoidanceArduinoController as aac
+import SerialArduinoController as aac
 from AvoidanceCameraManagement import CameraDevice
 from ArenaControllerProjectorWindow import ArenaControllerProjectorWindow 
 from OpenCVQImage import OpenCVQImage
@@ -233,18 +233,19 @@ class ArenaControllerMainWindow(QtGui.QMainWindow):
             self.statusBar().showMessage('Camera connected.')
 
     def connectToArduino(self):
-        portName, ok = QtGui.QInputDialog.getText(self, 'Arduino Port', 'Enter the arduino port:', text=aac.AvoidanceArduinoController.static_getDefaultPortName())
+        portName, ok = QtGui.QInputDialog.getText(self, 'Arduino Port', 'Enter the arduino port:',
+                                  text=aac.SerialArduinoController.static_getDefaultPortName())
         portName = str(portName)
         self.statusBar().showMessage('Restart the arduino to complete the connection.')
         if self.ard == None:
-            self.ard = aac.AvoidanceArduinoController(portName=portName) 
+            self.ard = aac.SerialArduinoController(portName=portName) 
         else:
             self.ard.connect(portName=portName)
 
         if self.ard.isConnected():
             self.statusBar().showMessage('Arduino connected.')
         else:
-            self.statusBar().showMessage('Arduino failed to connect.')
+            self.statusBar().showMessage('Arduino failed to connect. Restart arduino and try again.')
 
     def playpause(self):
         if not self.cam==None:

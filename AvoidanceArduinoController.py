@@ -11,30 +11,42 @@ import os
 import sys
 
 #Serial Communication Constants (for Arduino)
-cBaud = 9600
-cmd_LED_1_ON = 'A' 
-cmd_LED_1_OFF = 'B'
-cmd_LED_2_ON = 'C'
-cmd_LED_2_OFF = 'D'
-cmd_SHOCK_OFF = 'E'
-cmd_SHOCK_SIDE1 = 'F'
-cmd_SHOCK_SIDE2 = 'G'
-cmd_PULSESHOCK_SIDE1 = 'H'; 
+cBaud = 9600;
+cmd_pin13 = 'A';
+cmd_pin12 = 'B';
+cmd_pin11 = 'C';
+cmd_pulse = 'X';
+cmd_high = 'Z';
+cmd_low = 'Y';
+
+
+cmd_LED_1_ON = 'F'; 
+cmd_LED_1_OFF = 'B';
+cmd_LED_2_ON = 'C';
+cmd_LED_2_OFF = 'D';
+cmd_SHOCK_OFF = 'E';
+cmd_SHOCK_SIDE1 = 'J'; 
+cmd_SHOCK_SIDE2 = 'G';
+cmd_PULSESHOCK_SIDE1 = 'K'; 
 cmd_PULSESHOCK_SIDE2 = 'I';
-cmd_END = 'M'
-cmd_FAIL = 'N'
-cmd_HANDSHAKE = 'Z'	
+
+cmd_END = 'R';
+cmd_FAIL = 'S';
+cmd_HANDSHAKE = 'T';
+
+
 
 class AvoidanceArduinoController:
 
     @staticmethod
     def static_getDefaultPortName():
         if os.name == 'posix':
-            return '/dev/ttyACM0'
+            return '/dev/ttyACM1'
         elif os.name == 'mac':
             return '/dev//dev/tty.usbmodemfd121'
 
     def __init__(self, portName=None):
+        print 'init'
         self.ser = None
         if not portName:
             portName = AvoidanceArduinoController.static_getDefaultPortName()
@@ -53,7 +65,8 @@ class AvoidanceArduinoController:
 
         try:
             self.ser = serial.Serial(port=self.portName, baudrate=cBaud, bytesize=8, parity='N', stopbits=1, timeout=1)
-            #ser.open()
+            print self.ser            
+			#ser.open()
             #self.ser.flushInput()
             #self.ser.flushOutput()
             for nAttempt in range(10):
@@ -87,6 +100,10 @@ class AvoidanceArduinoController:
         if not self.isConnected(): return False
         self.ser.write(message+cmd_END)
         return self.confirmMessageRecv()
+
+	def sendMessage2(self, pinVal, command):
+		self.ser.write(pinVal+command+cmd_END)
+		return self.confirmMessageRecv()
 
     def confirmMessageRecv(self):
         startT = time.time();

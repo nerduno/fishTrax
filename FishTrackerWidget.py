@@ -1,4 +1,5 @@
 import cv
+import numpy as np
 from PyQt4 import QtCore
 from PyQt4 import QtGui
 
@@ -129,6 +130,7 @@ class FishTrackerWidget(QtGui.QGroupBox):
         self.currCvFrame = cvImg
         foundFish = False
         fishPos = (0,0)
+        allFish = []
         if not self.bcvImg == None and not self.arenaCvMask == None:
             #Background subtract, threshold, mask, erode and dilate
             if self.currG == None:
@@ -164,5 +166,10 @@ class FishTrackerWidget(QtGui.QGroupBox):
                 if (moments[ndx].m00 > self.trackMinArea.value() and moments[ndx].m00 < self.trackMaxArea.value()):
                     foundFish = True
                     fishPos = (moments[ndx].m10/moments[ndx].m00, moments[ndx].m01/moments[ndx].m00)
+                #get all fish sorted by size.
+                sndx = np.argsort(areas)[::-1]
+                for bn in sndx:
+                    if (moments[bn].m00 > self.trackMinArea.value() and moments[bn].m00 < self.trackMaxArea.value()):
+                        allFish.append((moments[bn].m10/moments[bn].m00, moments[bn].m01/moments[bn].m00))
             del seq  
-        return (foundFish, fishPos, self.getTrackDisplay())
+        return (foundFish, fishPos, self.getTrackDisplay(), allFish)

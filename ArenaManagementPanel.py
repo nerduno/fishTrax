@@ -1,4 +1,6 @@
 from PyQt4 import QtCore, QtGui
+import AvoidanceController
+import CocaineController
 
 class ArenaManagementPanel(QtGui.QWidget):
     """
@@ -15,6 +17,14 @@ class ArenaManagementPanel(QtGui.QWidget):
         self.manageGroup = QtGui.QGroupBox(self)
         self.manageGroup.setTitle('Manage Arenas')
         self.manageVBox = QtGui.QVBoxLayout()
+        self.arenaType = QtGui.QComboBox()
+        self.arenaType.addItem('Cocaine')
+        self.arenaType.addItem('Avoidance')
+        self.arenaType.addItem('Classical')
+        self.arenaType.addItem('Operant')
+        self.arenaType.addItem('Temperature')
+        self.arenaType.setCurrentIndex(0)
+        self.manageVBox.addWidget(self.arenaType)
         self.buttonHBox = QtGui.QHBoxLayout()
         self.addButton = QtGui.QPushButton('Add Arena')
         self.buttonHBox.addWidget(self.addButton)
@@ -70,8 +80,12 @@ class ArenaManagementPanel(QtGui.QWidget):
             self.arenas[arenaNdx].setCurrent(True)
 
     def addArena(self,bEvent):
-        from AvoidanceController import AvoidanceController
-        a = AvoidanceController(self, self.arenaMain)
+        if str(self.arenaType.currentText()) == 'Avoidance':
+            a = AvoidanceController.AvoidanceController(self, self.arenaMain)
+        elif str(self.arenaType.currentText()) == 'Cocaine':
+            a = CocaineController.CocaineController(self, self.arenaMain)
+        else:
+            return
         self.arenaCounter+=1
         self.arenas.append(a)
         self.selArena.addItem('Arena %d'%self.arenaCounter)

@@ -313,15 +313,13 @@ class AvoidanceController(ArenaController.ArenaController):
     #def getArenaView(self):
     #    return self.arenaView
 
-    def onNewFrame(self, frame, time):
-        self.readCurrentInput()
-        
+    def onNewFrame(self, frame, time):       
         self.mutex.acquire()
         try:
             self.frameTime = time
             self.currCvFrame = frame # may need to make a deep copy
 
-            (found, pos, view) = self.trackWidget.findFish(self.currCvFrame)
+            (found, pos, view, allFish) = self.trackWidget.findFish(self.currCvFrame)
             if found:
                 self.fishPosUpdate = found
                 self.fishPos = pos
@@ -352,7 +350,6 @@ class AvoidanceController(ArenaController.ArenaController):
                     if self.nTrial>-1:
                         self.arenaMain.statusBar().showMessage('NextTrial# %d TimeTilNextTrial %f TrialTime %f' % (self.nTrial+1, self.timeOfNextTrial - t, t - self.avoidData['trials'][self.nTrial]['startT']))
                     else:
-                        print 'status bar'
                         self.arenaMain.statusBar().showMessage('NextTrial# %d TimeTilNextTrial %f' % (self.nTrial+1, self.timeOfNextTrial - t))
 
                 #check if fish escaped
@@ -365,7 +362,7 @@ class AvoidanceController(ArenaController.ArenaController):
                 #handle State Changes
                 ###BETWEEN###
                 if self.currState==State.BETWEEN and t >= self.timeOfNextTrial: 
-                    print 'between'
+                    print 'Start Trial'
                     self.nTrial+=1
                     if self.nTrial < self.paramNumTrials.value():
                         self.currState = State.LED;
@@ -409,25 +406,30 @@ class AvoidanceController(ArenaController.ArenaController):
                                                          'endT':-1})
                     else:
                         #experiment is complete
-                        self.stop()
+                        self.stopController()
                 ###LED###
                 elif self.currState== State.LED:  
-                    self.timeState = t;
-                    if bDidEscape: 
+                    if bDidEscape:
+                        print 'Avoided Shocks'
+                        self.timeState = t
                         self.currState=State.BETWEEN;
                         self.timeOfNextTrial = self.timeState + random.randint(self.paramITIMin.value(),self.paramITIMax.value())
                         self.escapeLine = []
                         self.avoidData['trials'][self.nTrial]['endT'] = self.timeState
                         self.avoidData['trials'][self.nTrial]['bAvoidedShock'] = True
                         self.saveResults()
-                    elif (t - self.timeState) > self.paramEscapeT.value():   
+                    elif (t - self.timeState) > self.paramEscapeT.value(): 
+                        print 'Starting Shocks'
+                        self.timeState = t
                         self.currState= State.SHOCK;
                         self.avoidData['trials'][self.nTrial]['bAvoidedShock'] = False                    
                         self.setShockState(self.trialSide == Side.S1, self.trialSide == Side.S2)
+                        self.avoidData['trials'][self.nTrial]['Shock_current_start'] = self.readCurrentInput()
                     self.updateProjectorDisplay()
                 ###SHOCK###
                 elif self.currState == State.SHOCK:
                     if bDidEscape or t - self.timeState > self.paramShockT.value():
+                        print 'Ending Shocks'
                         self.currState=State.BETWEEN
                         self.timeOfNextTrial = self.timeState + random.randint(self.paramITIMin.value(),self.paramITIMax.value())
                         self.timeState = t;
@@ -539,22 +541,33 @@ class AvoidanceController(ArenaController.ArenaController):
             painter.drawLine(QtCore.QPointF(l[0][0],l[0][1]), QtCore.QPointF(l[1][0],l[1][1]))            
 
     def start(self):
-        self.paramGroup.setDisabled(True)
-        self.infoGroup.setDisabled(True)
-        self.initResults()
-
-        #initialize experimental state
-        self.nTrial = -1
-        self.currState = State.BETWEEN
-        self.setShockState(False,False)
-        self.updateProjectorDisplay()
-        self.timeState = time.time()
-        self.timeOfNextTrial = self.timeState + self.paramAcc.value()
-        self.trialSide = Side.S1
-        self.escapeLine = []
-        self.bRunning = True
+        self.mutex.acquire()
+        try:
+            self.paramGroup.setDisabled(True)
+            self.infoGroup.setDisabled(True)
+            self.initResults()
+            
+            #initialize experimental state
+            self.nTrial = -1
+            self.currState = State.BETWEEN
+            self.setShockState(False,False)
+            self.updateProjectorDisplay()
+            self.timeState = time.time()
+            self.timeOfNextTrial = self.timeState + self.paramAcc.value()
+            self.trialSide = Side.S1
+            self.escapeLine = []
+            self.bRunning = True
+        finally:
+            self.mutex.release()
 
     def stop(self):
+        self.mutex.acquire()
+        try:
+            self.stopController()
+        finally:
+            self.mutex.release()
+
+    def stopController(self):
         if self.bRunning:
             self.bRunning = False
             self.saveResults()
@@ -565,7 +578,7 @@ class AvoidanceController(ArenaController.ArenaController):
         self.escapeLine = []
         self.updateProjectorDisplay()
         self.paramGroup.setDisabled(False)
-        self.infoGroup.setDisabled(False)
+        self.infoGroup.setDisabled(False)       
 
     #---------------------------------------------------
     # CALLBACK METHODS
@@ -734,19 +747,20 @@ class AvoidanceController(ArenaController.ArenaController):
             return QtGui.QBrush(QtCore.Qt.black)
 
     def setShockState(self, bSide1, bSide2):
-        pass
+        if bSide1:
+            self.arenaMain.ard.pinPulse(self.cntrSide1Channel.value(), 
+                                        self.paramShockPeriod.value(), 
+                                        self.paramShockDura.value())
+        else:
+            self.arenaMain.ard.pinLow(self.cntrSide1Channel.value())
+        if bSide2:
+            self.arenaMain.ard.pinPulse(self.cntrSide2Channel.value(), 
+                                           self.paramShockPeriod.value(), 
+                                           self.paramShockDura.value())
+        else:
+            self.arenaMain.ard.pinLow(self.cntrSide2Channel.value())                   
         """
-        if bArduino:
-            if bSide1:
-                self.arenaMain.arduino.sendMessage(self.cntrSide1Channel.value()+1)
-            else
-                self.arenaMain.arduino.sendMessage(self.cntrSide1Channel.value())
-            if bSide2:
-                self.arenaMain.arduino.sendMessage(self.cntrSide2Channel.value()+1)
-            else
-                self.arenaMain.arduino.sendMessage(self.cntrSide2Channel.value())                   
-
-        if bLabJack:
+        elif bLabJack:
             self.pulseMutex.acquire()
             try:
                 if bSide1 and not self.shockSide1_t:
@@ -813,8 +827,9 @@ class AvoidanceController(ArenaController.ArenaController):
         """
 
     def readCurrentInput(self):
-        pass
+        self.arenaMain.ard.analogRead(self.currInputChannel.value())
         """
+        #for labjack
         #when start is pressed arenaMain needs to start labjack streaming
         #and arena main need to handle repeated called to:
         #see LFAnalyze/code/common/labjack_logging for configuration example
