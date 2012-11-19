@@ -132,11 +132,11 @@ class AvoidanceController(ArenaController.ArenaController):
         self.proj1X = QtGui.QSpinBox()
         self.proj1X.setValue(0)
         self.proj1X.setMaximumWidth(50)
-        self.proj1X.setRange(0,1000)
+        self.proj1X.setRange(0,2000)
         self.proj1Y = QtGui.QSpinBox()
         self.proj1Y.setValue(0)
         self.proj1Y.setMaximumWidth(50)
-        self.proj1Y.setRange(0,1000)
+        self.proj1Y.setRange(0,2000)
         self.projLayout.addWidget(self.proj1L,1,0)
         self.projLayout.addWidget(self.proj1X,1,1)
         self.projLayout.addWidget(self.proj1Y,1,2)
@@ -146,11 +146,11 @@ class AvoidanceController(ArenaController.ArenaController):
         self.proj2X = QtGui.QSpinBox()
         self.proj2X.setValue(0)
         self.proj2X.setMaximumWidth(50)
-        self.proj2X.setRange(0,1000)
+        self.proj2X.setRange(0,2000)
         self.proj2Y = QtGui.QSpinBox()
         self.proj2Y.setValue(100)
         self.proj2Y.setMaximumWidth(50)
-        self.proj2Y.setRange(0,1000)
+        self.proj2Y.setRange(0,2000)
         self.proj2X.valueChanged.connect(self.updateProjectorDisplay)
         self.proj2Y.valueChanged.connect(self.updateProjectorDisplay)
         self.projLayout.addWidget(self.proj2L,2,0)
@@ -160,11 +160,11 @@ class AvoidanceController(ArenaController.ArenaController):
         self.proj3X = QtGui.QSpinBox()
         self.proj3X.setValue(200)
         self.proj3X.setMaximumWidth(50)
-        self.proj3X.setRange(0,1000)
+        self.proj3X.setRange(0,2000)
         self.proj3Y = QtGui.QSpinBox()
         self.proj3Y.setValue(100)
         self.proj3Y.setMaximumWidth(50)
-        self.proj3Y.setRange(0,1000)
+        self.proj3Y.setRange(0,2000)
         self.projLayout.addWidget(self.proj3L,2,3)
         self.projLayout.addWidget(self.proj3X,2,4)
         self.projLayout.addWidget(self.proj3Y,2,5)
@@ -174,11 +174,11 @@ class AvoidanceController(ArenaController.ArenaController):
         self.proj4X = QtGui.QSpinBox()
         self.proj4X.setValue(200)
         self.proj4X.setMaximumWidth(50)
-        self.proj4X.setRange(0,1000)
+        self.proj4X.setRange(0,2000)
         self.proj4Y = QtGui.QSpinBox()
         self.proj4Y.setValue(0)
         self.proj4Y.setMaximumWidth(50)
-        self.proj4Y.setRange(0,1000)
+        self.proj4Y.setRange(0,2000)
         self.projLayout.addWidget(self.proj4L,1,3)
         self.projLayout.addWidget(self.proj4X,1,4)
         self.projLayout.addWidget(self.proj4Y,1,5)
@@ -261,10 +261,14 @@ class AvoidanceController(ArenaController.ArenaController):
         self.paramLayout.addWidget(self.paramEscapePos,7,2)
         self.paramLayout.addWidget(self.labelEscapePos,7,3)
 
+        self.paramDynamicDraw = QtGui.QCheckBox('Dynamic Draw')
+        self.paramDynamicDraw.setChecked(True)
+        self.paramLayout.addWidget(self.paramDynamicDraw,8,0,1,2)
+
         self.paramDebug = QtGui.QPushButton('Debug')
         self.paramDebug.setMaximumWidth(150) 
         self.paramDebug.setCheckable(True)
-        self.paramLayout.addWidget(self.paramDebug,8,0,1,2)
+        self.paramLayout.addWidget(self.paramDebug,8,2,1,2)
         self.paramDebug.clicked.connect(self.useDebugParams)
 
         self.paramGroup.setLayout(self.paramLayout)
@@ -348,8 +352,10 @@ class AvoidanceController(ArenaController.ArenaController):
                 #only update status bar if arena is selected.
                 if self.isCurrent():
                     if self.nTrial>-1:
+                        #print('NextTrial# %d TimeTilNextTrial %f TrialTime %f' % (self.nTrial+1, self.timeOfNextTrial - t, t - self.avoidData['trials'][self.nTrial]['startT']))
                         self.arenaMain.statusBar().showMessage('NextTrial# %d TimeTilNextTrial %f TrialTime %f' % (self.nTrial+1, self.timeOfNextTrial - t, t - self.avoidData['trials'][self.nTrial]['startT']))
                     else:
+                        #print('NextTrial# %d TimeTilNextTrial %f' % (self.nTrial+1, self.timeOfNextTrial - t))                        
                         self.arenaMain.statusBar().showMessage('NextTrial# %d TimeTilNextTrial %f' % (self.nTrial+1, self.timeOfNextTrial - t))
 
                 #check if fish escaped
@@ -449,7 +455,9 @@ class AvoidanceController(ArenaController.ArenaController):
                 self.mutex.release()
 
     def isReadyToStart(self):
-        return os.path.exists(self.infoDir.text()) and self.bcvImg and self.fishImg and self.arenaCamCorners
+        bReady =  os.path.exists(self.infoDir.text()) and self.bcvImg and self.fishImg and self.arenaCamCorners
+        print bReady
+        return bReady
 
     def drawProjectorDisplay(self, painter):
         if not self.bRunning and self.projCalibButton.isChecked():
@@ -484,8 +492,13 @@ class AvoidanceController(ArenaController.ArenaController):
                 else:
                     side2Color = self.paramAvoid.currentIndex()
 
-                a = float(1-self.escapePos)
-                b = float(self.escapePos)
+                if self.paramDynamicDraw.isChecked():
+                    a = float(1-self.escapePos)
+                    b = float(self.escapePos)
+                else:
+                    a = 0.5
+                    b = 0.5
+
                 #Draw side one
                 pen = QtGui.QPen(QtCore.Qt.NoPen)
                 brush = self.getBrush(side1Color)
@@ -688,6 +701,7 @@ class AvoidanceController(ArenaController.ArenaController):
                                          'AvoidStimulus':str(self.paramAvoid.currentText()),
                                          'EscapeStimulus':str(self.paramEscape.currentText()),
                                          'isDynamicEscape':self.paramDynamic.isChecked(),
+                                         'inDynamicDraw':self.paramDynamicDraw.isChecked(),
                                          'fEscapePosition':self.paramEscapePos.value(),
                                          'CodeVersion':None }
         self.avoidData['trackingParameters'] = self.trackWidget.getParameterDictionary()

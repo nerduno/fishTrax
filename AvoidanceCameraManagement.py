@@ -21,6 +21,8 @@ class CameraDevice(QtCore.QObject):
     @QtCore.pyqtSlot()
     def _queryFrame(self):
         frame = cv.QueryFrame(self._cameraDevice)
+        #print 'New frame has arrived'
+        #print frame
         if self.mirrored:
             mirroredFrame = cv.CreateImage(cv.GetSize(frame), frame.depth, \
                 frame.nChannels)
