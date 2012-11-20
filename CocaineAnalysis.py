@@ -20,7 +20,7 @@ def loadData(fishDir, runNum):
 	f.close()	
 	
 	#Clean up the tracking data and save it for other analysis.
-	arena_mm = [(0,0),(0,35),(80,35),(80,0)ap] #arena in mm.
+	arena_mm = [(0,0),(0,35),(80,35),(80,0)] #arena in mm.
 	jsonData['runs'][runNum]['warpedTracking'] = getWarpedAndCleanedTracking(jsonData, runNum=runNum, warpTarget=arena_mm)
 	
 	return jsonData['runs'][runNum]

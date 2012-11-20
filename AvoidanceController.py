@@ -827,7 +827,8 @@ class AvoidanceController(ArenaController.ArenaController):
         """
 
     def readCurrentInput(self):
-        self.arenaMain.ard.analogRead(self.currInputChannel.value())
+        return None
+        #self.arenaMain.ard.analogRead(self.currInputChannel.value())
         """
         #for labjack
         #when start is pressed arenaMain needs to start labjack streaming
