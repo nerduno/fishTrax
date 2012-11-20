@@ -24,7 +24,7 @@ import traceback
 import ipdb
 
 #Serial Communication Constants (for Arduino)
-cBaud = 28800;
+cBaud = 9600;
 validPins = [2,3,4,5,6,7,8,9,10,11,12,13]
 cmd_maxFields = 10
 
@@ -77,7 +77,7 @@ class SerialArduinoController:
             for pin in validPins:
                 bSuccess = bSuccess and self.pinLow(pin)
                 if not bSuccess:
-                    ipdb.set_trace()
+                    #ipdb.set_trace()
                     print 'ERROR: SerialArduinoController failed to connect to the arduino. %d'%pin
                     self.disconnect()
                     return False

@@ -9,26 +9,37 @@ import tkFileDialog
 import PerspectiveTransform 
 import pdb
 
-def loadData(fishDir, runNum):
+def printRunInfoForDataFile(filename):
+	f = open(filename)
+	jsonData = json.load(f)
+	f.close()
+	i = 0
+	for r in jsonData['runs']:
+		print '%d: %s'%(i,r['parameters']['Cond']) 
+		i+=1
+	return len(jsonData['runs'])
+
+def loadDataFromFile(filename, runNum, arena_mm = [(0,0),(0,35),(80,35),(80,0)]):
+	f = open(filename)
+	jsonData = json.load(f)
+	f.close()	
+	
+	#Clean up the tracking data and save it for other analysis.
+	jsonData['runs'][runNum]['warpedTracking'] = getWarpedAndCleanedTracking(jsonData, runNum=runNum, warpTarget=arena_mm)	
+	return jsonData['runs'][runNum]
+
+def loadData(fishDir, runNum, arena_mm = [(0,0),(0,35),(80,35),(80,0)]):
 	filelist = os.listdir(fishDir)
 	filelist = filter(lambda x: x.endswith('json'), filelist)
 	if len(filelist) != 1:
 		print 'Multile json files found'
 		return None 
-	f = open(fishDir + os.sep + filelist[0])
-	jsonData = json.load(f)
-	f.close()	
-	
-	#Clean up the tracking data and save it for other analysis.
-	arena_mm = [(0,0),(0,35),(80,35),(80,0)] #arena in mm.
-	jsonData['runs'][runNum]['warpedTracking'] = getWarpedAndCleanedTracking(jsonData, runNum=runNum, warpTarget=arena_mm)
-	
-	return jsonData['runs'][runNum]
+	return loadDataFromFile(fishDir + os.sep + filelist[0], runNum, arena_mm)
 
 def getWarpedAndCleanedTracking(jsonData, runNum, warpTarget):
 	#Get and clean up data
 	tracking = np.array(jsonData['runs'][runNum]['tracking'])
-	tracking = tracking[tracking[:,1]!=-1,:] #remove frames where tracking failed
+	tracking = tracking[tracking[:,1]!=0,:] #remove frames where tracking failed
 	#warp based on arena
 	ac = jsonData['runs'][runNum]['trackingParameters']['arenaPoly']
 	arena_raw = [tuple(x) for x in jsonData['runs'][runNum]['trackingParameters']['arenaPoly']]
@@ -326,6 +337,29 @@ def plotAvgVel(jsonData, win_1, win_2):
 		win_2_vel.append(vel2)
 	pyplot.plot(range(jsonData['parameters']['numtrials']), win_1_vel, label='window1')
 	pyplot.plot(range(jsonData['parameters']['numtrials']), win_2_vel, label='window2')	
+
+def getRunSidePreference(runData, dividePoint=40):
+	#colors alternate between sides, color1 is on side1 on even switches 0,2,...
+	#data should be warped so that side1 is always 0 to midline.
+	timeOnSide1 = []
+	switchDuration = []
+	timeOnColor1 = []
+	t = [runData['startTime']] + runData['switchTimes']
+	w = runData['warpedTracking']
+	dt = np.diff(w[:,0])
+	bSide1Ndx = w[0:-1,1]<dividePoint
+	print 'Max dt=%f'%np.max(np.diff(w[:,0]))
+	for switchNdx in range(len(t)-1):
+		switchDuration.append(t[switchNdx+1]-t[switchNdx])
+		bNdx = np.logical_and(w[0:-1,0]>t[switchNdx], w[0:-1,0]<t[switchNdx+1])
+		bNdx = np.logical_and(bNdx, bSide1Ndx)
+		timeOnSide1.append(sum(dt[bNdx]))
+		if switchNdx%2 == 0:
+			timeOnColor1.append(timeOnSide1[-1])
+		else:
+			timeOnColor1.append(switchDuration[-1] - timeOnSide1[-1])
+	return (timeOnColor1, timeOnSide1, switchDuration)
+
 
 #TODO
 #YES:  Create movie of particular path
