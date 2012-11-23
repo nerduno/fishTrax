@@ -21,7 +21,19 @@ def loadData(fishDir):
 	#Clean up the tracking data and save it for other analysis.
 	arena_mm = [(0,0),(0,35),(80,35),(80,0)] #arena in mm.
 	jsonData['warpedTracking'] = getWarpedAndCleanedTracking(jsonData, warpTarget = arena_mm)
-	
+
+	#Some old data sets define side1=0 and side2=1
+	#Where as newer data sets define side1=1 and side2=-1
+	bNewDataset = False
+	bOldDataset = False
+	for trial in jsonData['trials']:
+		bNewDataset = bNewDataset or trial['side']==-1
+		bOldDataset = bOldDataset or trial['side']==0
+	if not bNewDataset and not bOldDataset:
+		print 'Warning: dataset type is ambiguous.  Side is ill-defined.'
+	if bNewDataset and bOldDataset:
+		print 'Error: something is wrong!'
+	jsonData['bIsNewDataset'] = bNewDataset
 	return jsonData
 
 def getWarpedAndCleanedTracking(jsonData, warpTarget):
@@ -93,11 +105,15 @@ def getTrialPath(jsonData, trialNum, preTime = 0, postTime = 0, bPreRelStart=Tru
 	s = trial['startT']-preTime if bPreRelStart else trial['endT']-preTime
 	e = trial['endT']+postTime if bPostRelEnd else trial['startT']+postTime	
 	trialPath = tracking[np.logical_and(tracking[:,0] > s, tracking[:,0] < e),:].copy()
-	
+
 	#Fold if requested and return
 	if bFolded:
-		if trial['side'] == 1:
-			trialPath[:,1] = 80 - trialPath[:,1]
+		if jsonData['bIsNewDataset']:
+			if trial['side'] == -1:
+				trialPath[:,1] = 80 - trialPath[:,1]
+		else:
+			if trial['side'] == 1:
+				trialPath[:,1] = 80 - trialPath[:,1]
 	trialPath[:,0] = trialPath[:,0] - trial['startT']
 	return trialPath
 	
@@ -116,7 +132,9 @@ def plotTrialPath(jsonData, trialNum, preTime=0, postTime=0, bPreRelStart=True, 
 		else:
 			pyplot.plot(trialPath[:,1],trialPath[:,2], 'r')
 		#plot the LED
-		if bFolded or trial['side']==0:
+		if (bFolded or 
+		    (jsonData['bIsNewDataset'] and trial['side']==1) or 
+		    (not jsonData['bIsNewDataset'] and trial['side']==0)):
 			pyplot.plot(0,35/2.0,marker='o',mec='r',mfc='r',ms=10)
 			pyplot.plot(80,35/2.0,marker='o',mec='r',mfc='None',ms=10)
 		else:
@@ -185,10 +203,9 @@ def getSlopeOfDistFromLED(jsonData, trialNum):
 	slope = []
 	bAvoidedShock = []
 	for tn in trialNum:
-		trial = jsonData['trials'][tn]
-		trialPath = getTrialPath(jsonData, tn, 0, min(trial['endT']-trial['startT'],jsonData['parameters']['LEDTimeMS']/1000.0), bPostRelEnd=False, bFolded = True)	
+		trial = jsonData['trials'][tn]	
+		trialPath = getTrialPath(jsonData, tn, 0, min(trial['endT']-trial['startT'],jsonData['parameters']['LEDTimeMS']), bPostRelEnd=False, bFolded = True)
 		m, b, r, p, std_err = stats.linregress(trialPath[:,0],trialPath[:,1])
-		#pdb.set_trace()
 		slope.append(m)
 		bAvoidedShock.append(trial['bAvoidedShock'])
 	return slope, bAvoidedShock
@@ -200,15 +217,18 @@ def plotSlopeOfDistFromLEDAcrossTrials(jsonData):
 	#pyplot.bar(range(len(slope)),slope,color=c)
 	trials = np.array(range(len(slope)))
 	slope = np.array(slope)
+	bValid = np.logical_not(np.isnan(slope)) 
 	bEsc = np.array(bAvoidedShock,dtype=bool)
 	pyplot.plot(trials[np.logical_not(bEsc)],slope[np.logical_not(bEsc)],'ro')
 	pyplot.plot(trials[bEsc],slope[bEsc],'go')
-	m, b, r, p, std_err = stats.linregress(trials,slope)
+	m, b, r, p, std_err = stats.linregress(trials[bValid],slope[bValid])
 	#robust fit
-	resid = slope - trials*m+b
-	nonOut = abs(resid)<2*np.std(resid)
-	m, b, r, p, std_err = stats.linregress(trials[nonOut],slope[nonOut])
-	pyplot.plot((0,len(slope)), (m*0+b,m*len(slope)+b), 'k--')
+	#resid = slope - ((trials*m)+b)
+	#nonOut = abs(resid)<2*np.std(resid[bValid])
+	#m, b, r, p, std_err = stats.linregress(trials[np.logical_and(bValid,nonOut)],slope[np.logical_and(bValid,nonOut)])
+	#import ipdb; ipdb.set_trace()
+	#pyplot.plot(trials[np.logical_not(nonOut)], slope[np.logical_not(nonOut)], 'ko')
+	#pyplot.plot((0,len(slope)), (m*0+b,m*len(slope)+b), 'k--')
 	pyplot.xlabel('trial#')
 	pyplot.ylabel('linreg slope (mm/s)')
 	pyplot.title('p=%f'% p)
