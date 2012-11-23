@@ -79,9 +79,33 @@ def getTrialDurations(jsonData):
 #['tracking'] = list of tuples (frametime, posx, posy)
 def plotFishPosition(jsonData):
 	fishTracking = getTracking(jsonData)
-	frametime = fishTracking[:,0] - fishTracking[0,0]
+	frametime = fishTracking[:,0] - jsonData['startTime']
 	positionx = fishTracking[:,1] #we care about x position
-	positiony = fishTracking[:,2]
+	positiony = fishTracking[:,2] 
+	st = jsonData['switchTimes']
+	st = [jsonData['startTime']] + st
+	st = np.array(st) - jsonData['startTime']
+	for i in range(len(st)-1):
+		if i%2==0:
+			p1 = mpl.patches.Rectangle((st[i],0),
+						   width=st[i+1]-st[i],
+						   height=40,alpha=0.5,
+						   color=jsonData['parameters']['Color1'])
+			p2 = mpl.patches.Rectangle((st[i],40),
+						   width=st[i+1]-st[i],
+						   height=40,alpha=0.5,
+						   color=jsonData['parameters']['Color2'])						
+		else:
+			p1 = mpl.patches.Rectangle((st[i],0),
+						   width=st[i+1]-st[i],
+						   height=40,alpha=0.5,
+						   color=jsonData['parameters']['Color2'])
+			p2 = mpl.patches.Rectangle((st[i],40),
+						   width=st[i+1]-st[i],
+						   height=40,alpha=0.5,
+						   color=jsonData['parameters']['Color1'])						
+		pyplot.gca().add_patch(p1)
+		pyplot.gca().add_patch(p2)
 	pyplot.plot(frametime, positionx, 'm.')
 	pyplot.ylim([0,80])
 	pyplot.ylabel('Fish position')
@@ -240,7 +264,6 @@ def plotSlopeOfDistFromLEDAcrossTrials(jsonData):
 #return velocity at each frame time
 #if bXAxisVelocity then positive is away from LED
 def getTrialInstantVelocity(jsonData, trialNum, preTime=0, postTime=0, bPreRelStart=True, bPostRelEnd=True, bXAxisVelocity=False):
-	trial = jsonData['trials'][trialNum]
 	trialPath = getTrialPath(jsonData, trialNum, preTime, postTime, bPreRelStart, bPostRelEnd, bFolded = True)	
 	dt = np.diff(trialPath,1,0)
 	if not bXAxisVelocity:
