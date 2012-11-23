@@ -106,7 +106,7 @@ def plotFishPosition(jsonData):
 						   color=jsonData['parameters']['Color1'])						
 		pyplot.gca().add_patch(p1)
 		pyplot.gca().add_patch(p2)
-	pyplot.plot(frametime, positionx, 'm.')
+	pyplot.plot(frametime, positionx, 'k.')
 	pyplot.ylim([0,80])
 	pyplot.ylabel('Fish position')
 	pyplot.xlabel('Frame Time')
