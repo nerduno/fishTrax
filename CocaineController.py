@@ -211,15 +211,25 @@ class CocaineController(ArenaController.ArenaController):
         self.paramLayout.addWidget(self.paramOffColor,3,2)
         self.paramLayout.addWidget(self.labelOffColor,3,3)
         
+        self.paramDrugColor = QtGui.QComboBox()
+        self.paramDrugColor.addItem('White')
+        self.paramDrugColor.addItem('Red')
+        self.paramDrugColor.addItem('Blue')
+        self.paramDrugColor.addItem('Gray')
+        self.paramDrugColor.setCurrentIndex(0)
+        self.labelDrugColor = QtGui.QLabel('DrugColor')
+        self.paramLayout.addWidget(self.paramDrugColor,4,0)
+        self.paramLayout.addWidget(self.labelDrugColor,4,1)
+        
         self.paramConc = QtGui.QDoubleSpinBox()
         self.paramConc.setRange(0.0,1000.0)
         self.paramConc.setValue(10.0)
         self.labelConc = QtGui.QLabel('Conc mg/L')
-        self.paramLayout.addWidget(self.paramConc,4,0)
-        self.paramLayout.addWidget(self.labelConc,4,1)
+        self.paramLayout.addWidget(self.paramConc,5,0)
+        self.paramLayout.addWidget(self.labelConc,5,1)
 
         self.paramNumFish = LabeledSpinBox(None,'NumFish',1,10,1,60)
-        self.paramLayout.addWidget(self.paramNumFish,4,2,1,2)
+        self.paramLayout.addWidget(self.paramNumFish,5,2,1,2)
 
         self.paramGroup.setLayout(self.paramLayout)
 
@@ -557,9 +567,11 @@ class CocaineController(ArenaController.ArenaController):
         self.arenaData['runs'][cr]['parameters'] = { 'numSwitches':self.paramNumSwitches.value(),
                                                      'SwitchDuration':self.paramSwitchTime.value(),
                                                      'Cond':str(self.paramCond.currentText()),
+                                                     'Conc':str(self.paramConc.value()),
                                                      'Color1':str(self.paramColor1.currentText()),
                                                      'Color2':str(self.paramColor2.currentText()),
                                                      'OffColor':str(self.paramOffColor.currentText()),
+                                                     'DrugColor':str(self.paramDrugColor.currentText()),
                                                      'CodeVersion':None }
         self.arenaData['runs'][cr]['trackingParameters'] = self.trackWidget.getParameterDictionary()
         self.arenaData['runs'][cr]['trackingParameters']['arenaPoly'] = self.arenaCamCorners 
