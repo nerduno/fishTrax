@@ -384,6 +384,19 @@ def getRunSidePreference(runData, dividePoint=40):
 			timeOnColor1.append(switchDuration[-1] - timeOnSide1[-1])
 	return (timeOnColor1, timeOnSide1, switchDuration)
 
+def plotSidePreference(jsonData):
+	[c, s, d] = getRunSidePreference(jsonData)
+	c = np.array(c)
+	d = np.array(d)
+	ind = np.arange(len(c))
+	width = 0.35
+	
+	ax = pyplot.gca()
+	rects1 = ax.bar(ind, c/d, width, color='r')
+	rects2 = ax.bar(ind+width, 1 -c/d, width, color='b')
+	pyplot.ylim([0,1])
+	pyplot.ylabel('Time on color (%)')
+
 
 #TODO
 #YES:  Create movie of particular path
