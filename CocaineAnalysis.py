@@ -108,6 +108,7 @@ def plotFishPosition(jsonData):
 		pyplot.gca().add_patch(p2)
 	pyplot.plot(frametime, positionx, 'k.')
 	pyplot.ylim([0,80])
+	pyplot.xlim([0,jsonData['endTime']-jsonData['startTime']])
 	pyplot.ylabel('Fish position')
 	pyplot.xlabel('Frame Time')
 

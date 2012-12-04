@@ -1,6 +1,7 @@
 from PyQt4 import QtCore, QtGui
 import AvoidanceController
 import CocaineController
+import ClassicalConditioningController
 
 class ArenaManagementPanel(QtGui.QWidget):
     """
@@ -84,6 +85,8 @@ class ArenaManagementPanel(QtGui.QWidget):
             a = AvoidanceController.AvoidanceController(self, self.arenaMain)
         elif str(self.arenaType.currentText()) == 'Cocaine':
             a = CocaineController.CocaineController(self, self.arenaMain)
+        elif str(self.arenaType.currentText()) == 'Classical':
+            a = ClassicalConditioningController.ClassicalConditioningController(self, self.arenaMain)
         else:
             return
         self.arenaCounter+=1
