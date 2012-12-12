@@ -333,6 +333,7 @@ class CocaineController(ArenaController.ArenaController):
                         self.currState = State.OFF
                         self.arenaData['runs'][self.currRun]['endTime'] = t
                         self.startButton.setText('Start Switches')
+                        self.startButton.setChecked(False)
                         self.paramGroup.setDisabled(False)
                         self.infoGroup.setDisabled(False)
                     self.updateProjectorDisplay()

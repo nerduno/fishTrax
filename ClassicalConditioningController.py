@@ -161,7 +161,15 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         self.startButton = QtGui.QPushButton('Start Switches')
         self.startButton.setMaximumWidth(150)
         self.startButton.setCheckable(True)
-        self.startButton.clicked.connect(self.startSwitches)      
+        self.startButton.clicked.connect(self.startSwitches)
+      
+        self.pauseButton = QtGui.QPushButton('Pause')
+        self.pauseButton.setMaximumWidth(150)
+        self.pauseButton.setCheckable(True)
+        self.pauseButton.setDisabled(True)
+        self.pauseButton.clicked.connect(self.pause)
+
+        self.autoPauseCheckBox = QtGui.QCheckBox('AutoPause')
 
         #experimental parameters groupbox
         self.paramGroup = QtGui.QGroupBox()
@@ -173,7 +181,7 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         #testing parameters
         self.paramAcclimate = LabeledSpinBox(None, 'Acclimate (m)', 0, 180, 30, 60)
         self.paramLayout.addWidget(self.paramAcclimate, 0,0,1,2)
-        self.paramInitDuration = LabeledSpinBox(None, 'ReminderShockDura (s)', 0, 30, 4, 60)
+        self.paramInitDuration = LabeledSpinBox(None, 'ReminderShock (s)', 0, 30, 4, 60)
         self.paramLayout.addWidget(self.paramInitDuration, 0,2,1,2)
         self.paramNumPre = LabeledSpinBox(None,'NumPre',0,100,4,60) #number of side switches pre test
         self.paramLayout.addWidget(self.paramNumPre,1,0,1,2)
@@ -201,6 +209,8 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         self.paramLayout.addWidget(self.paramShockChan1, 7,0,1,2)
         self.paramShockChan2 = LabeledSpinBox(None, 'ShockChan2', 0,10000,13,60)
         self.paramLayout.addWidget(self.paramShockChan2, 7,2,1,2)
+        self.paramShockV = LabeledSpinBox(None, 'ShockV', 0,100, 10,60)
+        self.paramLayout.addWidget(self.paramShockV, 8,0,1,2)
 
         #Colors
         self.paramColorUS = QtGui.QComboBox()
@@ -210,8 +220,8 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         self.paramColorUS.addItem('Gray')
         self.paramColorUS.setCurrentIndex(1)
         self.labelColorUS = QtGui.QLabel('USColor')
-        self.paramLayout.addWidget(self.paramColorUS,8,0)
-        self.paramLayout.addWidget(self.labelColorUS,8,1)
+        self.paramLayout.addWidget(self.paramColorUS,9,0)
+        self.paramLayout.addWidget(self.labelColorUS,9,1)
 
         self.paramColorNeutral = QtGui.QComboBox()
         self.paramColorNeutral.addItem('White')
@@ -220,8 +230,8 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         self.paramColorNeutral.addItem('Gray')
         self.paramColorNeutral.setCurrentIndex(2)
         self.labelColorNeutral = QtGui.QLabel('NeutralColor')
-        self.paramLayout.addWidget(self.paramColorNeutral,8,2)
-        self.paramLayout.addWidget(self.labelColorNeutral,8,3)
+        self.paramLayout.addWidget(self.paramColorNeutral,9,2)
+        self.paramLayout.addWidget(self.labelColorNeutral,9,3)
 
         self.paramBetweenColor = QtGui.QComboBox()
         self.paramBetweenColor.addItem('White')
@@ -230,11 +240,11 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         self.paramBetweenColor.addItem('Gray')
         self.paramBetweenColor.setCurrentIndex(0)
         self.labelBetweenColor = QtGui.QLabel('BetweenColor')
-        self.paramLayout.addWidget(self.paramBetweenColor,9,0)
-        self.paramLayout.addWidget(self.labelBetweenColor,9,1)
+        self.paramLayout.addWidget(self.paramBetweenColor,10,0)
+        self.paramLayout.addWidget(self.labelBetweenColor,10,1)
 
         self.paramNumFish = LabeledSpinBox(None,'NumFish',1,10,1,60)
-        self.paramLayout.addWidget(self.paramNumFish,10,0,1,2)
+        self.paramLayout.addWidget(self.paramNumFish,11,0,1,2)
 
         self.paramGroup.setLayout(self.paramLayout)
 
@@ -267,11 +277,13 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         self.infoGroup.setLayout(self.infoLayout)
 
         self.settingsLayout = QtGui.QGridLayout()
-        self.settingsLayout.addWidget(self.startButton,0,0)
-        self.settingsLayout.addWidget(self.arenaGroup,1,0)
-        self.settingsLayout.addWidget(self.trackWidget,2,0)
-        self.settingsLayout.addWidget(self.paramGroup,3,0)
-        self.settingsLayout.addWidget(self.infoGroup,4,0)
+        self.settingsLayout.addWidget(self.startButton,0,0,1,1)
+        self.settingsLayout.addWidget(self.pauseButton,1,0,1,1)
+        self.settingsLayout.addWidget(self.autoPauseCheckBox,1,1,1,1)
+        self.settingsLayout.addWidget(self.arenaGroup,2,0,1,2)
+        self.settingsLayout.addWidget(self.trackWidget,3,0,1,2)
+        self.settingsLayout.addWidget(self.paramGroup,4,0,1,2)
+        self.settingsLayout.addWidget(self.infoGroup,5,0,1,2)
         self.setLayout(self.settingsLayout)
 
 
@@ -328,6 +340,7 @@ class ClassicalConditioningController(ArenaController.ArenaController):
 
                 if t > self.nextStateTime:
                     self.setShockState(False, False)
+                    self.pauseButton.setDisabled(True)
                     if (self.currState <= State.ACCLIMATE
                         and self.paramInitDuration.value() > 0):
                         self.currState = State.PREINIT
@@ -348,6 +361,10 @@ class ClassicalConditioningController(ArenaController.ArenaController):
                         self.nextStateTime = t + self.paramBetweenTime.value()*60
                         self.currContext = Context.BETWEEN
                         self.nextContextTime = float('inf')
+                        self.pauseButton.setDisabled(False)
+                        if self.autoPauseCheckBox.isChecked():
+                            self.pauseButton.setChecked(True)
+                            self.doPause()
                     elif (self.currState <= State.PREDONE
                         and self.paramNumTrain.value() > 0):
                         self.currState = State.TRAIN
@@ -362,6 +379,10 @@ class ClassicalConditioningController(ArenaController.ArenaController):
                         self.currContext = Context.BETWEEN
                         self.nextContextTime = float('inf')
                         self.nextShockTime = float('inf')
+                        self.pauseButton.setDisabled(False)
+                        if self.autoPauseCheckBox.isChecked():
+                            self.pauseButton.setChecked(True)
+                            self.doPause()
                     elif (self.currState <= State.TRAINDONE
                         and self.paramInitDuration.value() > 0):
                         self.currState = State.POSTINIT
@@ -381,11 +402,13 @@ class ClassicalConditioningController(ArenaController.ArenaController):
                         self.currContext = Context.BETWEEN
                         self.nextContextTime = float('inf')
                         self.startButton.setText('Start Switches')
+                        self.startButton.setChecked(False)
                         self.paramGroup.setDisabled(False)
                         self.infoGroup.setDisabled(False)
+                        self.saveResults()
                     self.arenaData['stateinfo'].append((t, self.currState, self.getSide1ColorName(), self.getSide2ColorName()))
                     self.updateProjectorDisplay()
-                    #self.saveResults()
+                    self.saveResults()
                           
                 #handle context changes
                 if t > self.nextContextTime:
@@ -535,6 +558,7 @@ class ClassicalConditioningController(ArenaController.ArenaController):
                     self.updateProjectorDisplay()
                     self.startButton.setText('Stop')
                 else:
+                    self.startButton.setChecked(False)
                     self.arenaMain.statusBar().showMessage('Arena not ready to start.  Information is missing.')
             else: 
                 t = time.time()
@@ -548,13 +572,37 @@ class ClassicalConditioningController(ArenaController.ArenaController):
                 self.saveResults()
                 self.paramGroup.setDisabled(False) 
                 self.infoGroup.setDisabled(False)
+                self.pauseButton.setChecked(False)
         except:
             print 'ClassicalConditioningController:startSwitches failed'
             traceback.print_exc()
             QtCore.pyqtRemoveInputHook() 
             ipdb.set_trace()
         finally:
-            self.mutex.release()            
+            self.mutex.release()    
+
+    def doPause(self):   
+        t = time.time()
+        if self.pauseButton.isChecked():
+            self.arenaData['pauseinfo'].append((True, t))
+            self.pausedRemainingTime = self.nextStateTime - t
+            self.nextStateTime = float('inf')
+        else:
+            self.arenaData['pauseinfo'].append((False, t))
+            self.nextStateTime = t + self.pausedRemainingTime
+
+    def pause(self):
+        self.mutex.acquire()
+        try:
+            self.doPause()
+        except:
+            print 'ClassicalConditioningController: pause failed'
+            traceback.print_exc()
+            QtCore.pyqtRemoveInputHook() 
+            ipdb.set_trace()
+        finally:
+            self.mutex.release()    
+                
         
     def getArenaCameraPosition(self):
         self.arenaMain.statusBar().showMessage('Click on the corners of the arena on side 1.')
@@ -653,6 +701,7 @@ class ClassicalConditioningController(ArenaController.ArenaController):
                                          'shock dura (ms)':self.paramShockDuration.value(),
                                          'shock chan 1':self.paramShockChan1.value(),
                                          'shock chan 2':self.paramShockChan2.value(),
+                                         'shock V':self.paramShockV.value(),
                                          'USColor':str(self.paramColorUS.currentText()),
                                          'NeutralColor':str(self.paramColorNeutral.currentText()),
                                          'BetweenColor':str(self.paramBetweenColor.currentText()),
@@ -666,6 +715,7 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         self.arenaData['video'] = list() #list of tuples (frametime, filename)	
         self.arenaData['stateinfo'] = list() #list of times at switch stimulus flipped.
         self.arenaData['shockinfo'] = list()
+        self.arenaData['pauseinfo'] = list()
         t = datetime.datetime.now()
       
         #save experiment images
@@ -705,6 +755,10 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         return self.getSideColors()[1]
 
     def setShockState(self, bSide1, bSide2):
+        if not self.arenaMain.ard:
+            print 'WARNING: Arduino not connected'
+            return
+
         if bSide1:
             self.arenaMain.ard.pinPulse(self.paramShockChan1.value(), 
                                         self.paramShockPeriod.value(), 
