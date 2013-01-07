@@ -31,24 +31,14 @@ from utility_widgets import LabeledSpinBox
 class State:
     OFF = 0
     ACCLIMATE = 1
-    PREINIT = 2
-    PRETEST = 3
-    PREDONE = 4
-    TRAIN = 5
-    TRAINDONE = 6
-    POSTINIT = 7
-    POSTTEST = 8
+    BETWEEN = 2
+    SHOCKSIDE1 = 3
+    SHOCKSIDE2 = 4
 
-class Context:
-    BETWEEN = 0
-    NEUTRAL = 1
-    AVERSIVE = 2
-    SPLIT_SIDE1_AVERSIVE = 3
-    SPLIT_SIDE1_NEUTRAL = 4
+class RealTimeShockController(ArenaController.ArenaController):
 
-class ClassicalConditioningController(ArenaController.ArenaController):
     def __init__(self, parent, arenaMain):        
-        super(ClassicalConditioningController, self).__init__(parent, arenaMain)
+        super(RealTimeShockController, self).__init__(parent, arenaMain)
 
         #calibration
         self.arenaCamCorners = []
@@ -158,19 +148,11 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         #tracking group box
         self.trackWidget = FishTrackerWidget(self, self.getBackgroundImage)
 
-        self.startButton = QtGui.QPushButton('Start Switches')
+        self.startButton = QtGui.QPushButton('Start')
         self.startButton.setMaximumWidth(150)
         self.startButton.setCheckable(True)
         self.startButton.clicked.connect(self.startSwitches)
       
-        self.pauseButton = QtGui.QPushButton('Pause')
-        self.pauseButton.setMaximumWidth(150)
-        self.pauseButton.setCheckable(True)
-        self.pauseButton.setDisabled(True)
-        self.pauseButton.clicked.connect(self.pause)
-
-        self.autoPauseCheckBox = QtGui.QCheckBox('AutoPause')
-
         #experimental parameters groupbox
         self.paramGroup = QtGui.QGroupBox()
         self.paramGroup.setTitle('Exprimental Parameters')
@@ -178,74 +160,27 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         self.paramLayout.setHorizontalSpacing(2)
         self.paramLayout.setVerticalSpacing(2)
 
-        #testing parameters
+        #parameters
         self.paramAcclimate = LabeledSpinBox(None, 'Acclimate (m)', 0, 180, 30, 60)
         self.paramLayout.addWidget(self.paramAcclimate, 0,0,1,2)
-        self.paramInitDuration = LabeledSpinBox(None, 'ReminderShock (s)', 0, 30, 4, 60)
-        self.paramLayout.addWidget(self.paramInitDuration, 0,2,1,2)
-        self.paramNumPre = LabeledSpinBox(None,'NumPre',0,100,4,60) #number of side switches pre test
-        self.paramLayout.addWidget(self.paramNumPre,1,0,1,2)
-        self.paramNumPost = LabeledSpinBox(None,'NumPost',0,100,4,60) #number of side switches post teset
-        self.paramLayout.addWidget(self.paramNumPost,1,2,1,2)
-        self.paramTestSwitchTime = LabeledSpinBox(None,'TestSwitchTime (s)',1,3600,300,60) #duration before two sides swap colors during pre and post
-        self.paramLayout.addWidget(self.paramTestSwitchTime,2,0,1,2)
-        self.paramBetweenTime = LabeledSpinBox(None,'BetweenTime (m)',0,1440,30,60) #time between pre , train and post periods
-        self.paramLayout.addWidget(self.paramBetweenTime,2,2,1,2)
-
-        #training parameters
-        self.paramNumTrain = LabeledSpinBox(None,'NumTrain',0,100,30,60)
-        self.paramLayout.addWidget(self.paramNumTrain,4,0,1,2)
-        self.paramUSTime = LabeledSpinBox(None, 'US Time (s)', 1,3600,30,60)
-        self.paramLayout.addWidget(self.paramUSTime,4,2,1,2)
-        self.paramNeutralMinTime = LabeledSpinBox(None, 'Neutral Min (s)',1,3600,30,60)
-        self.paramLayout.addWidget(self.paramNeutralMinTime, 5,0,1,2)
-        self.paramNeutralMaxTime = LabeledSpinBox(None, 'Neutral Max (s)',1,3600,60,60)
-        self.paramLayout.addWidget(self.paramNeutralMaxTime, 5,2,1,2)
+        self.paramNumShockBlocks = LabeledSpinBox(None,'NumShockBlocks',0,100,4,60) #number of side switches pre test
+        self.paramLayout.addWidget(self.paramNumShockBlocks,0,2,1,2)
+        self.paramShockingTime = LabeledSpinBox(None,'ShockingTime (s)',1,3600,60,60) #duration before two sides swap colors during pre and post
+        self.paramLayout.addWidget(self.paramShockingTime,1,0,1,2)
+        self.paramBetweenTime = LabeledSpinBox(None,'BetweenTime (s)',0,3600,30,60) #time between pre , train and post periods
+        self.paramLayout.addWidget(self.paramBetweenTime,1,2,1,2)
         self.paramShockPeriod = LabeledSpinBox(None, 'Shock Period (ms)', 0,5000,1000,60)
-        self.paramLayout.addWidget(self.paramShockPeriod, 6,0,1,2)
+        self.paramLayout.addWidget(self.paramShockPeriod, 2,0,1,2)
         self.paramShockDuration = LabeledSpinBox(None, 'ShockDuration (ms)', 0,1000,50,60)
-        self.paramLayout.addWidget(self.paramShockDuration, 6,2,1,2)
+        self.paramLayout.addWidget(self.paramShockDuration, 2,2,1,2)
         self.paramShockChan1 = LabeledSpinBox(None, 'ShockChan1', 0,10000,12,60)
-        self.paramLayout.addWidget(self.paramShockChan1, 7,0,1,2)
+        self.paramLayout.addWidget(self.paramShockChan1, 3,0,1,2)
         self.paramShockChan2 = LabeledSpinBox(None, 'ShockChan2', 0,10000,13,60)
-        self.paramLayout.addWidget(self.paramShockChan2, 7,2,1,2)
+        self.paramLayout.addWidget(self.paramShockChan2, 3,2,1,2)
         self.paramShockV = LabeledSpinBox(None, 'ShockV', 0,100, 10,60)
-        self.paramLayout.addWidget(self.paramShockV, 8,0,1,2)
-
-        #Colors
-        self.paramColorUS = QtGui.QComboBox()
-        self.paramColorUS.addItem('White')
-        self.paramColorUS.addItem('Red')
-        self.paramColorUS.addItem('Blue')
-        self.paramColorUS.addItem('Gray')
-        self.paramColorUS.setCurrentIndex(1)
-        self.labelColorUS = QtGui.QLabel('USColor')
-        self.paramLayout.addWidget(self.paramColorUS,9,0)
-        self.paramLayout.addWidget(self.labelColorUS,9,1)
-
-        self.paramColorNeutral = QtGui.QComboBox()
-        self.paramColorNeutral.addItem('White')
-        self.paramColorNeutral.addItem('Red')
-        self.paramColorNeutral.addItem('Blue')
-        self.paramColorNeutral.addItem('Gray')
-        self.paramColorNeutral.setCurrentIndex(2)
-        self.labelColorNeutral = QtGui.QLabel('NeutralColor')
-        self.paramLayout.addWidget(self.paramColorNeutral,9,2)
-        self.paramLayout.addWidget(self.labelColorNeutral,9,3)
-
-        self.paramBetweenColor = QtGui.QComboBox()
-        self.paramBetweenColor.addItem('White')
-        self.paramBetweenColor.addItem('Red')
-        self.paramBetweenColor.addItem('Blue')
-        self.paramBetweenColor.addItem('Gray')
-        self.paramBetweenColor.setCurrentIndex(0)
-        self.labelBetweenColor = QtGui.QLabel('BetweenColor')
-        self.paramLayout.addWidget(self.paramBetweenColor,10,0)
-        self.paramLayout.addWidget(self.labelBetweenColor,10,1)
-
+        self.paramLayout.addWidget(self.paramShockV, 4,0,1,2)
         self.paramNumFish = LabeledSpinBox(None,'NumFish',1,10,1,60)
-        self.paramLayout.addWidget(self.paramNumFish,11,0,1,2)
-
+        self.paramLayout.addWidget(self.paramNumFish,4,2,1,2)
         self.paramGroup.setLayout(self.paramLayout)
 
         #Experimental info group
@@ -278,8 +213,6 @@ class ClassicalConditioningController(ArenaController.ArenaController):
 
         self.settingsLayout = QtGui.QGridLayout()
         self.settingsLayout.addWidget(self.startButton,0,0,1,1)
-        self.settingsLayout.addWidget(self.pauseButton,1,0,1,1)
-        self.settingsLayout.addWidget(self.autoPauseCheckBox,1,1,1,1)
         self.settingsLayout.addWidget(self.arenaGroup,2,0,1,2)
         self.settingsLayout.addWidget(self.trackWidget,3,0,1,2)
         self.settingsLayout.addWidget(self.paramGroup,4,0,1,2)
@@ -318,7 +251,7 @@ class ClassicalConditioningController(ArenaController.ArenaController):
 
             self.arenaView = view
         except:
-            print 'ClassicalConditioningController:onNewFrame failed'
+            print 'onNewFrame failed'
             traceback.print_exc()
             QtCore.pyqtRemoveInputHook() 
             ipdb.set_trace()
@@ -336,108 +269,43 @@ class ClassicalConditioningController(ArenaController.ArenaController):
                 t = time.time()
                 #only update status bar if arena is selected.
                 if self.isCurrent():
-                    self.arenaMain.statusBar().showMessage('State %d'%(self.currState))
-
+                    self.arenaMain.statusBar().showMessage('Running: Block:%d/%d, CurrState=%d, TimeToNextState=%f'%(self.numBlocks,self.paramNumShockBlocks.value(),self.currState,self.nextStateTime-t))
                 if t > self.nextStateTime:
                     self.setShockState(False, False)
-                    self.pauseButton.setDisabled(True)
-                    if (self.currState <= State.ACCLIMATE
-                        and self.paramInitDuration.value() > 0):
-                        self.currState = State.PREINIT
-                        self.nextStateTime = t + self.paramInitDuration.value()
-                        self.currContext = Context.AVERSIVE
-                        self.nextContextTime = float('inf')
-                        self.setShockState(True, True)
-                    elif (self.currState <= State.PREINIT
-                        and self.paramNumPre.value() > 0):
-                        self.currState = State.PRETEST
-                        self.nextStateTime = float("inf") 
-                        self.numContext = 0; self.numContexts = self.paramNumPre.value()
-                        self.currContext = Context.SPLIT_SIDE1_NEUTRAL
-                        self.nextContextTime = t + self.paramTestSwitchTime.value()
-                    elif (self.currState <= State.PRETEST
-                        and self.paramBetweenTime.value() > 0):
-                        self.currState = State.PREDONE
-                        self.nextStateTime = t + self.paramBetweenTime.value()*60
-                        self.currContext = Context.BETWEEN
-                        self.nextContextTime = float('inf')
-                        self.pauseButton.setDisabled(False)
-                        if self.autoPauseCheckBox.isChecked():
-                            self.pauseButton.setChecked(True)
-                            self.doPause()
-                    elif (self.currState <= State.PREDONE
-                        and self.paramNumTrain.value() > 0):
-                        self.currState = State.TRAIN
-                        self.nextStateTime = float("inf")
-                        self.numContext = 0; self.numContexts = self.paramNumTrain.value()
-                        self.currContext = Context.NEUTRAL
-                        self.nextContextTime = t + random.uniform(self.paramNeutralMinTime.value(), self.paramNeutralMaxTime.value())
-                    elif (self.currState <= State.TRAIN
-                          and self.paramBetweenTime.value() > 0):
-                        self.currState = State.TRAINDONE
-                        self.nextStateTime = t + self.paramBetweenTime.value()*60
-                        self.currContext = Context.BETWEEN
-                        self.nextContextTime = float('inf')
-                        self.nextShockTime = float('inf')
-                        self.pauseButton.setDisabled(False)
-                        if self.autoPauseCheckBox.isChecked():
-                            self.pauseButton.setChecked(True)
-                            self.doPause()
-                    elif (self.currState <= State.TRAINDONE
-                        and self.paramInitDuration.value() > 0):
-                        self.currState = State.POSTINIT
-                        self.nextStateTime = t + self.paramInitDuration.value()
-                        self.currContext = Context.AVERSIVE
-                        self.nextContextTime = float('inf')
-                        self.setShockState(True,True)
-                    elif (self.currState <= State.POSTINIT
-                        and self.paramNumPost.value() > 0):
-                        self.currState = State.POSTTEST
-                        self.nextStateTime = float("inf") 
-                        self.numContext = 0; self.numContexts = self.paramNumPost.value()
-                        self.currContext = Context.SPLIT_SIDE1_NEUTRAL
-                        self.nextContextTime = t + self.paramTestSwitchTime.value()
-                    elif self.currState <= State.POSTTEST:
-                        self.currState = State.OFF
-                        self.currContext = Context.BETWEEN
-                        self.nextContextTime = float('inf')
-                        self.startButton.setText('Start Switches')
-                        self.startButton.setChecked(False)
-                        self.paramGroup.setDisabled(False)
-                        self.infoGroup.setDisabled(False)
-                        self.saveResults()
-                    self.arenaData['stateinfo'].append((t, self.currState, self.getSide1ColorName(), self.getSide2ColorName()))
+                    if (self.currState == State.ACCLIMATE or
+                        self.currState == State.BETWEEN or
+                        self.paramBetweenTime.value() == 0):
+                        if self.numBlocks < self.paramNumShockBlocks.value():
+                            if random.random() < 0.5:
+                                self.currState = State.SHOCKSIDE1
+                                self.setShockState(True,False)
+                                self.arenaData['stateinfo'].append((t, self.currState, 'On','Off'))
+                                print 'SHOCKING SIDE1'
+                            else:
+                                self.currState = State.SHOCKSIDE2
+                                self.setShockState(False,True)
+                                self.arenaData['stateinfo'].append((t, self.currState, 'Off','On'))
+                                print 'SHOCKING SIDE2'
+                            self.nextStateTime = t + self.paramShockingTime.value()
+                            self.numBlocks+=1
+                        else:
+                            self.currState = State.OFF
+                            self.arenaData['stateinfo'].append((t, self.currState, 'Off','Off'))
+                            self.startButton.setText('Start Switches')
+                            self.startButton.setChecked(False)
+                            self.paramGroup.setDisabled(False)
+                            self.infoGroup.setDisabled(False)
+                            self.saveResults()
+                            print 'DONE'
+                    elif self.paramBetweenTime.value() > 0:
+                        self.currState = State.BETWEEN
+                        self.nextStateTime = t + self.paramBetweenTime.value()
+                        self.arenaData['stateinfo'].append((t, self.currState, 'Off','Off'))
+                        print 'BETWEEN'
                     self.updateProjectorDisplay()
                     self.saveResults()
-                          
-                #handle context changes
-                if t > self.nextContextTime:
-                    self.setShockState(False,False)
-                    self.numContext += 1
-                    if self.numContext >= self.numContexts:
-                        self.nextStateTime = t
-                        self.nextContextTime = float('inf')
-                    else:
-                        if self.currContext == Context.AVERSIVE:
-                            self.currContext = Context.NEUTRAL
-                            self.nextContextTime = t + random.uniform(self.paramNeutralMinTime.value(),
-                                                                      self.paramNeutralMaxTime.value())
-                            print 'N ', self.nextContextTime
-                        elif self.currContext == Context.NEUTRAL:
-                            self.currContext = Context.AVERSIVE
-                            self.nextContextTime = t + self.paramUSTime.value()
-                            self.setShockState(True,True)
-                            print 'A ', self.nextContextTime
-                        elif self.currContext == Context.SPLIT_SIDE1_NEUTRAL:
-                            self.currContext = Context.SPLIT_SIDE1_AVERSIVE
-                            self.nextContextTime = t + self.paramTestSwitchTime.value()
-                        elif self.currContext == Context.SPLIT_SIDE1_AVERSIVE:
-                            self.currContext = Context.SPLIT_SIDE1_NEUTRAL
-                            self.nextContextTime = t + self.paramTestSwitchTime.value()
-                        self.updateProjectorDisplay()
-                        self.arenaData['stateinfo'].append((t, self.currState, self.getSide1ColorName(), self.getSide2ColorName()))
             except:
-                print 'ClassicalConditioningController:updateState failed'
+                print ':updateState failed'
                 traceback.print_exc()
                 QtCore.pyqtRemoveInputHook() 
                 ipdb.set_trace()
@@ -449,13 +317,11 @@ class ClassicalConditioningController(ArenaController.ArenaController):
 
     def drawProjectorDisplay(self, painter):
         if self.currState == State.OFF and self.projCalibButton.isChecked() and self.isCurrent():
-            side1Color = QtCore.Qt.red
-            side2Color = QtCore.Qt.blue
             a = .5
             b = 1-a
             #Draw side one
             pen = QtGui.QPen(QtCore.Qt.NoPen)
-            brush = QtGui.QBrush(side1Color)
+            brush = QtGui.QBrush(QtCore.Qt.red)
             painter.setBrush(brush)
             painter.setPen(pen)
             poly = QtGui.QPolygonF()
@@ -467,7 +333,7 @@ class ClassicalConditioningController(ArenaController.ArenaController):
             painter.drawText(self.proj1X.value(),self.proj1Y.value(),'1')
             #Draw side two
             pen = QtGui.QPen(QtCore.Qt.NoPen)
-            brush = QtGui.QBrush(side2Color)
+            brush = QtGui.QBrush(QtCore.Qt.blue)
             painter.setBrush(brush)
             painter.setPen(pen)
             poly = QtGui.QPolygonF()
@@ -476,47 +342,7 @@ class ClassicalConditioningController(ArenaController.ArenaController):
             poly.append(QtCore.QPointF(self.proj3X.value(), self.proj3Y.value()))
             poly.append(QtCore.QPointF(self.proj4X.value(), self.proj4Y.value()))
             painter.drawPolygon(poly)
-        else:
-            if self.currState == State.OFF:
-                #Draw whole tank
-                pen = QtGui.QPen(QtCore.Qt.NoPen)
-                brush = self.getBrush(self.paramBetweenColor.currentIndex())
-                painter.setBrush(brush)
-                painter.setPen(pen)
-                poly = QtGui.QPolygonF()
-                poly.append(QtCore.QPointF(self.proj1X.value(), self.proj1Y.value()))
-                poly.append(QtCore.QPointF(self.proj2X.value(), self.proj2Y.value()))
-                poly.append(QtCore.QPointF(self.proj3X.value(), self.proj3Y.value()))
-                poly.append(QtCore.QPointF(self.proj4X.value(), self.proj4Y.value()))
-                painter.drawPolygon(poly)
-            else:
-                side1Color = self.getSide1ColorNdx()
-                side2Color = self.getSide2ColorNdx()
-                a = .5
-                b = 1-a
-                #Draw side one
-                pen = QtGui.QPen(QtCore.Qt.NoPen)
-                brush = self.getBrush(side1Color)
-                painter.setBrush(brush)
-                painter.setPen(pen)
-                poly = QtGui.QPolygonF()
-                poly.append(QtCore.QPointF(self.proj1X.value(), self.proj1Y.value()))
-                poly.append(QtCore.QPointF(self.proj2X.value(), self.proj2Y.value()))
-                poly.append(QtCore.QPointF(a*self.proj2X.value() + b*self.proj3X.value(), a*self.proj2Y.value() + b*self.proj3Y.value()))
-                poly.append(QtCore.QPointF(a*self.proj1X.value() + b*self.proj4X.value(), a*self.proj1Y.value() + b*self.proj4Y.value()))
-                painter.drawPolygon(poly)
-                #Draw side two
-                pen = QtGui.QPen(QtCore.Qt.NoPen)
-                brush = self.getBrush(side2Color)
-                painter.setBrush(brush)
-                painter.setPen(pen)
-                poly = QtGui.QPolygonF()
-                poly.append(QtCore.QPointF(a*self.proj1X.value() + b*self.proj4X.value(), a*self.proj1Y.value() + b*self.proj4Y.value()))
-                poly.append(QtCore.QPointF(a*self.proj2X.value() + b*self.proj3X.value(), a*self.proj2Y.value() + b*self.proj3Y.value()))
-                poly.append(QtCore.QPointF(self.proj3X.value(), self.proj3Y.value()))
-                poly.append(QtCore.QPointF(self.proj4X.value(), self.proj4Y.value()))
-                painter.drawPolygon(poly)
-                
+                 
     def drawDisplayOverlay(self, painter):
         #draw the fish position
         if self.fishPos and self.fishPos[0] > 0:
@@ -541,11 +367,10 @@ class ClassicalConditioningController(ArenaController.ArenaController):
             painter.drawPolygon(poly)
             if len(self.arenaCamCorners) >= 2:
                 pen = QtGui.QPen(QtCore.Qt.red)
-                pen.setWidth(2)
+                pen.setWidth(3)
                 painter.setPen(pen)
                 painter.drawLine(self.arenaCamCorners[0][0],self.arenaCamCorners[0][1],
                                  self.arenaCamCorners[1][0],self.arenaCamCorners[1][1])
-
 
     def start(self):
         #Global start button not used.
@@ -573,61 +398,35 @@ class ClassicalConditioningController(ArenaController.ArenaController):
                     self.initArenaData()
                     
                     t = time.time()
+                    self.numBlocks = 0
                     self.currState = State.ACCLIMATE
                     self.nextStateTime = t + self.paramAcclimate.value()*60
-                    self.currContext = Context.BETWEEN
                     self.setShockState(False,False)
-                    self.nextContextTime = float('inf')
-                    self.arenaData['stateinfo'].append((t, self.currState, self.getSide1ColorName(), self.getSide2ColorName()))
+                    self.arenaData['stateinfo'].append((t, self.currState, 'Off', 'Off'))
                     self.updateProjectorDisplay()
                     self.startButton.setText('Stop')
+                    print 'ACCLIMATING'
                 else:
                     self.startButton.setChecked(False)
                     self.arenaMain.statusBar().showMessage('Arena not ready to start.  Information is missing.')
             else: 
                 t = time.time()
                 self.currState = State.OFF
-                self.currContext = Context.BETWEEN
                 self.setShockState(False,False)
-                self.nextContextTime = float('inf')
                 self.startButton.setText('Start Switches')
-                self.arenaData['stateinfo'].append((t, self.currState, self.getSide1ColorName(), self.getSide2ColorName()))
+                self.arenaData['stateinfo'].append((t, self.currState, 'Off', 'Off'))
                 self.updateProjectorDisplay()
                 self.saveResults()
                 self.paramGroup.setDisabled(False) 
                 self.infoGroup.setDisabled(False)
-                self.pauseButton.setChecked(False)
         except:
-            print 'ClassicalConditioningController:startSwitches failed'
+            print ':startSwitches failed'
             traceback.print_exc()
             QtCore.pyqtRemoveInputHook() 
             ipdb.set_trace()
         finally:
             self.mutex.release()    
 
-    def doPause(self):   
-        t = time.time()
-        if self.pauseButton.isChecked():
-            self.arenaData['pauseinfo'].append((True, t))
-            self.pausedRemainingTime = self.nextStateTime - t
-            self.nextStateTime = float('inf')
-        else:
-            self.arenaData['pauseinfo'].append((False, t))
-            self.nextStateTime = t + self.pausedRemainingTime
-
-    def pause(self):
-        self.mutex.acquire()
-        try:
-            self.doPause()
-        except:
-            print 'ClassicalConditioningController: pause failed'
-            traceback.print_exc()
-            QtCore.pyqtRemoveInputHook() 
-            ipdb.set_trace()
-        finally:
-            self.mutex.release()    
-                
-        
     def getArenaCameraPosition(self):
         self.arenaMain.statusBar().showMessage('Click on the corners of the arena on side 1.')
         self.currArenaClick = 0
@@ -711,24 +510,15 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         self.arenaData['fishage'] =  (datetime.date.today() - self.infoDOB.date().toPyDate()).days
         self.arenaData['fishstrain'] = str(self.infoType.text())
         self.arenaData['fishsize'] = self.fishSize
-        self.arenaData['parameters'] = { 'numPre':self.paramNumPre.value(),
-                                         'numTrain':self.paramNumTrain.value(),
-                                         'numPost':self.paramNumPost.value(),
+        self.arenaData['parameters'] = { 'numShockBlocks':self.paramNumShockBlocks.value(),
                                          'acclimate (m)':self.paramAcclimate.value(),
-                                         'initShockDuration': self.paramInitDuration.value(),
-                                         'between (m)': self.paramBetweenTime.value(),
-                                         'prepostswitchtime': self.paramTestSwitchTime.value(),
-                                         'trainUStime': self.paramUSTime.value(),
-                                         'trainNeutralMinTime':self.paramNeutralMinTime.value(),
-                                         'trainNeutralMaxTime':self.paramNeutralMaxTime.value(),
+                                         'between': self.paramBetweenTime.value(),
+                                         'shockingTime': self.paramShockingTime.value(),
                                          'shock period (ms)':self.paramShockPeriod.value(),
                                          'shock dura (ms)':self.paramShockDuration.value(),
                                          'shock chan 1':self.paramShockChan1.value(),
                                          'shock chan 2':self.paramShockChan2.value(),
                                          'shock V':self.paramShockV.value(),
-                                         'USColor':str(self.paramColorUS.currentText()),
-                                         'NeutralColor':str(self.paramColorNeutral.currentText()),
-                                         'BetweenColor':str(self.paramBetweenColor.currentText()),
                                          'numFish': self.paramNumFish.value(),
                                          'CodeVersion':None }
         self.arenaData['trackingParameters'] = self.trackWidget.getParameterDictionary()
@@ -739,7 +529,6 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         self.arenaData['video'] = list() #list of tuples (frametime, filename)	
         self.arenaData['stateinfo'] = list() #list of times at switch stimulus flipped.
         self.arenaData['shockinfo'] = list()
-        self.arenaData['pauseinfo'] = list()
         t = datetime.datetime.now()
       
         #save experiment images
@@ -752,31 +541,6 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         f = open(name=self.jsonFileName, mode='w')
         json.dump(self.arenaData,f)
         f.close()
-
-    def getSideColors(self):
-        if self.currContext == Context.BETWEEN:
-            return (self.paramBetweenColor.currentIndex(), self.paramBetweenColor.currentIndex(),
-                    str(self.paramBetweenColor.currentText()), str(self.paramBetweenColor.currentText()))
-        elif self.currContext == Context.AVERSIVE:
-            return (self.paramColorUS.currentIndex(), self.paramColorUS.currentIndex(),
-                    str(self.paramColorUS.currentText()), str(self.paramColorUS.currentText()))
-        elif self.currContext == Context.NEUTRAL:
-            return (self.paramColorNeutral.currentIndex(), self.paramColorNeutral.currentIndex(),
-                    str(self.paramColorNeutral.currentText()), str(self.paramColorNeutral.currentText()))
-        elif self.currContext == Context.SPLIT_SIDE1_AVERSIVE:
-            return (self.paramColorUS.currentIndex(), self.paramColorNeutral.currentIndex(),
-                    str(self.paramColorUS.currentText()), str(self.paramColorNeutral.currentText()))
-        elif self.currContext == Context.SPLIT_SIDE1_NEUTRAL:
-            return (self.paramColorNeutral.currentIndex(), self.paramColorUS.currentIndex(),
-                    str(self.paramColorNeutral.currentText()), str(self.paramColorUS.currentText()))
-    def getSide1ColorName(self):
-        return self.getSideColors()[2]
-    def getSide2ColorName(self):
-        return self.getSideColors()[3]
-    def getSide1ColorNdx(self):
-        return self.getSideColors()[0]
-    def getSide2ColorNdx(self):
-        return self.getSideColors()[1]
 
     def setShockState(self, bSide1, bSide2):
         if not self.arenaMain.ard:
@@ -797,17 +561,7 @@ class ClassicalConditioningController(ArenaController.ArenaController):
             self.arenaMain.ard.pinLow(self.paramShockChan2.value()) 
         self.arenaData['shockinfo'].append((time.time(), bSide1, bSide2))
 
-    def getBrush(self, colorNdx):
-        if colorNdx == 0:
-            return QtGui.QBrush(QtCore.Qt.white)
-        elif colorNdx == 1:
-             return QtGui.QBrush(QtCore.Qt.red)           
-        elif colorNdx == 2:
-             return QtGui.QBrush(QtCore.Qt.blue)           
-        elif colorNdx == 3:
-             return QtGui.QBrush(QtGui.QColor(128,128,128))  
-        else:
-            return QtGui.QBrush(QtCore.Qt.black)
+
 
 
 

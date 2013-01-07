@@ -2,6 +2,7 @@ from PyQt4 import QtCore, QtGui
 import AvoidanceController
 import CocaineController
 import ClassicalConditioningController
+import RealTimeShockController
 
 class ArenaManagementPanel(QtGui.QWidget):
     """
@@ -22,6 +23,7 @@ class ArenaManagementPanel(QtGui.QWidget):
         self.arenaType.addItem('Cocaine')
         self.arenaType.addItem('Avoidance')
         self.arenaType.addItem('Classical')
+        self.arenaType.addItem('RealTimeShock')
         self.arenaType.addItem('Operant')
         self.arenaType.addItem('Temperature')
         self.arenaType.setCurrentIndex(0)
@@ -87,6 +89,8 @@ class ArenaManagementPanel(QtGui.QWidget):
             a = CocaineController.CocaineController(self, self.arenaMain)
         elif str(self.arenaType.currentText()) == 'Classical':
             a = ClassicalConditioningController.ClassicalConditioningController(self, self.arenaMain)
+        elif str(self.arenaType.currentText()) == 'RealTimeShock':
+            a = RealTimeShockController.RealTimeShockController(self, self.arenaMain)
         else:
             return
         self.arenaCounter+=1
