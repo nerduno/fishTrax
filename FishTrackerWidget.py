@@ -187,7 +187,7 @@ class FishTrackerWidget(QtGui.QGroupBox):
             #update background image:
             if self.bFixBackgroundNow:
                 cv.Rectangle(self.fmask,(0,0),cv.GetSize(self.fmask),255,-1)
-                cv.Circle(self.fmask, tuple([int(x) for x in self.correctFish]), 0, -1)
+                cv.Circle(self.fmask, tuple([int(x) for x in self.correctFish]), self.fishSize.value(), 0, -1)
                 cv.Copy(self.currG, self.backG, self.fmask)
                 cv.ConvertScale(self.backG, self.backG32) 
                 self.bFixBackgroundNow = False
