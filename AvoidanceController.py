@@ -53,7 +53,6 @@ class AvoidanceController(ArenaController.ArenaController):
         self.arenaMidLine = []
         self.arenaSide1Sign = 1
         self.arenaProjCorners = []
-        self.bcvImg = None #background image
         self.fishImg = None #image of fish
 
         #tracking
@@ -193,7 +192,7 @@ class AvoidanceController(ArenaController.ArenaController):
         self.arenaGroup.setLayout(self.arenaLayout)
 
         #tracking group box
-        self.trackWidget = FishTrackerWidget(self, self.getBackgroundImage)
+        self.trackWidget = FishTrackerWidget(self, self.arenaMain.ftDisp)
 
         #experimental parameters groupbox
         self.paramGroup = QtGui.QGroupBox()
@@ -455,7 +454,7 @@ class AvoidanceController(ArenaController.ArenaController):
                 self.mutex.release()
 
     def isReadyToStart(self):
-        bReady =  os.path.exists(self.infoDir.text()) and self.bcvImg and self.fishImg and self.arenaCamCorners
+        bReady =  os.path.exists(self.infoDir.text()) and self.trackWidget.getBackgroundImage() and self.fishImg and self.arenaCamCorners
         print bReady
         return bReady
 
@@ -667,10 +666,10 @@ class AvoidanceController(ArenaController.ArenaController):
     # HELPER METHODS
     #---------------------------------------------------
 
-    def getBackgroundImage(self):
-        if self.currCvFrame:
-            self.bcvImg = cv.CloneImage(self.currCvFrame) 
-            self.trackWidget.setBackgroundImage(self.bcvImg)
+#    def getBackgroundImage(self):
+#        if self.currCvFrame:
+#            self.bcvImg = cv.CloneImage(self.currCvFrame) 
+#            self.trackWidget.setBackgroundImage(self.bcvImg)
 
     #convert the arena corners into a color mask image (arena=255, not=0)    
     def getArenaMask(self): 
@@ -721,7 +720,7 @@ class AvoidanceController(ArenaController.ArenaController):
 
         #save experiment images
         self.bcvImgFileName = str(self.infoDir.text()) + os.sep + self.fnResults  + '_BackImg.tiff'
-        cv.SaveImage(self.bcvImgFileName, self.bcvImg)	
+        cv.SaveImage(self.bcvImgFileName, self.trackWidget.getBackgroundImage())	
         self.fishImgFileName = str(self.infoDir.text()) + os.sep +  self.fnResults + '_FishImg.tiff'
         cv.SaveImage(self.fishImgFileName, self.fishImg)
 

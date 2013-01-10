@@ -101,19 +101,29 @@ def plotFishPosition(jsonData, startState=1, endState=0):
 	positionx = tracking[:,1] 
 	positiony = tracking[:,2] 
 	for i in range(nS,nE):
+		c1 = state[i][2]
+		c2 = state[i][3]
+		c1 = 'Yellow' if c1=='On' else c1
+		c1 = 'White' if c1=='Off' else c1
+		c2 = 'Yellow' if c2=='On' else c2
+		c2 = 'White' if c2=='Off' else c2
+
 		p1 = mpl.patches.Rectangle((state[i][0]-st,0),
 					   width=state[i+1][0]-state[i][0],
 					   height=40,alpha=0.5,
-					   color=state[i][2])
+					   color=c1)
 		p2 = mpl.patches.Rectangle((state[i][0]-st,40),
 					   width=state[i+1][0]-state[i][0],
 					   height=40,alpha=0.5,
-					   color=state[i][3])						
+					   color=c2)						
 		pyplot.gca().add_patch(p1)
 		pyplot.gca().add_patch(p2)
 	pyplot.plot(frametime, positionx, 'k.')
+	import scipy
+	pyplot.plot(frametime, scipy.convolve(positionx,np.ones(400)/400, mode='same'), 'r-')
 	pyplot.ylim([0,80])
 	pyplot.xlim([0,et-st])
+	pyplot.plot([0,et-st],[40,40],'y-')
 	pyplot.ylabel('Fish position')
 	pyplot.xlabel('Frame Time')
 
@@ -392,7 +402,7 @@ def plotAvgVel(jsonData, win_1, win_2):
 	pyplot.plot(range(jsonData['parameters']['numtrials']), win_1_vel, label='window1')
 	pyplot.plot(range(jsonData['parameters']['numtrials']), win_2_vel, label='window2')	
 
-def getSidePreference(runData, dividePoint=40, cond=3, color='Red'):
+def getSidePreference(runData, dividePoint=40, cond=[3,8], color='Red'):
 	#cond specifies for which state the preference will be extracted
 	#data should be warped so that side1 is always 0 to midline.
 	timeOnSide1 = []
@@ -402,21 +412,14 @@ def getSidePreference(runData, dividePoint=40, cond=3, color='Red'):
 	state = runData['stateinfo']
 
 	#HACK
-	for nS in range(len(state)):
-		if state[nS][1] == cond:
-			break
-	
-	for nE in reversed(range(len(state))):
-		if state[nE][1] == cond:
-			break
-
-	print nS, nE
+	ndx = np.nonzero([x in cond for x in [y[1] for y in state]])[0]
+	print ndx
 
 	w = runData['warpedTracking']
 	dt = np.diff(w[:,0])
 	bSide1Ndx = w[0:-1,1]<dividePoint
 	print 'Max dt=%f'%np.max(np.diff(w[:,0]))
-	for switchNdx in range(nS,nE+1):
+	for switchNdx in ndx:
 		switchDuration.append(state[switchNdx+1][0]-state[switchNdx][0])
 		bNdx = np.logical_and(w[0:-1,0]>state[switchNdx][0], w[0:-1,0]<state[switchNdx+1][0])
 		bNdx = np.logical_and(bNdx, bSide1Ndx)
