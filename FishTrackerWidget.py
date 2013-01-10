@@ -2,32 +2,41 @@ import cv
 import numpy as np
 from PyQt4 import QtCore
 from PyQt4 import QtGui
+from utility_widgets import LabeledSpinBox
+from utility_widgets import LabeledDoubleSpinBox
 
 dilateKernal = cv.CreateStructuringElementEx(3, 3, 1, 1, cv.CV_SHAPE_CROSS)
 erodeKernal = cv.CreateStructuringElementEx(3, 3, 1, 1, cv.CV_SHAPE_CROSS)
 
 class FishTrackerWidget(QtGui.QGroupBox):
 
-    def __init__(self, parent, getBackgroundImageFunc):        
+    def __init__(self, parent, ftDisp):
+        #ftDisp is necessary so the FishTrackerWidget can collect mouse clicks
+        
         super(FishTrackerWidget, self).__init__(parent)
+
+        self.ftDisp = ftDisp
+
         self.currCvFrame = None
         self.arenaCvMask = None #track mask
         self.bcvImg = None #background image for subtraction
         self.currG = None
         self.maskG = None
         self.backG = None
+        self.backG32 = None
         self.diffG = None
         self.thrsG = None
         self.thrsMG = None
         self.tracEG = None
         self.tracDG = None
+        self.fmask = None
+        self.bFixBackgroundNow = False
 
         self.setTitle('Tracking Parameters')
         self.trackLayout = QtGui.QGridLayout(self)
         self.trackLayout.setHorizontalSpacing(3)
         self.trackLayout.setVerticalSpacing(3)
-        self.bgButton = QtGui.QPushButton('Get Background')
-        self.bgButton.clicked.connect(getBackgroundImageFunc)
+
         self.viewLabel = QtGui.QLabel('Track Display Mode:')
         self.viewLabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.viewLabel.adjustSize()
@@ -40,60 +49,58 @@ class FishTrackerWidget(QtGui.QGroupBox):
         self.selView.addItem('Eroded')
         self.selView.addItem('Dilated')
         self.selView.addItem('Mask')
-        l1 = QtGui.QLabel('Threshold')
-        l1.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        l1.adjustSize()
-        l2 = QtGui.QLabel('Erode')
-        l2.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        l2.adjustSize()
-        l3 = QtGui.QLabel('Dilate')
-        l3.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        l3.adjustSize()
-        l4 = QtGui.QLabel('MinSize')
-        l4.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        l4.adjustSize()
-        l5 = QtGui.QLabel('MaxSize')
-        l5.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        l5.adjustSize()
-        self.trackThreshold = QtGui.QSpinBox()
-        self.trackThreshold.setMaximumWidth(50)
-        self.trackThreshold.setValue(3)
-        self.trackThreshold.setRange(0,255)
-        self.trackErode = QtGui.QSpinBox()
-        self.trackErode.setMaximumWidth(50)
-        self.trackErode.setValue(0)
-        self.trackErode.setRange(0,20)
-        self.trackDilate = QtGui.QSpinBox()
-        self.trackDilate.setMaximumWidth(50)
-        self.trackDilate.setValue(0)
-        self.trackDilate.setRange(0,20)
-        self.trackMinArea = QtGui.QSpinBox()
-        self.trackMinArea.setMaximumWidth(75)
-        self.trackMinArea.setRange(0,600000)
-        self.trackMinArea.setValue(0)
-        self.trackMaxArea = QtGui.QSpinBox()
-        self.trackMaxArea.setMaximumWidth(75)
-        self.trackMaxArea.setRange(0,600000)
-        self.trackMaxArea.setValue(600000)
         self.trackLayout.addWidget(self.viewLabel, 0,0,1,2)
         self.trackLayout.addWidget(self.selView, 0,2,1,2)
+
+        self.bgButton = QtGui.QPushButton('Get Background')
+        self.bgButton.clicked.connect(self.setBackgroundImage)
         self.trackLayout.addWidget(self.bgButton, 1,0,1,2)
-        self.trackLayout.addWidget(l1,1,2)
-        self.trackLayout.addWidget(self.trackThreshold, 1,3)
-        self.trackLayout.addWidget(l2,2,0)
-        self.trackLayout.addWidget(self.trackErode, 2,1)
-        self.trackLayout.addWidget(l3,2,2)
-        self.trackLayout.addWidget(self.trackDilate, 2,3)        
-        self.trackLayout.addWidget(l4,3,0)
-        self.trackLayout.addWidget(self.trackMinArea, 3,1)
-        self.trackLayout.addWidget(l5,3,2)
-        self.trackLayout.addWidget(self.trackMaxArea, 3,3) 
+
+        self.fixButton = QtGui.QPushButton('Fix Background')
+        self.fixButton.clicked.connect(self.fixBackground)
+        self.trackLayout.addWidget(self.fixButton, 1,2,1,2)
+
+        self.trackThreshold = LabeledSpinBox(None,'Threshold',0,255,3,60)
+        self.trackErode = LabeledSpinBox(None,'Erode',0,20,0,60)
+        self.trackDilate = LabeledSpinBox(None,'Dilate',0,20,0,60)
+        self.trackMinArea = LabeledSpinBox(None,'MinArea',0,600000,0,75)
+        self.trackMaxArea = LabeledSpinBox(None,'MaxArea',0,600000,600000,75)
+        self.updateCheckbox = QtGui.QCheckBox('Use Updating BG')
+        self.numFish = LabeledSpinBox(None,'NumFish',0,20,1,60)
+        self.fishSize = LabeledSpinBox(None,'FG Size',0,1000,50,60)
+        self.learningRate = LabeledDoubleSpinBox(None,'Learning rate',0,1,0.1,60)
+
+        self.trackLayout.addWidget(self.trackThreshold,2,0,1,2)
+        self.trackLayout.addWidget(self.trackErode, 2,2,1,2)
+        self.trackLayout.addWidget(self.trackDilate, 3,0,1,2)        
+        self.trackLayout.addWidget(self.trackMinArea, 3,2,1,2)
+        self.trackLayout.addWidget(self.trackMaxArea, 4,0,1,2) 
+        self.trackLayout.addWidget(self.updateCheckbox,5,0,1,2)
+        self.trackLayout.addWidget(self.numFish,5,2,1,2)
+        self.trackLayout.addWidget(self.fishSize,6,0,1,2)
+        self.trackLayout.addWidget(self.learningRate,6,2,1,2)
+
         self.setLayout(self.trackLayout)
 
-    def setBackgroundImage(self, img):
-        self.bcvImg = img
-        self.backG = cv.CreateImage((self.currCvFrame.width, self.currCvFrame.height), cv.IPL_DEPTH_8U, 1)
-        cv.CvtColor(self.bcvImg, self.backG, cv.CV_BGR2GRAY)
+    def setBackgroundImage(self):
+        if self.currCvFrame:
+            self.bcvImg = cv.CloneImage(self.currCvFrame)
+            self.backG = cv.CreateImage(cv.GetSize(self.currCvFrame), cv.IPL_DEPTH_8U, 1)
+            self.backG32 = cv.CreateImage(cv.GetSize(self.currCvFrame), cv.IPL_DEPTH_32F, 1)
+            cv.CvtColor(self.bcvImg, self.backG, cv.CV_BGR2GRAY)
+            cv.ConvertScale(self.backG, self.backG32)
+
+    def getBackgroundImage(self):
+        return self.bcvImg
+
+    def fixBackground(self):
+        self.ftDisp.clicked.connect(self.handleFixBackgroundClick)
+        self.bFixBackgroundNow = False
+
+    def handleFixBackgroundClick(self,x,y):
+        self.correctFish = (x,y)
+        self.ftDisp.clicked.disconnect(self.handleFixBackgroundClick)
+        self.bFixBackgroundNow = True
 
     def setTrackMask(self, img):
         self.arenaCvMask = img
@@ -127,6 +134,9 @@ class FishTrackerWidget(QtGui.QGroupBox):
             return self.currCvFrame
 
     def findFish(self, cvImg):
+        ####NEED TO MODIFY TO USE CV2 
+        ####NEED TO MODIFY TO CROP BEFORE PROCESSING!
+
         self.currCvFrame = cvImg
         foundFish = False
         fishPos = (0,0)
@@ -141,6 +151,7 @@ class FishTrackerWidget(QtGui.QGroupBox):
                 self.tracEG = cv.CreateImage((self.currCvFrame.width, self.currCvFrame.height), cv.IPL_DEPTH_8U, 1)
                 self.tracDG = cv.CreateImage((self.currCvFrame.width, self.currCvFrame.height), cv.IPL_DEPTH_8U, 1)
                 self.tracG = cv.CreateImage((self.currCvFrame.width, self.currCvFrame.height), cv.IPL_DEPTH_8U, 1)
+                self.fmask = cv.CreateImage(cv.GetSize(self.currCvFrame), cv.IPL_DEPTH_8U, 1)
             cv.CvtColor(self.currCvFrame, self.currG, cv.CV_BGR2GRAY)
             cv.AbsDiff(self.currG, self.backG, self.diffG) #difference
             cv.Threshold ( self.diffG , self.thrsG , self.trackThreshold.value() , 255 , cv.CV_THRESH_BINARY ) #threshold
@@ -172,4 +183,20 @@ class FishTrackerWidget(QtGui.QGroupBox):
                     if (moments[bn].m00 > self.trackMinArea.value() and moments[bn].m00 < self.trackMaxArea.value()):
                         allFish.append((moments[bn].m10/moments[bn].m00, moments[bn].m01/moments[bn].m00))
             del seq  
+
+            #update background image:
+            if self.bFixBackgroundNow:
+                cv.Rectangle(self.fmask,(0,0),cv.GetSize(self.fmask),255,-1)
+                cv.Circle(self.fmask, tuple([int(x) for x in self.correctFish]), 0, -1)
+                cv.Copy(self.currG, self.backG, self.fmask)
+                cv.ConvertScale(self.backG, self.backG32) 
+                self.bFixBackgroundNow = False
+            elif self.updateCheckbox.isChecked():
+                if foundFish:
+                    cv.Rectangle(self.fmask,(0,0),cv.GetSize(self.fmask),255,-1)
+                    for nFish in range(min(self.numFish.value(),len(allFish))):
+                        cv.Circle(self.fmask, tuple([int(x) for x in allFish[nFish]]), self.fishSize.value(),0,-1)
+                    cv.RunningAvg(self.currG, self.backG32, self.learningRate.value(), self.fmask)
+                    cv.ConvertScaleAbs(self.backG32,self.backG)
+
         return (foundFish, fishPos, self.getTrackDisplay(), allFish)

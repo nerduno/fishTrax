@@ -5,9 +5,9 @@ class LabeledSpinBox(QtGui.QWidget):
     def __init__(self, parent, label, nMin, nMax, nVal, nWidth):
         super(LabeledSpinBox, self).__init__(parent)
         self.gbox = QtGui.QGridLayout()
-        self.gbox.setHorizontalSpacing(0)
-        self.gbox.setVerticalSpacing(0)
-        self.gbox.setContentsMargins(0,0,0,0)
+        self.gbox.setHorizontalSpacing(1)
+        self.gbox.setVerticalSpacing(1)
+        self.gbox.setContentsMargins(1,1,1,1)
         self.spin = QtGui.QSpinBox()
         self.spin.setRange(nMin,nMax)
         self.spin.setValue(nVal)
@@ -22,6 +22,29 @@ class LabeledSpinBox(QtGui.QWidget):
 
     def setValue(self, val):
         self.spin.setValue(val)
+
+class LabeledDoubleSpinBox(QtGui.QWidget):
+    def __init__(self, parent, label, nMin=0.0, nMax=1.0, nVal=0.0, nWidth=60):
+        super(LabeledDoubleSpinBox, self).__init__(parent)
+        self.gbox = QtGui.QGridLayout()
+        self.gbox.setHorizontalSpacing(1)
+        self.gbox.setVerticalSpacing(1)
+        self.gbox.setContentsMargins(1,1,1,1)
+        self.spin = QtGui.QDoubleSpinBox()
+        self.spin.setRange(nMin,nMax)
+        self.spin.setValue(nVal)
+        self.spin.setMaximumWidth(nWidth)
+        self.label = QtGui.QLabel(label)
+        self.gbox.addWidget(self.spin,0,0)
+        self.gbox.addWidget(self.label,0,1)
+        self.setLayout(self.gbox)
+
+    def value(self):
+        return self.spin.value()
+
+    def setValue(self, val):
+        self.spin.setValue(val)
+
 
 class TextAndBrowseWidget(QtGui.QWidget):
     """

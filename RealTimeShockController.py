@@ -44,7 +44,6 @@ class RealTimeShockController(ArenaController.ArenaController):
         self.arenaMidLine = []
         self.arenaSide1Sign = 1
         self.arenaProjCorners = []
-        self.bcvImg = None #background image
         self.fishImg = None #image of fish
 
         #tracking
@@ -145,7 +144,7 @@ class RealTimeShockController(ArenaController.ArenaController):
         self.arenaGroup.setLayout(self.arenaLayout)
 
         #tracking group box
-        self.trackWidget = FishTrackerWidget(self, self.getBackgroundImage)
+        self.trackWidget = FishTrackerWidget(self, self.arenaMain.ftDisp)
 
         self.startButton = QtGui.QPushButton('Start')
         self.startButton.setMaximumWidth(150)
@@ -314,7 +313,7 @@ class RealTimeShockController(ArenaController.ArenaController):
                 self.mutex.release()
 
     def isReadyToStart(self):
-        return os.path.exists(self.infoDir.text()) and self.bcvImg and self.fishImg and self.arenaCamCorners
+        return os.path.exists(self.infoDir.text()) and self.trackWidget.getBackgroundImage() and self.fishImg and self.arenaCamCorners
 
     def drawProjectorDisplay(self, painter):
         if self.currState == State.OFF and self.projCalibButton.isChecked() and self.isCurrent():
@@ -368,7 +367,7 @@ class RealTimeShockController(ArenaController.ArenaController):
             painter.drawPolygon(poly)
             if len(self.arenaCamCorners) >= 2:
                 pen = QtGui.QPen(QtCore.Qt.red)
-                pen.setWidth(3)
+                pen.setWidth(2)
                 painter.setPen(pen)
                 painter.drawLine(self.arenaCamCorners[0][0],self.arenaCamCorners[0][1],
                                  self.arenaCamCorners[1][0],self.arenaCamCorners[1][1])
@@ -474,10 +473,10 @@ class RealTimeShockController(ArenaController.ArenaController):
     # HELPER METHODS
     #---------------------------------------------------
 
-    def getBackgroundImage(self):
-        if self.currCvFrame:
-            self.bcvImg = cv.CloneImage(self.currCvFrame) 
-            self.trackWidget.setBackgroundImage(self.bcvImg)
+    #def getBackgroundImage(self):
+    #    if self.currCvFrame:
+    #        self.bcvImg = cv.CloneImage(self.currCvFrame) 
+    #        self.trackWidget.setBackgroundImage(self.bcvImg)
 
     def processArenaCorners(self, arenaCorners, linePosition):
         #return the line dividing the center of the arena, and a definition of side 1.
@@ -535,7 +534,7 @@ class RealTimeShockController(ArenaController.ArenaController):
       
         #save experiment images
         self.bcvImgFileName = str(self.infoDir.text()) + os.sep + self.fnResults  + '_BackImg_' + t.strftime('%Y-%m-%d-%H-%M-%S') + '.tiff'
-        cv.SaveImage(self.bcvImgFileName, self.bcvImg)	
+        cv.SaveImage(self.bcvImgFileName, self.trackWidget.getBackgroundImage())	
         self.fishImgFileName = str(self.infoDir.text()) + os.sep +  self.fnResults + '_FishImg_' + t.strftime('%Y-%m-%d-%H-%M-%S') + '.tiff'
         cv.SaveImage(self.fishImgFileName, self.fishImg)
 
