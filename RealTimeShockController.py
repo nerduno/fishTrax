@@ -32,8 +32,7 @@ class State:
     OFF = 0
     ACCLIMATE = 1
     BETWEEN = 2
-    SHOCKSIDE1 = 3
-    SHOCKSIDE2 = 4
+    SHOCKING = 3
 
 class RealTimeShockController(ArenaController.ArenaController):
 
@@ -269,22 +268,24 @@ class RealTimeShockController(ArenaController.ArenaController):
                 t = time.time()
                 #only update status bar if arena is selected.
                 if self.isCurrent():
-                    self.arenaMain.statusBar().showMessage('Running: Block:%d/%d, CurrState=%d, TimeToNextState=%f'%(self.numBlocks,self.paramNumShockBlocks.value(),self.currState,self.nextStateTime-t))
+                    self.arenaMain.statusBar().showMessage('Running: Block:%d/%d, CurrState=%d, TimeToNextState=%f, Side=%d'%(self.numBlocks,self.paramNumShockBlocks.value(),self.currState,self.nextStateTime-t, self.currShockSide))
                 if t > self.nextStateTime:
                     self.setShockState(False, False)
                     if (self.currState == State.ACCLIMATE or
                         self.currState == State.BETWEEN or
                         self.paramBetweenTime.value() == 0):
                         if self.numBlocks < self.paramNumShockBlocks.value():
-                            if random.random() < 0.5:
-                                self.currState = State.SHOCKSIDE1
+                            if self.currShockSide == 2:
+                                self.currState = State.SHOCKING
                                 self.setShockState(True,False)
                                 self.arenaData['stateinfo'].append((t, self.currState, 'On','Off'))
+                                self.currShockSide = 1
                                 print 'SHOCKING SIDE1'
                             else:
-                                self.currState = State.SHOCKSIDE2
+                                self.currState = State.SHOCKING
                                 self.setShockState(False,True)
                                 self.arenaData['stateinfo'].append((t, self.currState, 'Off','On'))
+                                self.currShockSide = 2
                                 print 'SHOCKING SIDE2'
                             self.nextStateTime = t + self.paramShockingTime.value()
                             self.numBlocks+=1
@@ -402,6 +403,7 @@ class RealTimeShockController(ArenaController.ArenaController):
                     self.currState = State.ACCLIMATE
                     self.nextStateTime = t + self.paramAcclimate.value()*60
                     self.setShockState(False,False)
+                    self.currShockSide = random.choice([1,2])
                     self.arenaData['stateinfo'].append((t, self.currState, 'Off', 'Off'))
                     self.updateProjectorDisplay()
                     self.startButton.setText('Stop')
