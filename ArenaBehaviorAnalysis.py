@@ -231,7 +231,7 @@ def plotFlippedPath(runData, tankLength=48, cond=[2,3], color='On'):
         else:
             pyplot.plot(tankLength-w[bNdxWin,1],w[bNdxWin,2],'k')
 
-def getSidePreference(runData, dividePoint=24, cond=[3,8], refState='Red'):
+def getSidePreference(runData, tankLength=48, cond=[3,8], refState='Red',sideFrac=.5):
     """
     cond specifies for which state the preference will be extracted
     specifies the side description on which the returned data is based.  e.g. if refState is red then
@@ -250,35 +250,42 @@ def getSidePreference(runData, dividePoint=24, cond=[3,8], refState='Red'):
 
     #HACK
     ndx = np.nonzero([x in cond for x in [y[1] for y in state]])[0]
+    print ndx
 
     w = runData['warpedTracking']
     dt = np.diff(w[:,0])
-    bSide1Ndx = w[0:-1,1]<dividePoint
+    bMidNdx = w[0:-1,1]<tankLength*.5
+    bSide1Ndx = w[0:-1,1]<tankLength*sideFrac
+    bSide2Ndx = w[0:-1,1]>tankLength*(1-sideFrac)
     print 'Max dt=%f'%np.max(np.diff(w[:,0]))
     for switchNdx in ndx:
         startTime.append(state[switchNdx][0] - w[0,0])
         switchDuration.append(state[switchNdx+1][0]-state[switchNdx][0])
         bNdxWin = np.logical_and(w[:,0]>state[switchNdx][0], w[:,0]<state[switchNdx+1][0])
-        bNdx = np.logical_and(w[0:-1,0]>state[switchNdx][0], w[0:-1,0]<state[switchNdx+1][0])
-        bNdx = np.logical_and(bNdx, bSide1Ndx)
+        bNdxWinDiff = np.logical_and(w[0:-1,0]>state[switchNdx][0], w[0:-1,0]<state[switchNdx+1][0])
+        bNdx = np.logical_and(bNdxWinDiff, bMidNdx)
         timeOnSide1.append(sum(dt[bNdx]))
-        distFromSide1.append(np.mean(w[bNdxWin,1]))
+        distFromSide1.append(np.median(w[bNdxWin,1]))
         if refState.lower() == state[switchNdx][2].lower():
-            timeOnColor1.append(timeOnSide1[-1])
-            distFromColor1.append(np.mean(w[bNdxWin,1]))
+            bNdx = np.logical_and(bNdxWinDiff, bSide1Ndx)
+            timeOnColor1.append(sum(dt[bNdx]))
+            #timeOnColor1.append(timeOnSide1[-1])
+            distFromColor1.append(np.median(w[bNdxWin,1]))
         elif refState.lower() == state[switchNdx][3].lower():
-            timeOnColor1.append(switchDuration[-1] - timeOnSide1[-1])
-            distFromColor1.append(2*dividePoint - np.mean(w[bNdxWin,1]))
+            bNdx = np.logical_and(bNdxWinDiff, bSide2Ndx)
+            timeOnColor1.append(sum(dt[bNdx]))
+            #timeOnColor1.append(switchDuration[-1] - timeOnSide1[-1])
+            distFromColor1.append(tankLength - np.median(w[bNdxWin,1]))
         else:
             timeOnColor1.append(0)
             distFromColor1.append(0)
             print 'Warning requested color not present'
     return (timeOnColor1, timeOnSide1, switchDuration, distFromColor1, distFromSide1, startTime)
 
-def getSidePreference_Multi(datasets, dividePoint=24, cond=[3,4], refState='On'):
+def getSidePreference_Multi(datasets, tankLength=48, cond=[3,4], refState='On',sideFrac=.4):
     fracOnRef = []; distFromRef = []
     for n in range(len(datasets)):
-        [rt,s1t,t,rd,s1d,t0] = getSidePreference(datasets[n], dividePoint=dividePoint, cond=cond, refState=refState)
+        [rt,s1t,t,rd,s1d,t0] = getSidePreference(datasets[n], tankLength=tankLength, cond=cond, refState=refState, sideFrac=sideFrac)
         fracOnRef.append(np.array(rt)/np.array(t))
         distFromRef.append(rd)
     return (np.array(fracOnRef),np.array(distFromRef))
