@@ -25,7 +25,7 @@ import ipdb
 
 #Serial Communication Constants (for Arduino)
 cBaud = 9600;
-validPins = [2,3,4,5,6,7,8,9,10,11,12,13]
+validPins = range(2,54)
 cmd_maxFields = 10
 
 #Commands
