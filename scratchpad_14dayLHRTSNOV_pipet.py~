@@ -1,0 +1,261 @@
+import ArenaBehaviorAnalysis as aba
+import pylab
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as pyplot
+
+e_shockR = ['/home/vburns/Dropbox/ConchisData/2013-02-17/f00160/f00160_2013-02-17-10-53-08.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00161/f00161_2013-02-17-10-53-06.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00162/f00162_2013-02-17-10-53-03.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00163/f00163_2013-02-17-10-52-57.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00164/f00164_2013-02-17-12-33-27.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00165/f00165_2013-02-17-12-33-25.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00166/f00166_2013-02-17-12-33-22.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00167/f00167_2013-02-17-12-33-19.json']
+e_shockR = aba.loadMultipleDataFiles(e_shockR)
+
+e_RTR = [ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00160/f00160_2013-02-17-11-45-31.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00161/f00161_2013-02-17-11-44-11.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00162/f00162_2013-02-17-11-44-48.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00164/f00164_2013-02-17-13-24-08.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00165/f00165_2013-02-17-13-24-41.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00166/f00166_2013-02-17-13-25-07.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00167/f00167_2013-02-17-13-25-49.json']
+e_RTR = aba.loadMultipleDataFiles(e_RTR)
+
+e_shock = ['/home/vburns/Dropbox/ConchisData/2013-02-17/f00168/f00168_2013-02-17-14-20-02.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00169/f00169_2013-02-17-14-19-57.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00170/f00170_2013-02-17-14-19-53.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00171/f00171_2013-02-17-14-19-50.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00172/f00172_2013-02-18-10-57-04.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00173/f00173_2013-02-18-10-57-06.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00174/f00174_2013-02-18-10-57-08.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00175/f00175_2013-02-18-10-57-10.json']
+e_shock = aba.loadMultipleDataFiles(e_shock)
+
+e_RT= ['/home/vburns/Dropbox/ConchisData/2013-02-17/f00168/f00168_2013-02-17-15-09-57.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00169/f00169_2013-02-17-15-09-44.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00170/f00170_2013-02-17-15-09-30.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00171/f00171_2013-02-17-15-09-20.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00172/f00172_2013-02-18-11-48-17.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00173/f00173_2013-02-18-11-47-18.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00174/f00174_2013-02-18-11-47-11.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00175/f00175_2013-02-18-11-46-46.json']
+e_RT = aba.loadMultipleDataFiles(e_RT)
+
+e_long = ['/home/vburns/Dropbox/ConchisData/2013-02-17/f00168/f00168_2013-02-17-15-50-10.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00169/f00169_2013-02-17-15-50-12.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00170/f00170_2013-02-17-15-50-14.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00171/f00171_2013-02-17-15-50-17.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00172/f00172_2013-02-18-12-28-25.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00173/f00173_2013-02-18-12-28-28.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00174/f00174_2013-02-18-12-28-31.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00175/f00175_2013-02-18-12-28-34.json']
+e_long = aba.loadMultipleDataFiles(e_long)
+
+c_shock = ['/home/vburns/Dropbox/ConchisData/2013-02-13/f00143/f00143_2013-02-13-10-40-11.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-13/f00144/f00144_2013-02-13-10-40-13.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-13/f00145/f00145_2013-02-13-10-40-15.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-13/f00146/f00146_2013-02-13-10-40-17.json']
+c_shock = aba.loadMultipleDataFiles(c_shock)
+
+c_RT = ['/home/vburns/Dropbox/ConchisData/2013-02-13/f00143/f00143_2013-02-13-11-43-08.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-13/f00144/f00144_2013-02-13-11-43-06.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-13/f00145/f00145_2013-02-13-11-43-05.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-13/f00146/f00146_2013-02-13-11-43-03.json']
+c_RT = aba.loadMultipleDataFiles(c_RT)
+
+c_novel = ['/home/vburns/Dropbox/ConchisData/2013-02-13/f00143/f00143_2013-02-13-12-28-33.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-13/f00144/f00144_2013-02-13-12-28-27.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-13/f00145/f00145_2013-02-13-12-28-22.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-13/f00146/f00146_2013-02-13-12-28-15.json']
+c_novel = aba.loadMultipleDataFiles(c_novel)
+
+import pylab
+#Real time avoidance statistics following extended shock (learned helplessness)
+(e_fracRT,e_distRT) = aba.getSidePreference_Multi(e_RT)
+(e_fracRT2, e_distRT2) = aba.getSidePreference_Multi(e_RTR)
+(c_fracRT,c_distRT) = aba.getSidePreference_Multi(c_RT)
+
+
+import scipy
+[tv, e_fracRT_stat] = scipy.stats.ttest_1samp(np.mean(e_fracRT, axis = 1), 0.5)
+[tv, e_distRT_stat] = scipy.stats.ttest_1samp(np.mean(e_distRT, axis = 1), 24)
+[tv, e_fracRT2_stat] = scipy.stats.ttest_1samp(np.mean(e_fracRT2, axis = 1), 0.5)
+[tv, e_distRT2_stat] = scipy.stats.ttest_1samp(np.mean(e_distRT2, axis = 1), 24)
+[tv, c_fracRT_stat] = scipy.stats.ttest_1samp(np.mean(c_fracRT, axis = 1), 0.5)
+[tv, c_distRT_stat] = scipy.stats.ttest_1samp(np.mean(c_distRT, axis = 1), 24)
+[t, time_diff] = scipy.stats.ttest_ind(np.mean(e_fracRT,axis = 1), np.mean(c_fracRT,1))
+[t, dist_diff] = scipy.stats.ttest_ind(np.mean(e_distRT,axis = 1), np.mean(c_distRT,1))
+[t, time_diff2] = scipy.stats.ttest_ind(np.mean(e_fracRT2,axis = 1), np.mean(c_fracRT,1))
+[t, dist_diff2] = scipy.stats.ttest_ind(np.mean(e_distRT2,axis = 1), np.mean(c_distRT,1))
+
+print 'Avoidance Post LH_5V 14dpf with pipetting (frac, distance): ', e_fracRT_stat, e_distRT_stat
+print 'Avoidance Post LH_5V 14dpf, tested in new context (frac, distance):', e_fracRT2_stat, e_distRT2_stat
+print 'Avoidance Control (frac, distance): ', c_fracRT_stat, c_distRT_stat
+print 'Controls diff from Experimental in RTS with both being pipetted (time, dist): ', time_diff, dist_diff 
+print 'Controls diff from Experimental in novel context, bot being pipetted (time, dist): ', time_diff2, dist_diff2 
+"""
+for n in range(len(e_RT)):
+    pylab.figure(n);
+    ax1 = pylab.subplot2grid((4,1),(0,0),rowspan=2) 
+    aba.plotFishXPosition(e_RTn[n])
+    ax = pylab.subplot2grid((4,1),(2,0),sharex=ax1)
+    [sh,s,d,dsh,ds,st] = aba.getSidePreference(e_RTn[n], cond=[3,4], refState='On')
+    pylab.bar(st,np.array(s)/np.array(d),width=d)
+    pylab.axhline(.5,color='k')
+    pylab.ylabel('% time side1')
+    ax.set_yticks((0,.5,1))
+    ax = pylab.subplot2grid((4,1),(3,0),sharex=ax1);
+    pylab.bar(st,np.array(ds),width=d); 
+    pylab.ylim((0,48))
+    pylab.axhline(24,color='k')
+    ax.set_yticks((0,24,48))
+    pylab.ylabel('Avg dist from\nside 1 (mm)')
+    pylab.xlabel('Time (s)')
+pylab.show()
+
+
+for y in range(len(c_RT)):
+    pylab.figure(y+10);
+    ax1 = pylab.subplot2grid((4,1),(0,0),rowspan=2); 
+    aba.plotFishXPosition(c_RT[y])
+    ax = pylab.subplot2grid((4,1),(2,0),sharex=ax1);
+    [sh,s,d,dsh,ds,st] = aba.getSidePreference(c_RT[y], cond=[3,4], refState='On')
+    pylab.bar(st,np.array(s)/np.array(d),width=d)
+    pylab.axhline(.5,color='k')
+    pylab.ylabel('% time side1')
+    ax.set_yticks((0,.5,1))
+    ax = pylab.subplot2grid((4,1),(3,0),sharex=ax1);
+    pylab.bar(st,np.array(ds),width=d); 
+    pylab.ylim((0,48))
+    pylab.axhline(24,color='k')
+    ax.set_yticks((0,24,48))
+    pylab.ylabel('Avg dist from\nside 1 (mm)')
+    pylab.xlabel('Time (s)')
+pylab.show()
+"""
+
+ae_f = np.mean(e_fracRT,1)
+ac_f = np.mean(c_fracRT,1)
+ae_d = np.mean(e_distRT,1)
+ac_d = np.mean(c_distRT,1)
+ae_f2 = np.mean(e_fracRT2, 1)
+ae_d2 = np.mean(e_distRT2, 1)
+pylab.figure(1)
+ax = pylab.subplot(1,2,1)
+pylab.errorbar([0,1,2],[np.mean(ae_f), np.mean(ae_f2), np.mean(ac_f)],fmt='o',yerr=(2*scipy.stats.sem(ae_f),2*scipy.stats.sem(ae_f2), 2*scipy.stats.sem(ac_f)))
+pylab.axhline(.5)
+pylab.xlim((-1,3))
+pylab.ylim((0,1))
+pylab.ylabel('% Time on shock side')
+ax.set_xticks((0,1,2))
+ax.set_xticklabels(('exper RTS\nwith pipetting', 'exper RTS\nin novel context' , 'control\nwith pipetting'))
+pylab.suptitle('Real-time shock avoidance following learned helplessness 14dpf')
+ax = pylab.subplot(1,2,2)
+pylab.errorbar([0,1,2],[48-np.mean(ae_d),48-np.mean(ae_d2), 48-np.mean(ac_d)],fmt='o',yerr=(2*scipy.stats.sem(ae_d), 2*scipy.stats.sem(ae_d2), 2*scipy.stats.sem(ac_d)))
+pylab.axhline(24)
+pylab.xlim((-1,3))
+pylab.ylim((0,48))
+pylab.ylabel('% Avg dist from safe side')
+ax.set_xticks((0,1,2))
+ax.set_xticklabels(('exper RTS\nwith pipetting','exper RTS\nin novel context', 'control'))
+ax.set_yticks((0,24,48))
+pylab.show()
+
+def getVelMulti(datasets, tRange=None):
+    medVel = []
+    for d in datasets:
+        w = d['warpedTracking']
+        if tRange:
+            bNdxWin = np.logical_and(w[:,0]>tRange[0]+w[0,0], w[:,0]<tRange[1]+w[0,0])
+            vel = np.sqrt(pow(np.diff(w[bNdxWin,1]),2) + pow(np.diff(w[bNdxWin,2]),2)) / np.diff(w[bNdxWin,0])
+        else:
+            vel = np.sqrt(pow(np.diff(w[:,1]),2) + pow(np.diff(w[:,2]),2)) / np.diff(w[:,0])
+        medVel.append(np.median(vel))     
+    return medVel
+
+def getVelRaw(d, tRange=None):
+    w = d['warpedTracking']
+    if tRange:
+        bNdxWin = np.logical_and(w[:,0]>tRange[0]+w[0,0], w[:,0]<tRange[1]+w[0,0])
+        vel = np.sqrt(pow(np.diff(w[bNdxWin,1]),2) + pow(np.diff(w[bNdxWin,2]),2)) / np.diff(w[bNdxWin,0])
+    else:
+        vel = np.sqrt(pow(np.diff(w[:,1]),2) + pow(np.diff(w[:,2]),2)) / np.diff(w[:,0])
+    return vel
+
+#velocity locomation analysis
+eShockVel = getVelMulti(e_shock, (0,900))
+eLHVel = getVelMulti(e_RT)
+eVellate = getVelMulti(e_long, (2700,3600))
+#eNovVel = getVelMulti(e_novel, (0,900))
+eShockR = getVelMulti(e_shockR, (0,900))
+eLHVelR = getVelMulti(e_RTR)
+
+#t = getVelRaw(e_shock[0])
+
+cShockVel = getVelMulti(c_shock, (0, 900))
+cLHVel = getVelMulti(c_RT)
+#cNovVel = getVelMulti(c_novel, (0,900))
+cNovVellate = getVelMulti(c_novel, (2700,3600))
+#cNov = getVelMulti(c_novel)
+
+[tv, e_Shock_LH] = scipy.stats.ttest_ind(eShockVel, eLHVel)
+[tv, e_Shock_Nov] = scipy.stats.ttest_ind(eShockVel, eVellate)
+[tv, e_LH_Nov] = scipy.stats.ttest_ind(eLHVel, eVellate)
+[tv, e_Shock_LH2] = scipy.stats.ttest_ind(eShockR, eLHVelR)
+[tv, e_Shock_Shock] = scipy.stats.ttest_ind(eLHVel, eLHVelR)
+
+[tv, c_Shock_LH] = scipy.stats.ttest_ind(cShockVel, cLHVel)
+[tv, c_Shock_Nov] = scipy.stats.ttest_ind(cShockVel, cNovVellate)
+[tv, c_LH_Nov] = scipy.stats.ttest_ind(cLHVel, cNovVellate)
+
+[tv, ce_Shock] = scipy.stats.ttest_ind(cShockVel, eShockVel)
+[tv, ce_ShockR] = scipy.stats.ttest_ind(cShockVel, eShockR)
+[tv, ce_RT] = scipy.stats.ttest_ind(cLHVel, eLHVel)
+[tv, ce_RTR] = scipy.stats.ttest_ind(cLHVel, eLHVelR)
+#[tv, ce_Nov] = scipy.stats.ttest_ind(cNovVellate, eLHVellate)
+
+print 'Statistics comparing velocities Shock/RT, Shock/Nov, RT/Nov, experimental in same context with pipeting: ', e_Shock_LH, e_Shock_Nov, e_LH_Nov
+print 'Statistics comparing velocities Shock/RT novel context, RT same context/RT novel, experimental with pipeting: ', e_Shock_LH2, e_Shock_Shock
+print 'Statistics comparing velocities Shock/RT, Shock/Nov, RT/Nov control with pipetting : ', c_Shock_LH, c_Shock_Nov, c_LH_Nov
+print 'Statistics comparing control and experimental Shock/Shock black to black, Shock/Shock black to red, RT/RT black with pipet, RT/RT red with pipet: ', ce_Shock, ce_ShockR, ce_RT, ce_RTR  
+
+pylab.figure(30)
+ax = pylab.subplot(1,3,1)
+pylab.plot(0,[eShockVel], 'r.')
+pylab.plot(1,[eLHVel], 'r.')
+pylab.plot(2,[eVellate],'r.')
+pylab.plot([0,1,2],[np.mean(eShockVel),np.mean(eLHVel), np.mean(eVellate)],'o-k')
+ax.set_xticks((0,1,2))
+ax.set_xticklabels(('shock','RT\nsame tank', 'velocity late', ))
+pylab.xlim((-.25,2.5))
+pylab.ylabel('Median Velocity (mm/s)')
+pylab.title('Effect of LH protocol on velocity in novel context\n(Experimental Fish pipetted in same tank)')
+patch1 = mpl.patches.Rectangle((.5,0), 1,5, color = 'g', fill=True, alpha=0.5)
+pyplot.gca().add_patch(patch1)
+ax = pylab.subplot(1,3,2)
+pylab.plot(0,[eShockR], 'r.')
+pylab.plot(1,[eLHVelR], 'r.')
+pylab.plot([0,1],[np.mean(eShockR),np.mean(eLHVelR)],'o-k')
+ax.set_xticks((0,1))
+ax.set_xticklabels(('shock','RT\nnovel tank',))
+pylab.xlim((-.25,1.5))
+pylab.ylabel('Median Velocity (mm/s)')
+pylab.title('Effect of LH protocol on velocity in novel context\n(Experimental Fish in novel tank)')
+patch3 = mpl.patches.Rectangle((.5,0), 1,5, color = 'g', fill=True, alpha=0.5)
+pyplot.gca().add_patch(patch3)
+ax = pylab.subplot(1,3,3,sharey=ax)
+pylab.plot(0,[cShockVel], 'b.')
+pylab.plot(1,[cLHVel], 'b.')
+pylab.plot(2,[cNovVellate],'b.')
+pylab.plot([0,1,2],[np.mean(cShockVel),np.mean(cLHVel),np.mean(cNovVellate)],'o-k')
+ax.set_xticks((0,1,2))
+ax.set_xticklabels(('shock','RT', 'novel late'))
+pylab.xlim((-.25,2.5))
+pylab.ylabel('Median Velocity (mm/s)')
+pylab.title('Effect of LH protocol on velocity in novel context\n(Control Fish pipetted)')
+patch2 = mpl.patches.Rectangle((.5,0), 1,5, color = 'g', fill=True, alpha=0.5)
+pyplot.gca().add_patch(patch2)
+
+pylab.show()

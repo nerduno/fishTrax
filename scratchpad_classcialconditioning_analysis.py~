@@ -1,0 +1,183 @@
+import ArenaBehaviorAnalysis as aba
+import pylab
+import numpy as np
+
+e_pre_f_multi = '/home/vburns/Dropbox/ConchisData/2012-12-21/f00022/f00022_2012-12-21-10-07-32.json'
+e_pre_f = ['/home/vburns/Dropbox/ConchisData/2012-12-21/f00024/f00024_2012-12-21-10-07-38.json',
+ '/home/vburns/Dropbox/ConchisData/2012-12-21/f00027/f00027_2012-12-21-10-07-46.json',
+ '/home/vburns/Dropbox/ConchisData/2012-12-21/f00029/f00029_2012-12-21-10-07-51.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-03/f00042/f00042_2013-01-03-11-26-35.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-03/f00043/f00043_2013-01-03-11-26-32.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-03/f00044/f00044_2013-01-03-11-26-30.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-03/f00045/f00045_2013-01-03-11-26-27.json']
+e_pre = aba.loadMultipleDataFiles(e_pre_f)
+e_temp = aba.loadDataFromFile_AvgMultiFish(e_pre_f_multi) 
+e_pre = [e_temp] + e_pre
+
+e_postM_f = '/home/vburns/Dropbox/ConchisData/2012-12-21/f00022/f00022_2012-12-21-13-23-49.json'
+e_post_f = ['/home/vburns/Dropbox/ConchisData/2012-12-21/f00024/f00024_2012-12-21-13-24-03.json',
+ '/home/vburns/Dropbox/ConchisData/2012-12-21/f00027/f00027_2012-12-21-13-25-17.json',
+ '/home/vburns/Dropbox/ConchisData/2012-12-21/f00029/f00029_2012-12-21-13-25-49.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-03/f00042/f00042_2013-01-03-13-52-59.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-03/f00043/f00043_2013-01-03-13-53-02.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-03/f00044/f00044_2013-01-03-13-53-04.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-03/f00045/f00045_2013-01-03-13-53-06.json']
+e_temp2 = aba.loadDataFromFile_AvgMultiFish(e_postM_f)
+e_post = aba.loadMultipleDataFiles(e_post_f)
+e_post = [e_temp2] + e_post
+
+c_pre_f = ['/home/vburns/Dropbox/ConchisData/2013-01-14/f00080/f00080_2013-01-14-12-17-49.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-14/f00081/f00081_2013-01-14-12-17-52.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-14/f00082/f00082_2013-01-14-12-17-55.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-14/f00083/f00083_2013-01-14-12-17-58.json']
+c_pre = aba.loadMultipleDataFiles(c_pre_f)
+
+c_post_f = ['/home/vburns/Dropbox/ConchisData/2013-01-14/f00080/f00080_2013-01-14-14-27-16.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-14/f00081/f00081_2013-01-14-14-27-21.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-14/f00082/f00082_2013-01-14-14-27-30.json',
+ '/home/vburns/Dropbox/ConchisData/2013-01-14/f00083/f00083_2013-01-14-14-27-41.json']
+c_post = aba.loadMultipleDataFiles(c_post_f)
+
+#assumes cocaine is on red
+(e_pre_frac,e_pre_dist) = aba.getSidePreference_Multi(e_pre, cond = [3,8], refState ='Red')
+(c_pre_frac,c_pre_dist) = aba.getSidePreference_Multi(c_pre, cond = [3,8], refState = 'Red')
+
+(e_post_frac,e_post_dist) = aba.getSidePreference_Multi(e_post, cond = [3,8], refState ='Red')
+(c_post_frac,c_post_dist) = aba.getSidePreference_Multi(c_post, cond = [3,8], refState = 'Red')
+
+import scipy
+[tv, p_e_pre] = scipy.stats.ttest_1samp(np.mean(e_pre_frac, axis = 1),.5)
+[tv, p_e_post] = scipy.stats.ttest_1samp(np.mean(e_post_frac, axis = 1),.5)
+[tv, e_pre_post] = scipy.stats.ttest_1samp(np.mean(e_post_frac, axis = 1)-np.mean(e_pre_frac, axis = 1),0)
+
+[tv, p_c_pre] = scipy.stats.ttest_1samp(np.mean(c_pre_frac, axis = 1),.5)
+[tv, p_c_post] = scipy.stats.ttest_1samp(np.mean(c_post_frac, axis = 1),.5)
+[tv, c_pre_post] = scipy.stats.ttest_1samp(np.mean(c_post_frac, axis = 1)-np.mean(c_pre_frac, axis = 1),0)
+
+print 'experimental pre,post,prevspost: ', p_e_pre, p_e_post, e_pre_post
+print 'control pre,post,prevspost: ', p_c_pre, p_c_post, c_pre_post
+
+import pylab
+pylab.figure(1)
+pylab.clf()
+pylab.title('Effect of Cocaine CCP (5uM) Experimental Fish', ha = 'center')
+ax = pylab.subplot(1,2,1)
+pylab.plot([0,1],[np.mean(e_pre_frac, 1),np.mean(e_post_frac,1)],'.-r')
+ax.set_xticks((0,1))
+ax.set_xticklabels(('pre','post'))
+pylab.xlim((-.25,1.25))
+pylab.ylim((0,1))
+pylab.ylabel('Percent Time on Cocaine Color (Experimental)')
+pylab.hold(True)
+pylab.errorbar([0,1],[np.mean(e_pre_frac),np.mean(e_post_frac)], yerr=2*scipy.stats.sem([np.mean(e_pre_frac,1),np.mean(e_post_frac,1)], axis = 1), capsize = 5, fmt = '.-k', linewidth = 3, markersize = 10)
+pylab.axhline(.5,color='k',linestyle=':')
+ax = pylab.subplot(1,2,2,sharey=ax)
+pylab.plot([0,1],[np.mean(c_pre_frac, 1),np.mean(c_post_frac,1)],'.-b')
+ax.set_xticks((0,1))
+ax.set_xticklabels(('pre','post'))
+pylab.xlim((-.25,1.25))
+pylab.ylim((0,1))
+pylab.ylabel('Percent Time on Cocaine Color (Control)')
+pylab.hold(True)
+pylab.errorbar([0,1],[np.mean(c_pre_frac),np.mean(c_post_frac)], yerr=2*scipy.stats.sem([np.mean(c_pre_frac,1),np.mean(c_post_frac,1)], axis = 1), capsize = 5, fmt = '.-k', linewidth = 3, markersize = 10)
+pylab.axhline(.5,color='k',linestyle=':')
+pylab.show()
+
+
+"""
+#Real time avoidance statistics following extended shock (learned helplessness)
+(e_fracTimeOnShock,e_distFromShock) = aba.getSidePreference_Multi(e_test)
+(c_fracTimeOnShock,c_distFromShock) = aba.getSidePreference_Multi(c_test)
+
+#n is an animal
+import scipy
+[t,p_e_time] = scipy.stats.ttest_1samp(np.mean(e_fracTimeOnShock,1),.5)
+[t,p_c_time] = scipy.stats.ttest_1samp(np.mean(c_fracTimeOnShock,1),.5)
+[t,p_e_dist] = scipy.stats.ttest_1samp(np.mean(e_distFromShock,1),24)
+[t,p_c_dist] = scipy.stats.ttest_1samp(np.mean(c_distFromShock,1),24)
+[t,p_time_diff] = scipy.stats.ttest_ind(np.mean(e_fracTimeOnShock,1), np.mean(c_fracTimeOnShock,1))
+[t,p_dist_diff] = scipy.stats.ttest_ind(np.mean(e_distFromShock,1), np.mean(c_distFromShock,1))
+print 'BY ANIMAL Avoidance Post LH_5V      p_frac,p_dist: ', p_e_time, p_e_dist
+print 'BY ANIMAL Avoidance Post LH_CONTROL p_frac,p_dist: ', p_c_time, p_c_dist
+print 'BY ANIMAL Controls diff from Exper (time,dist): ', p_time_diff, p_dist_diff 
+ae_f = np.mean(e_fracTimeOnShock,1)
+ac_f = np.mean(c_fracTimeOnShock,1)
+ae_d = np.mean(e_distFromShock,1)
+ac_d = np.mean(c_distFromShock,1)
+pylab.figure(1)
+ax = pylab.subplot(1,2,1)
+pylab.errorbar([0,1],[np.mean(ae_f),np.mean(ac_f)],fmt='o',yerr=(2*scipy.stats.sem(ae_f),2*scipy.stats.sem(ac_f)))
+pylab.axhline(.5)
+pylab.xlim((-1,2))
+pylab.ylim((0,1))
+pylab.ylabel('% Time on shock side')
+ax.set_xticks((0,1))
+ax.set_xticklabels(('exper','control'))
+pylab.title('Real-time shock avoidance following \nlearned helplessness induction\np=%2.2f, %2.2f.'%(p_e_time,p_c_time))
+ax = pylab.subplot(1,2,2)
+pylab.errorbar([0,1],[48-np.mean(ae_d),48-np.mean(ac_d)],fmt='o',yerr=(2*scipy.stats.sem(ae_d),2*scipy.stats.sem(ac_d)))
+pylab.axhline(24)
+pylab.xlim((-1,2))
+pylab.ylim((0,48))
+pylab.ylabel('% Avg dist from safe side')
+ax.set_xticks((0,1))
+ax.set_xticklabels(('exper','control'))
+ax.set_yticks((0,24,48))
+pylab.title('Real-time shock avoidance following \nlearned helplessness induction\np=%2.2f, %2.2f.'%(p_e_dist,p_c_dist))
+
+#n is an shockblock (120s)
+import scipy
+[t,p_e_time] = scipy.stats.ttest_1samp(e_fracTimeOnShock.flatten(),.5)
+[t,p_c_time] = scipy.stats.ttest_1samp(c_fracTimeOnShock.flatten(),.5)
+[t,p_e_dist] = scipy.stats.ttest_1samp(e_distFromShock.flatten(),24)
+[t,p_c_dist] = scipy.stats.ttest_1samp(c_distFromShock.flatten(),24)
+[t,p_time_diff] = scipy.stats.ttest_ind(e_fracTimeOnShock.flatten(), c_fracTimeOnShock.flatten())
+[t,p_dist_diff] = scipy.stats.ttest_ind(e_distFromShock.flatten(), c_distFromShock.flatten())
+print 'BY SHOCKBLOCK Avoidance Post LH_5V      p_frac,p_dist: ', p_e_time, p_e_dist
+print 'BY SHOCKBLOCK Avoidance Post LH_CONTROL p_frac,p_dist: ', p_c_time, p_c_dist
+print 'BY SHOCKBLOCK Controls diff from Exper (time,dist): ', p_time_diff, p_dist_diff 
+pylab.figure(2)
+pylab.subplot(1,2,1)
+pylab.boxplot([e_fracTimeOnShock,c_fracTimeOnShock])
+pylab.subplot(1,2,2)
+pylab.boxplot([e_distFromShock,c_distFromShock])
+pylab.show()
+
+def getVelMulti(datasets, tRange=None):
+    medVel = []
+    for d in datasets:
+        w = d['warpedTracking']
+        if tRange:
+            bNdxWin = np.logical_and(w[:,0]>tRange[0]+w[0,0], w[:,0]<tRange[1]+w[0,0])
+            vel = np.sqrt(pow(np.diff(w[bNdxWin,1]),2) + pow(np.diff(w[bNdxWin,2]),2)) / np.diff(w[bNdxWin,0])
+        else:
+            vel = np.sqrt(pow(np.diff(w[:,1]),2) + pow(np.diff(w[:,2]),2)) / np.diff(w[:,0])
+        medVel.append(np.median(vel))     
+    return medVel
+
+#velocity locomation analysis
+eTestVel = getVelMulti(e_test)
+eLHVel = getVelMulti(e_lh, (300,900))
+cTestVel = getVelMulti(c_test)
+cLHVel = getVelMulti(c_lh, (300,900))
+pylab.figure(3)
+ax = pylab.subplot(1,2,1)
+pylab.plot([0,1],[eLHVel,eTestVel],'.-r')
+ax.set_xticks((0,1))
+ax.set_xticklabels(('pre','post'))
+pylab.xlim((-.25,1.25))
+pylab.ylabel('Median Velocity (mm/s)')
+pylab.title('Effect of LH protocol on velocity\nExperimental Fish')
+ax = pylab.subplot(1,2,2,sharey=ax)
+pylab.plot([0,1],[cLHVel,cTestVel],'.-k')
+ax.set_xticks((0,1))
+ax.set_xticklabels(('pre','post'))
+pylab.xlim((-.25,1.25))
+pylab.ylabel('Median Velocity (mm/s)')
+pylab.title('Effect of LH protocol on velocity\nControl Fish')
+pylab.show()
+"""
+
+
+
+
