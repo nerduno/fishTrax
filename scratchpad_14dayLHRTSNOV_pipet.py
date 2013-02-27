@@ -11,7 +11,18 @@ e_shockR = ['/home/vburns/Dropbox/ConchisData/2013-02-17/f00160/f00160_2013-02-1
  '/home/vburns/Dropbox/ConchisData/2013-02-17/f00164/f00164_2013-02-17-12-33-27.json',
  '/home/vburns/Dropbox/ConchisData/2013-02-17/f00165/f00165_2013-02-17-12-33-25.json',
  '/home/vburns/Dropbox/ConchisData/2013-02-17/f00166/f00166_2013-02-17-12-33-22.json',
- '/home/vburns/Dropbox/ConchisData/2013-02-17/f00167/f00167_2013-02-17-12-33-19.json']
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00167/f00167_2013-02-17-12-33-19.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-24/f00190/f00190_2013-02-24-13-55-23.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-24/f00191/f00191_2013-02-24-13-56-11.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-24/f00192/f00192_2013-02-24-13-55-53.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00193/f00193_2013-02-26-14-46-26.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00194/f00194_2013-02-26-14-46-23.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00195/f00195_2013-02-26-14-46-20.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00196/f00196_2013-02-26-14-46-18.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00197/f00197_2013-02-26-14-46-16.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00198/f00198_2013-02-26-14-46-14.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00199/f00199_2013-02-26-14-46-11.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00200/f00200_2013-02-26-14-46-09.json']
 e_shockR = aba.loadMultipleDataFiles(e_shockR)
 
 e_RTR = [ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00160/f00160_2013-02-17-11-45-31.json',
@@ -20,7 +31,18 @@ e_RTR = [ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00160/f00160_2013-02-17-
  '/home/vburns/Dropbox/ConchisData/2013-02-17/f00164/f00164_2013-02-17-13-24-08.json',
  '/home/vburns/Dropbox/ConchisData/2013-02-17/f00165/f00165_2013-02-17-13-24-41.json',
  '/home/vburns/Dropbox/ConchisData/2013-02-17/f00166/f00166_2013-02-17-13-25-07.json',
- '/home/vburns/Dropbox/ConchisData/2013-02-17/f00167/f00167_2013-02-17-13-25-49.json']
+ '/home/vburns/Dropbox/ConchisData/2013-02-17/f00167/f00167_2013-02-17-13-25-49.json', 
+ '/home/vburns/Dropbox/ConchisData/2013-02-24/f00190/f00190_2013-02-24-14-48-06.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-24/f00191/f00191_2013-02-24-14-47-47.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-24/f00192/f00192_2013-02-24-14-47-36.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00193/f00193_2013-02-26-15-38-30.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00194/f00194_2013-02-26-15-38-27.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00195/f00195_2013-02-26-15-38-34.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00196/f00196_2013-02-26-15-38-32.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00197/f00197_2013-02-26-15-38-20.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00198/f00198_2013-02-26-15-38-17.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00199/f00199_2013-02-26-15-38-25.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00200/f00200_2013-02-26-15-38-22.json']
 e_RTR = aba.loadMultipleDataFiles(e_RTR)
 
 e_shock = ['/home/vburns/Dropbox/ConchisData/2013-02-17/f00168/f00168_2013-02-17-14-20-02.json',
@@ -30,7 +52,15 @@ e_shock = ['/home/vburns/Dropbox/ConchisData/2013-02-17/f00168/f00168_2013-02-17
  '/home/vburns/Dropbox/ConchisData/2013-02-18/f00172/f00172_2013-02-18-10-57-04.json',
  '/home/vburns/Dropbox/ConchisData/2013-02-18/f00173/f00173_2013-02-18-10-57-06.json',
  '/home/vburns/Dropbox/ConchisData/2013-02-18/f00174/f00174_2013-02-18-10-57-08.json',
- '/home/vburns/Dropbox/ConchisData/2013-02-18/f00175/f00175_2013-02-18-10-57-10.json']
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00175/f00175_2013-02-18-10-57-10.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00201/f00201_2013-02-26-16-24-07.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00202/f00202_2013-02-26-16-24-04.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00203/f00203_2013-02-26-16-24-00.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00204/f00204_2013-02-26-16-23-56.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00205/f00205_2013-02-26-16-23-52.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00206/f00206_2013-02-26-16-23-48.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00207/f00207_2013-02-26-16-23-43.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00208/f00208_2013-02-26-16-23-39.json']
 e_shock = aba.loadMultipleDataFiles(e_shock)
 
 e_RT= ['/home/vburns/Dropbox/ConchisData/2013-02-17/f00168/f00168_2013-02-17-15-09-57.json',
@@ -40,7 +70,15 @@ e_RT= ['/home/vburns/Dropbox/ConchisData/2013-02-17/f00168/f00168_2013-02-17-15-
  '/home/vburns/Dropbox/ConchisData/2013-02-18/f00172/f00172_2013-02-18-11-48-17.json',
  '/home/vburns/Dropbox/ConchisData/2013-02-18/f00173/f00173_2013-02-18-11-47-18.json',
  '/home/vburns/Dropbox/ConchisData/2013-02-18/f00174/f00174_2013-02-18-11-47-11.json',
- '/home/vburns/Dropbox/ConchisData/2013-02-18/f00175/f00175_2013-02-18-11-46-46.json']
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00175/f00175_2013-02-18-11-46-46.json', 
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00201/f00201_2013-02-26-17-11-56.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00202/f00202_2013-02-26-17-12-05.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00203/f00203_2013-02-26-17-12-11.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00204/f00204_2013-02-26-17-12-19.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00205/f00205_2013-02-26-17-12-35.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00206/f00206_2013-02-26-17-12-40.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00207/f00207_2013-02-26-17-12-52.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00208/f00208_2013-02-26-17-12-59.json']
 e_RT = aba.loadMultipleDataFiles(e_RT)
 
 e_long = ['/home/vburns/Dropbox/ConchisData/2013-02-17/f00168/f00168_2013-02-17-15-50-10.json',
@@ -50,7 +88,15 @@ e_long = ['/home/vburns/Dropbox/ConchisData/2013-02-17/f00168/f00168_2013-02-17-
  '/home/vburns/Dropbox/ConchisData/2013-02-18/f00172/f00172_2013-02-18-12-28-25.json',
  '/home/vburns/Dropbox/ConchisData/2013-02-18/f00173/f00173_2013-02-18-12-28-28.json',
  '/home/vburns/Dropbox/ConchisData/2013-02-18/f00174/f00174_2013-02-18-12-28-31.json',
- '/home/vburns/Dropbox/ConchisData/2013-02-18/f00175/f00175_2013-02-18-12-28-34.json']
+ '/home/vburns/Dropbox/ConchisData/2013-02-18/f00175/f00175_2013-02-18-12-28-34.json', 
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00201/f00201_2013-02-26-17-55-10.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00202/f00202_2013-02-26-17-55-15.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00203/f00203_2013-02-26-17-55-21.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00204/f00204_2013-02-26-17-55-47.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00205/f00205_2013-02-26-17-55-52.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00206/f00206_2013-02-26-17-55-57.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00207/f00207_2013-02-26-17-56-07.json',
+ '/home/vburns/Dropbox/ConchisData/2013-02-26/f00208/f00208_2013-02-26-17-56-13.json']
 e_long = aba.loadMultipleDataFiles(e_long)
 
 #pop fish with velocity <1mm/s (fish 1, 5,6) 
@@ -187,6 +233,7 @@ experimental = np.transpose(np.hstack((eBV, eSSV, eSV, eLH, eVlate)))
 experimental2 = np.transpose(np.hstack((eBVR, eSSR, eSR, eLHR)))
 
 pylab.figure(31)
+pylab.suptitle('Learned Helplessness/Blocking Assay')
 ax = pylab.subplot(1,2,1)
 pylab.plot(experimental)
 pylab.plot(0, [eBaseVel], 'r.')
@@ -196,10 +243,10 @@ pylab.plot(3,[eLHVel], 'r.')
 pylab.plot(4,[eVellate],'r.')
 pylab.plot([0,1,2,3,4],[np.mean(eBaseVel), np.mean(eStartShockVel), np.mean(eShockVel),scipy.stats.nanmean(eLHVel), np.mean(eVellate)],'o-k', lw=3)
 ax.set_xticks((0,1,2,3,4))
-ax.set_xticklabels(('base', 'start shock', 'shock','RT\nsame tank', 'velocity late'))
+ax.set_xticklabels(('baseline', '0-15 min\nshock', '15-30 min\nshock','avoidance\ntest', 'novel\ncontext'))
 pylab.xlim((-.25,4.5))
 pylab.ylabel('Median Velocity (mm/s)')
-pylab.title('Effect of LH protocol on velocity in novel context\n(Experimental Fish pipetted in same tank)')
+pylab.title('Experimental fish avoidance-tested in same tank')
 patch1 = mpl.patches.Rectangle((2.5,0), 1,5, color = 'g', fill=True, alpha=0.5)
 pyplot.gca().add_patch(patch1)
 ax = pylab.subplot(1,2,2)
@@ -210,10 +257,10 @@ pylab.plot(2,[eShockR], 'b.')
 pylab.plot(3,[eLHVelR], 'b.')
 pylab.plot([0,1,2,3],[np.mean(eBaseVelR), np.mean(eStartShockR), np.mean(eShockR),scipy.stats.nanmean(eLHVelR)],'o-k', lw=3)
 ax.set_xticks((0,1,2,3))
-ax.set_xticklabels(('baseline', 'start shock', 'shock','RT\nnovel tank',))
+ax.set_xticklabels(('baseline', '0-15 min\nshock', '15-30 min\nshock','avoidance test\n(novel tank)',))
 pylab.xlim((-.25,3.5))
 pylab.ylabel('Median Velocity (mm/s)')
-pylab.title('Effect of LH protocol on velocity in novel context\n(Experimental Fish in novel tank)')
+pylab.title('Experimental fish avoidance-tested in novel tank')
 patch3 = mpl.patches.Rectangle((2.5,0), 1,5, color = 'g', fill=True, alpha=0.5)
 pyplot.gca().add_patch(patch3)
 
