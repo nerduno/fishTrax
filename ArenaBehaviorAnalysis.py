@@ -282,7 +282,7 @@ def getSidePreference(runData, tankLength=48, cond=[3,8], refState='Red',sideFra
             print 'Warning requested color not present'
     return (timeOnColor1, timeOnSide1, switchDuration, distFromColor1, distFromSide1, startTime)
 
-def getSidePreference_Multi(datasets, tankLength=48, cond=[3,4], refState='On',sideFrac=.4):
+def getSidePreference_Multi(datasets, tankLength=48, cond=[3,4], refState='On',sideFrac=.5):
     fracOnRef = []; distFromRef = []
     for n in range(len(datasets)):
         [rt,s1t,t,rd,s1d,t0] = getSidePreference(datasets[n], tankLength=tankLength, cond=cond, refState=refState, sideFrac=sideFrac)
