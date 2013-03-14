@@ -175,12 +175,16 @@ class RealTimeShockController(ArenaController.ArenaController):
         self.paramLayout.addWidget(self.paramShockChan1, 3,0,1,2)
         self.paramShockChan2 = LabeledSpinBox(None, 'ShockChan2', 0,10000,13,60)
         self.paramLayout.addWidget(self.paramShockChan2, 3,2,1,2)
+        self.paramCurrChan1 = LabeledSpinBox(None, 'CurrChan Side 1', 0,16,0,60)
+        self.paramLayout.addWidget(self.paramCurrChan1,4,0,1,2)
+        self.paramCurrChan2 = LabeledSpinBox(None, 'CurrChan Side 2', 0,16,0,60)
+        self.paramLayout.addWidget(self.paramCurrChan2,4,2,1,2)
         self.paramShockV = LabeledSpinBox(None, 'ShockV', 0,100, 10,60)
-        self.paramLayout.addWidget(self.paramShockV, 4,0,1,2)
+        self.paramLayout.addWidget(self.paramShockV,5,0,1,2)
         self.paramNumFish = LabeledSpinBox(None,'NumFish',1,10,1,60)
-        self.paramLayout.addWidget(self.paramNumFish,4,2,1,2)
+        self.paramLayout.addWidget(self.paramNumFish,5,2,1,2)
         self.paramGroup.setLayout(self.paramLayout)
-
+        
         #Experimental info group
         self.infoGroup = QtGui.QGroupBox()
         self.infoGroup.setTitle('Experiment Info')
@@ -549,18 +553,22 @@ class RealTimeShockController(ArenaController.ArenaController):
             return
 
         if bSide1:
-            self.arenaMain.ard.pinPulse(self.paramShockChan1.value(), 
+            curr1 = self.arenaMain.ard.pinPulse(self.paramShockChan1.value(), 
                                         self.paramShockPeriod.value(), 
-                                        self.paramShockDuration.value())
+                                        self.paramShockDuration.value(),
+                                        feedbackPin = self.paramCurrChan1.value())
         else:
             self.arenaMain.ard.pinLow(self.paramShockChan1.value())
+            curr1 = 0
         if bSide2:
-            self.arenaMain.ard.pinPulse(self.paramShockChan2.value(), 
+            curr2 = self.arenaMain.ard.pinPulse(self.paramShockChan2.value(), 
                                            self.paramShockPeriod.value(), 
-                                           self.paramShockDuration.value())
+                                           self.paramShockDuration.value(),
+                                           feedbackPin = self.paramCurrChan2.value())
         else:
             self.arenaMain.ard.pinLow(self.paramShockChan2.value()) 
-        self.arenaData['shockinfo'].append((time.time(), bSide1, bSide2))
+            curr2 = 0
+        self.arenaData['shockinfo'].append((time.time(), bSide1, bSide2, curr1, curr2))
 
 
 
