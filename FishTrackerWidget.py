@@ -85,10 +85,17 @@ class FishTrackerWidget(QtGui.QGroupBox):
     def setBackgroundImage(self):
         if self.currCvFrame:
             self.bcvImg = cv.CloneImage(self.currCvFrame)
-            self.backG = cv.CreateImage(cv.GetSize(self.currCvFrame), cv.IPL_DEPTH_8U, 1)
-            self.backG32 = cv.CreateImage(cv.GetSize(self.currCvFrame), cv.IPL_DEPTH_32F, 1)
-            cv.CvtColor(self.bcvImg, self.backG, cv.CV_BGR2GRAY)
-            cv.ConvertScale(self.backG, self.backG32)
+            if not self.maskG:
+                self.backG = cv.CreateImage(cv.GetSize(self.currCvFrame), cv.IPL_DEPTH_8U, 1)
+                self.backG32 = cv.CreateImage(cv.GetSize(self.currCvFrame), cv.IPL_DEPTH_32F, 1)
+                cv.CvtColor(self.bcvImg, self.backG, cv.CV_BGR2GRAY)
+                cv.ConvertScale(self.backG, self.backG32)
+            else:
+                self.backG = cv.CreateImage(cv.GetSize(self.maskG), cv.IPL_DEPTH_8U, 1)
+                self.backG32 = cv.CreateImage(cv.GetSize(self.maskG), cv.IPL_DEPTH_32F, 1)
+                cv.CvtColor(self.bcvImg[self.maskBoundedR0:self.maskBoundedR0+self.maskBoundedHeight, 
+                                        self.maskBoundedC0:self.maskBoundedC0+self.maskBoundedWidth], self.backG, cv.CV_BGR2GRAY)
+                cv.ConvertScale(self.backG, self.backG32)
 
     def getBackgroundImage(self):
         return self.bcvImg
@@ -98,14 +105,44 @@ class FishTrackerWidget(QtGui.QGroupBox):
         self.bFixBackgroundNow = False
 
     def handleFixBackgroundClick(self,x,y):
-        self.correctFish = (x,y)
+        self.correctFish = (x - self.maskBoundedC0, y - self.maskBoundedR0)
         self.ftDisp.clicked.disconnect(self.handleFixBackgroundClick)
         self.bFixBackgroundNow = True
 
     def setTrackMask(self, img):
+        #Convert mask to gray scale.
         self.arenaCvMask = img
         self.maskG = cv.CreateImage((self.arenaCvMask.width, self.arenaCvMask.height), cv.IPL_DEPTH_8U, 1)
         cv.CvtColor(self.arenaCvMask, self.maskG, cv.CV_BGR2GRAY)
+        
+        #get bounding rectangle of mask and resize it
+        maskArray = np.asarray(self.maskG[:,:])
+        self.maskBoundedC0 = np.min(np.nonzero(np.max(maskArray,0))) #X = width = cols
+        self.maskBoundedR0 = np.min(np.nonzero(np.max(maskArray,1))) #Y = height = rows
+        self.maskBoundedWidth = np.max(np.nonzero(np.max(maskArray,0))) - self.maskBoundedC0 + 1
+        self.maskBoundedHeight = np.max(np.nonzero(np.max(maskArray,1))) - self.maskBoundedR0 + 1
+        print self.maskBoundedC0, self.maskBoundedR0, self.maskBoundedWidth, self.maskBoundedHeight
+        self.maskG = cv.CreateImage((self.maskBoundedWidth, self.maskBoundedHeight), cv.IPL_DEPTH_8U, 1)
+        cv.CvtColor(self.arenaCvMask[self.maskBoundedR0:self.maskBoundedR0+self.maskBoundedHeight, 
+                                     self.maskBoundedC0:self.maskBoundedC0+self.maskBoundedWidth], self.maskG, cv.CV_BGR2GRAY)
+
+        #recrop background image
+        if self.bcvImg:
+            self.backG = cv.CreateImage(cv.GetSize(self.maskG), cv.IPL_DEPTH_8U, 1)
+            self.backG32 = cv.CreateImage(cv.GetSize(self.maskG), cv.IPL_DEPTH_32F, 1)
+            cv.CvtColor(self.bcvImg[self.maskBoundedR0:self.maskBoundedR0+self.maskBoundedHeight, 
+                                    self.maskBoundedC0:self.maskBoundedC0+self.maskBoundedWidth], self.backG, cv.CV_BGR2GRAY)
+            cv.ConvertScale(self.backG, self.backG32)
+
+        #resize temp images to bounded rect size
+        self.currG = cv.CreateImage((self.maskBoundedWidth, self.maskBoundedHeight), cv.IPL_DEPTH_8U, 1)	
+        self.diffG = cv.CreateImage((self.maskBoundedWidth, self.maskBoundedHeight), cv.IPL_DEPTH_8U, 1)
+        self.thrsG = cv.CreateImage((self.maskBoundedWidth, self.maskBoundedHeight), cv.IPL_DEPTH_8U, 1)
+        self.thrsMG = cv.CreateImage((self.maskBoundedWidth, self.maskBoundedHeight), cv.IPL_DEPTH_8U, 1)
+        self.tracEG = cv.CreateImage((self.maskBoundedWidth, self.maskBoundedHeight), cv.IPL_DEPTH_8U, 1)
+        self.tracDG = cv.CreateImage((self.maskBoundedWidth, self.maskBoundedHeight), cv.IPL_DEPTH_8U, 1)
+        self.tracG = cv.CreateImage((self.maskBoundedWidth, self.maskBoundedHeight), cv.IPL_DEPTH_8U, 1)
+        self.fmask = cv.CreateImage((self.maskBoundedWidth, self.maskBoundedHeight), cv.IPL_DEPTH_8U, 1)
 
     def getParameterDictionary(self):
         pd = {}
@@ -115,44 +152,45 @@ class FishTrackerWidget(QtGui.QGroupBox):
         return pd
 
     def getTrackDisplay(self):
+        if self.currCvFrame == None:
+            return None
+
+        dispImg = cv.CreateImage(cv.GetSize(self.currCvFrame), cv.IPL_DEPTH_8U, 1)
+        cv.CvtColor(self.currCvFrame, dispImg, cv.CV_BGR2GRAY)
+        if self.maskG:
+            cv.SetImageROI(dispImg, (self.maskBoundedC0, self.maskBoundedR0, self.maskBoundedWidth, self.maskBoundedHeight))
+      
         dispModeNdx = self.selView.currentIndex()
         if dispModeNdx == 1 and self.backG:
-            return self.backG
+            cv.Copy(self.backG, dispImg)
         elif dispModeNdx == 2 and self.diffG:
-            return self.diffG
+            cv.Copy(self.diffG, dispImg)
         elif dispModeNdx == 3 and self.thrsG:
-            return self.thrsG
+            cv.Copy(self.thrsG, dispImg)
         elif dispModeNdx == 4 and self.thrsMG:
-            return self.thrsMG
+            cv.Copy(self.thrsMG, dispImg)
         elif dispModeNdx == 5 and self.tracEG:
-            return self.tracEG
+            cv.Copy(self.tracEG, dispImg)
         elif dispModeNdx == 6 and self.tracDG:
-            return self.tracDG
+            cv.Copy(self.tracDG, dispImg)
         elif dispModeNdx == 7 and self.maskG:
-            return self.maskG
+            cv.Copy(self.maskG, dispImg)
         else:
             return self.currCvFrame
 
+        cv.ResetImageROI(dispImg)
+        return dispImg
+
     def findFish(self, cvImg):
         ####NEED TO MODIFY TO USE CV2 
-        ####NEED TO MODIFY TO CROP BEFORE PROCESSING!
-
         self.currCvFrame = cvImg
         foundFish = False
         fishPos = (0,0)
         allFish = []
         if not self.bcvImg == None and not self.arenaCvMask == None:
             #Background subtract, threshold, mask, erode and dilate
-            if self.currG == None:
-                self.currG = cv.CreateImage((self.currCvFrame.width, self.currCvFrame.height), cv.IPL_DEPTH_8U, 1)	
-                self.diffG = cv.CreateImage((self.currCvFrame.width, self.currCvFrame.height), cv.IPL_DEPTH_8U, 1)
-                self.thrsG = cv.CreateImage((self.currCvFrame.width, self.currCvFrame.height), cv.IPL_DEPTH_8U, 1)
-                self.thrsMG = cv.CreateImage((self.currCvFrame.width, self.currCvFrame.height), cv.IPL_DEPTH_8U, 1)
-                self.tracEG = cv.CreateImage((self.currCvFrame.width, self.currCvFrame.height), cv.IPL_DEPTH_8U, 1)
-                self.tracDG = cv.CreateImage((self.currCvFrame.width, self.currCvFrame.height), cv.IPL_DEPTH_8U, 1)
-                self.tracG = cv.CreateImage((self.currCvFrame.width, self.currCvFrame.height), cv.IPL_DEPTH_8U, 1)
-                self.fmask = cv.CreateImage(cv.GetSize(self.currCvFrame), cv.IPL_DEPTH_8U, 1)
-            cv.CvtColor(self.currCvFrame, self.currG, cv.CV_BGR2GRAY)
+            cv.CvtColor(self.currCvFrame[self.maskBoundedR0:self.maskBoundedR0+self.maskBoundedHeight, 
+                                         self.maskBoundedC0:self.maskBoundedC0+self.maskBoundedWidth], self.currG, cv.CV_BGR2GRAY)
             cv.AbsDiff(self.currG, self.backG, self.diffG) #difference
             cv.Threshold ( self.diffG , self.thrsG , self.trackThreshold.value() , 255 , cv.CV_THRESH_BINARY ) #threshold
             cv.And( self.thrsG, self.maskG, self.thrsMG ) #mask
@@ -176,12 +214,12 @@ class FishTrackerWidget(QtGui.QGroupBox):
                 ndx = areas.index(max(areas))
                 if (moments[ndx].m00 > self.trackMinArea.value() and moments[ndx].m00 < self.trackMaxArea.value()):
                     foundFish = True
-                    fishPos = (moments[ndx].m10/moments[ndx].m00, moments[ndx].m01/moments[ndx].m00)
+                    fishPos = (moments[ndx].m10/moments[ndx].m00 + self.maskBoundedC0, moments[ndx].m01/moments[ndx].m00 + self.maskBoundedR0)
                 #get all fish sorted by size.
                 sndx = np.argsort(areas)[::-1]
                 for bn in sndx:
                     if (moments[bn].m00 > self.trackMinArea.value() and moments[bn].m00 < self.trackMaxArea.value()):
-                        allFish.append((moments[bn].m10/moments[bn].m00, moments[bn].m01/moments[bn].m00))
+                        allFish.append((moments[bn].m10/moments[bn].m00 + self.maskBoundedC0, moments[bn].m01/moments[bn].m00 + self.maskBoundedR0))
             del seq  
 
             #update background image:
@@ -195,7 +233,8 @@ class FishTrackerWidget(QtGui.QGroupBox):
                 if foundFish:
                     cv.Rectangle(self.fmask,(0,0),cv.GetSize(self.fmask),255,-1)
                     for nFish in range(min(self.numFish.value(),len(allFish))):
-                        cv.Circle(self.fmask, tuple([int(x) for x in allFish[nFish]]), self.fishSize.value(),0,-1)
+                        pos = (int(allFish[nFish][0] - self.maskBoundedC0), int(allFish[nFish][1] - self.maskBoundedR0))
+                        cv.Circle(self.fmask, pos, self.fishSize.value(),0,-1)
                     cv.RunningAvg(self.currG, self.backG32, self.learningRate.value(), self.fmask)
                     cv.ConvertScaleAbs(self.backG32,self.backG)
 

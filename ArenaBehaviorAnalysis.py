@@ -305,6 +305,26 @@ def plotSidePreference(jsonData):
     pyplot.ylim([0,1])
     pyplot.ylabel('Time on color (%)')
 
+def getVelMulti(datasets, tRange=None):
+    medVel = []
+    for d in datasets:
+        w = d['warpedTracking']
+        if tRange:
+            bNdxWin = np.logical_and(w[:,0]>tRange[0]+w[0,0], w[:,0]<tRange[1]+w[0,0])
+            vel = np.sqrt(pow(np.diff(w[bNdxWin,1]),2) + pow(np.diff(w[bNdxWin,2]),2)) / np.diff(w[bNdxWin,0])
+        else:
+            vel = np.sqrt(pow(np.diff(w[:,1]),2) + pow(np.diff(w[:,2]),2)) / np.diff(w[:,0])
+        medVel.append(np.median(vel))     
+    return medVel
+
+def getVelRaw(d, tRange=None):
+    w = d['warpedTracking']
+    if tRange:
+        bNdxWin = np.logical_and(w[:,0]>tRange[0]+w[0,0], w[:,0]<tRange[1]+w[0,0])
+        vel = np.sqrt(pow(np.diff(w[bNdxWin,1]),2) + pow(np.diff(w[bNdxWin,2]),2)) / np.diff(w[bNdxWin,0])
+    else:
+        vel = np.sqrt(pow(np.diff(w[:,1]),2) + pow(np.diff(w[:,2]),2)) / np.diff(w[:,0])
+    return vel
 
 #####################
 # AVOIDANCE METHODS
