@@ -24,8 +24,12 @@ const char cmd_END = 'M';
 const char cmd_FAIL = 'N';
 const char cmd_HANDSHAKE = 'Z';
 
-const int numPins = 14;
-const boolean bValidPin[numPins] = {0,0,1,1,1,1,1,1,1,1,1,1,1,1};
+//For ardunino uno
+//const int numPins = 14;
+//For arduino mega
+const int numPins = 54;
+//const boolean bValidPin[numPins] = {0,0,1,1,1,1,1,1,1,1,1,1,1,1};
+//const boolean bValidPin[numPins] = {0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 const int communicationPin = 13;
 const int cmd_maxFields = 10;
 
@@ -38,6 +42,7 @@ int fieldIndex = 0;            // the current field being received
 int values[cmd_maxFields];     // the fields received so far.
 
 //Pulsing State (option to handle pulsing on the arduino for timing accuracy??)
+boolean bValidPin[numPins];
 boolean bPulsing[numPins];
 unsigned long lastPulse[numPins];
 boolean bPulseHigh[numPins];
@@ -47,6 +52,14 @@ int pulseSpacing[numPins];
 void setup()  { 
   randomSeed(analogRead(0));
   
+  //init valid pins
+  bValidPin[0] = 0;
+  bValidPin[1] = 0;
+  for(int nPin=2; nPin<numPins; nPin++) {
+    bValidPin[nPin] = 1;
+  }  
+  
+  //init pin outputs and states
   for(int nPin=0; nPin<numPins; nPin++) {
     if(bValidPin[nPin]) {
       pinMode( nPin, OUTPUT );
@@ -109,7 +122,7 @@ void executeCmd(int* cmdValues, int numValues) {
   //for (int i = 0; i<=numValues; i++) {
   //  Serial.println(values[i]);
   //} 
-  
+  int val;
   if (numValues>=0) {
     if ( cmdValues[0] == cmd_type_SET ) {
       if (numValues>=2 && cmdValues[1]>=0 && cmdValues[1]<numPins && bValidPin[cmdValues[1]]) {
@@ -120,6 +133,11 @@ void executeCmd(int* cmdValues, int numValues) {
         } else if (cmdValues[2] == cmd_set_HIGH ) {        
           digitalWrite(pin, HIGH);
           bPulsing[pin] = false;
+          if (numValues>=3) {
+            delay(7);
+            val = analogRead(cmdValues[3]);
+            Serial.println(val);
+          }
         } else if (cmdValues[2] == cmd_set_PULSE ) {
           bPulsing[pin] = true;
           if (numValues>=3) {
@@ -128,9 +146,14 @@ void executeCmd(int* cmdValues, int numValues) {
           if (numValues>=4) {
             pulseDuration[pin] = cmdValues[4];
           }
-          lastPulse[pin] = millis() - pulseDuration[pin];
-          digitalWrite(pin, LOW);
-          bPulseHigh[pin] = false;
+          lastPulse[pin] = millis();
+          digitalWrite(pin, HIGH);
+          bPulseHigh[pin] = true;
+          if (numValues>=5) {
+              delay(7);
+              val = analogRead(cmdValues[5]);
+              Serial.println(val);
+          }
         }
       } else {
         //Set commands require both a valid pin number and a value
@@ -138,7 +161,6 @@ void executeCmd(int* cmdValues, int numValues) {
       }    
     } else if (cmdValues[0] == cmd_type_AGET) {
       if (numValues>=1 && cmdValues[1]>=0 && cmdValues[1]<=5) {
-        int val;
         val =  analogRead(cmdValues[1]);
         Serial.println(val);
       } else {
