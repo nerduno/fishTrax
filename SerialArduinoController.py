@@ -144,6 +144,7 @@ class SerialArduinoController:
     def readAnalogIn(self, scale=(0,5)):
         attempts = 0
         val = -1
+        bImmediateSuccess = True
         while attempts < 10 and val==-1:
             try:
                 val = self.ser.readline()
@@ -152,9 +153,10 @@ class SerialArduinoController:
                 traceback.print_exc()
                 attempts+=1
                 print 'Retrying, attempt #:', attempts
+                bImmediateSuccess = False
         print val
         bSuccess = self.confirmMessageRecv()
-        if bSuccess:
+        if bSuccess and bImmediateSuccess:
             val = float(val)
             return (val/1023.0)*(scale[1]-scale[0]) + scale[0]
         else:

@@ -374,3 +374,27 @@ labels = ['    baseline', '    shock', '    late\n    shock', '    RTS', '    la
 pylab.xticks(xvalues, labels)
 pylab.show()
 
+"""
+pylab.figure(100)
+pylab.suptitle('Summary Effect of LH protocol on velocity')
+ax = pylab.subplot(1,1,1)
+pylab.plot([0,1,2,3,4],[np.mean(eBaseVel), np.mean(eStartShockVel), np.mean(eShockVel),np.mean(eLHVel), np.mean(eNovVellate)], lw=3, label = 'experimental with no pipetting')
+pylab.plot([0,1,2,3,4],[np.mean(cBaseVel), np.mean(cStartShockVel), np.mean(cShockVel),np.mean(cLHVel),scipy.stats.nanmean(cNovVellate)], lw=3, label = 'control with no pipetting')
+pylab.plot([0,1,2,3,4],[np.mean(eBaseVelN), np.mean(eStartShockVelN), np.mean(eShockVelN),scipy.stats.nanmean(eLHVelN), np.mean(eVellate)], lw=3, label = 'experimental pipetted into same tank')
+pylab.plot([0,1,2,3],[np.mean(eBaseVelR), np.mean(eStartShockR), np.mean(eShockR),scipy.stats.nanmean(eLHVelR)], lw=3, label = 'experimental pipetted into novel tank')
+ax.set_xticks((0,1,2,3,4))
+ax.set_xticklabels(('baseline','0-15 min\nshock', '15-30 min\nshock','avoidance\ntest', 'novel\ncontext'))
+pylab.xlim((-.25,4.5))
+pylab.ylabel('Median Velocity (mm/s)')
+pylab.title('Experimental Fish')
+patch1 = mpl.patches.Rectangle((2.5,0), 1,5, color = 'g', fill=True, alpha=0.5)
+pyplot.gca().add_patch(patch1)
+pylab.legend()
+"""
+
+
+
+
+
+
+

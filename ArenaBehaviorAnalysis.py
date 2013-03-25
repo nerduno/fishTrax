@@ -305,10 +305,20 @@ def plotSidePreference(jsonData):
     pyplot.ylim([0,1])
     pyplot.ylabel('Time on color (%)')
 
-def getVelMulti(datasets, tRange=None):
+def getVelMulti(datasets, tRange=None, smoothWinLen=15, smoothWinType='flat'):
     medVel = []
     for d in datasets:
         w = d['warpedTracking']
+        if smoothWinLen>1:
+            if smoothWinType=='flat':
+                smoothWin = np.ones(smoothWinLen,'d')
+            else:
+                smoothWin = eval('np.'+smoothWinType+'(smoothWinLen)')
+            w_new = np.zeros([w.shape[0]-smoothWinLen+1, w.shape[1]])
+            w_new[:,0] = np.convolve(smoothWin/smoothWin.sum(),w[:,0],mode='valid')
+            w_new[:,1] = np.convolve(smoothWin/smoothWin.sum(),w[:,1],mode='valid')
+            w_new[:,2] = np.convolve(smoothWin/smoothWin.sum(),w[:,2],mode='valid')
+            w = w_new
         if tRange:
             bNdxWin = np.logical_and(w[:,0]>tRange[0]+w[0,0], w[:,0]<tRange[1]+w[0,0])
             vel = np.sqrt(pow(np.diff(w[bNdxWin,1]),2) + pow(np.diff(w[bNdxWin,2]),2)) / np.diff(w[bNdxWin,0])
