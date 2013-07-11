@@ -120,7 +120,7 @@ def loadMultipleDataFiles_Smart(arena_mm=defArena):
 def loadMultipleDataFiles(filenames,arena_mm=defArena):
     datasets = []
     for fn in filenames:
-        datasets.append(loadDataFromFile(fn,arena_mm))
+        datasets.append(loadDataFromFile(fn,arena_mm=arena_mm))
     return datasets
 
 def getWarpedAndCleanedTracking(jsonData, warpTarget, tracking=[]):
@@ -128,13 +128,14 @@ def getWarpedAndCleanedTracking(jsonData, warpTarget, tracking=[]):
     if not tracking:
         tracking = np.array(jsonData['tracking'])
     tracking = tracking[tracking[:,1]!=0,:] #remove frames where tracking failed
-    #warp based on arena
-    ac = jsonData['trackingParameters']['arenaPoly']
-    arena_raw = [tuple(x) for x in jsonData['trackingParameters']['arenaPoly']]
-    Mw = PerspectiveTransform.getWarpMatrix(arena_raw,warpTarget)
-    warpP = PerspectiveTransform.warpPoints(tracking[:,1:3],Mw)
-    tracking = np.vstack([tracking[:,0],warpP[:,0],warpP[:,1]])
-    tracking = tracking.T
+    if warpTarget is not None:
+        #warp based on arena
+        ac = jsonData['trackingParameters']['arenaPoly']
+        arena_raw = [tuple(x) for x in jsonData['trackingParameters']['arenaPoly']]
+        Mw = PerspectiveTransform.getWarpMatrix(arena_raw,warpTarget)
+        warpP = PerspectiveTransform.warpPoints(tracking[:,1:3],Mw)
+        tracking = np.vstack([tracking[:,0],warpP[:,0],warpP[:,1]])
+        tracking = tracking.T
     return tracking
 
 def getTracking(jsonData):
@@ -157,6 +158,121 @@ def getFrameRate(jsonData):
     totalFrames = fr.shape[0]
     missedFrames = np.sum(np.logical_or(fr[:,1]==0, fr[:,1]==-1))
     print "fraction of frames where tracking failed: " , missedFrames, 'of', totalFrames, ':', float(missedFrames)/totalFrames
+
+def plotFishPath(jsonData, trange = None, tracking = []):
+    """
+    Plot the path of the fish -- used warped tracking data if available.
+    trange - tuple of len 2 indicating the time range to be plotted in seconds relative to T0.
+    tracking - optional override for default tracking info.
+    """
+    if tracking == []:
+        tracking = getTracking(jsonData)
+    
+    if not trange:
+        tndx = range(tracking.shape[0])
+    else:
+        trange = trange + tracking[0,0]
+        tndx = np.logical_and(tracking[:,0]>=trange[0], tracking[:,0]<trange[1])
+    pyplot.plot(tracking[tndx,1],tracking[tndx,2],'k-')
+
+def plotFishPathHeatmap(jsonData, trange = None, bins=50, tracking=[]):
+    """
+    make heatmap of fish position -- used warped tracking data if available.
+    trange - tuple of len 2 indicating the time range to be plotted in seconds relative to T0.
+    bins - the bins argurment to np.histogram2d
+    tracking - optional override for default tracking info.
+    return heatmap, xedges, yedges (See np.histogram2d)
+    """
+    if tracking == []:
+        tracking = getTracking(jsonData)
+    
+    if not trange:
+        tndx = range(tracking.shape[0])
+    else:
+        trange = trange + tracking[0,0]
+        tndx = np.logical_and(tracking[:,0]>=trange[0], tracking[:,0]<trange[1])
+    heatmap, xedges, yedges = np.histogram2d(tracking[tndx,1],tracking[tndx,2],bins=bins,normed=True)
+    extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+    pyplot.imshow(heatmap,extent = extent, interpolation='nearest',vmin=0, cmap=pyplot.hot())
+    return (heatmap, xedges, yedges)
+
+def generateFishPathMovie(jsonData, filename, trange = None, fps=10, trail_len=5, 
+                          trail_color=[0,0,1], track_color=[.8,.8,1], 
+                          xl=None, yl=None, tracking = None):
+    """
+    Make an mp4 movie of fish path
+    filename - the output filename
+    trange - tuple of len 2 indicating the time range to be rendered in seconds relative to T0.
+    fps - number of frames per second
+    trail_len - length of the fish trail in seconds
+    trail_color - the color of the resent path trail - None to hide
+    track_color - the color of the entire prior track -- None to hide
+    tracking - optional override of jsondata.getTracking.
+    """
+    import tempfile
+    tmpdir = tempfile.mkdtemp(prefix='tmpfishpath')
+    
+    if tracking is None:
+        tracking = getTracking(jsonData)
+    
+    if not trange:
+        tndx = range(tracking.shape[0])
+    else:
+        trange = trange + tracking[0,0]
+        tndx = np.logical_and(tracking[:,0]>=trange[0], tracking[:,0]<trange[1])
+
+    tracking=tracking[tndx,:]
+
+    #save individual frames to temporary directory
+    frametimes = np.arange(tracking[0,0],tracking[-1,0],1.0/fps)
+    ###HIGHLY INEFFICIENT
+    pyplot.ioff()
+    f = pyplot.figure(1)
+    output_template = os.path.join(tmpdir, 'tmpfishpath_%07d.png')
+    for i,t in enumerate(frametimes):
+        pyplot.clf()
+        if track_color is not None:
+            trackndx = tracking[:,0]<t
+            pyplot.plot(tracking[trackndx,1],tracking[trackndx,2],color=track_color)
+        if trail_color is not None:
+            trailndx = np.logical_and(tracking[:,0]>=t-trail_len, tracking[:,0]<t)
+            pyplot.plot(tracking[trailndx,1],tracking[trailndx,2],color=trail_color)
+        if xl is not None:
+            pyplot.xlim(xl)
+        if yl is not None:
+            pyplot.ylim(yl)
+        pyplot.savefig(output_template%i)
+        print i, t-tracking[0,0]
+
+    #create the movie
+    cmd  = ['ffmpeg']
+    cmd += ['-i', output_template]
+    cmd += ['-vcodec', 'libx264']
+    #cmd += ['-vpre', 'hq'] #this doesn't always work (depends on ffmpeg version) 
+    cmd += ['-preset', 'slow'] #but neither does this
+    cmd += ['-crf', '22']
+    cmd += ['-y']
+    #cmd += ['-s', '%dx%d'%(np.ceil(im_col.shape[1]*0.5)*2, np.ceil(im_col.shape[0]*0.5)*2)] #make size even
+    cmd += ['-threads', '0']
+    cmd += [filename]
+    cmd_string = ''.join(["%s " % el for el in cmd])
+    print 'Running: ', cmd_string
+    try:
+        import subprocess
+        result = subprocess.check_output(cmd, stderr=subprocess.STDOUT)  # Grab stderr as well...
+        print result
+        print 'Cleaning up tmp directory.'
+        import glob
+        filelist = glob.glob(os.path.join(tmpdir,'*.png'))
+        for f in filelist:
+            os.remove(f)
+        time.sleep(1)
+        os.rmdir(tmpdir)
+        print 'Clean up complete.'
+    except subprocess.CalledProcessError,e:                              # Handle error conditions
+        print str(e) + '\nProgram output was:\n' + e.output
+    finally:
+        pyplot.ion()
 
 def plotFishXPosition(jsonData, startState=1, endState=0, midLine=24, smooth=0):
     """
@@ -208,6 +324,125 @@ def plotFishXPosition(jsonData, startState=1, endState=0, midLine=24, smooth=0):
     pyplot.plot([0,et-st],[midLine,midLine],'y-')
     pyplot.ylabel('Fish position (mm)')
     pyplot.xlabel('Time (s)')
+
+def plotFishSummary(jsonData, startState=1, endState=0, midLine=24, smooth=0, xl=None):
+    """
+    For RealTime and ClassicalConditioning Data
+    Plot x position over time.
+    """
+    state = jsonData['stateinfo']
+    shockinfo = jsonData['shockinfo']
+    
+    for nS in range(len(state)):
+        if state[nS][1] == startState:
+            break
+    for nE in reversed(range(len(state))):
+        if state[nE][1] == endState:
+            break
+    st = state[nS][0]
+    et = state[nE][0]
+
+    tracking = getTracking(jsonData)
+    t0 = tracking[0,0]
+    tracking = tracking[np.logical_and(tracking[:,0] > st, tracking[:,0] < et),:].copy()
+    frametime = tracking[:,0] - st
+    positionx = tracking[:,1]
+    positiony = tracking[:,2]
+    [vel, vt] = getVelRaw(jsonData, tRange=[max(0,st-t0),et-t0], smoothWinLen=1)
+    [velsm, vtsm] = getVelRaw(jsonData, tRange=[max(0,st-t0),et-t0], smoothWinLen=smooth)
+   
+    foundTrue=False
+    for i in range(len(shockinfo)):
+        if shockinfo[i][1] == True:
+            foundTrue = True
+            curravail = True
+            sizen = 4
+        elif foundTrue==False:
+            curravail = False
+            sizen = 3
+
+    pyplot.figure()
+    #plot position
+    ax = pyplot.subplot(sizen,1,1)
+    for i in range(nS,nE):
+        c1 = state[i][2]
+        c2 = state[i][3]
+        c1 = 'Yellow' if c1=='On' else c1
+        c1 = 'White' if c1=='Off' else c1
+        c2 = 'Yellow' if c2=='On' else c2
+        c2 = 'White' if c2=='Off' else c2
+        p1 = mpl.patches.Rectangle((state[i][0]-st,0),
+                                   width=state[i+1][0]-state[i][0],
+                                   height=midLine,alpha=0.5,
+                                   color=c1)
+        p2 = mpl.patches.Rectangle((state[i][0]-st,midLine),
+                                   width=state[i+1][0]-state[i][0],
+                                   height=midLine,alpha=0.5,
+                                   color=c2)
+        pyplot.gca().add_patch(p1)
+        pyplot.gca().add_patch(p2)
+    pyplot.plot(frametime, positionx, 'k.')
+    if smooth>0:
+        import scipy
+        pyplot.plot(frametime, scipy.convolve(positionx,np.ones(smooth)/smooth, mode='same'), 'g-')
+    pyplot.ylim([0,midLine*2])
+    pyplot.xlim([0,et-st])
+    pyplot.plot([0,et-st],[midLine,midLine],'y-')
+    pyplot.ylabel('Fish x position (mm)')
+    pyplot.xlabel('Time (s)')
+    #plot y
+    pyplot.subplot(sizen,1,2,sharex=ax)
+    pyplot.plot(frametime, positiony, 'k.')
+    if smooth>0:
+        import scipy
+        pyplot.plot(frametime, scipy.convolve(positiony,np.ones(smooth)/smooth, mode='same'), 'g-')
+    pyplot.ylabel('Fish y position (mm)')
+    pyplot.xlabel('Time (s)')
+    #plot velocity
+    pyplot.subplot(sizen,1,3, sharex=ax)
+    pyplot.plot(vt-st,vel, 'k.')
+    pyplot.plot(vtsm-st,velsm,'g-')
+    pyplot.ylim([0,30])
+    pyplot.xlim([0,et-st])
+    pyplot.ylabel('Instant Velocity (mm/s)')
+    pyplot.xlabel('Time (s)')
+    if sizen!=3: 
+        pyplot.subplot(sizen, 1, 4)
+        plotCurrent(jsonData)
+    print vt[0]
+    print len(vt)
+    print len(vel)
+    print st
+    print frametime[0]
+
+def plotCurrent(jsonData, cond=[5], ylm=1):
+    #input is voltage?
+    resistor =1000.0
+    shockinfo = jsonData['shockinfo']
+    
+    shockon = []
+    current1 = []
+    current2 = []
+    for s in range(len(shockinfo)):
+        shockon.append(shockinfo[s][1])
+        current1.append(shockinfo[s][3])
+        current2.append(shockinfo[s][4])
+    current1=np.array(current1)
+    current2=np.array(current2)
+    current1= current1[np.array(shockon)]
+    current2 = current2[np.array(shockon)] 
+    for i in range(len(current1)):
+        if current1[i]==None:
+            current1[i] = 0
+        if current2[i] == None: 
+            current2[i] = 0
+    pyplot.bar(np.array(range(len(current1)))+1, current1, width=0.25, color='r')
+    pyplot.bar(np.array(range(len(current2)))+1.25, current2, width=0.25, color='b')
+    pyplot.xlim((0,31))
+    pyplot.ylim((0,ylm))
+    pyplot.ylabel('Current (mA)')
+    #mA because output is voltage /1000 resistor *1000 convert to mA
+    pyplot.xlabel('Bout Number (Red = Side1, Blue = Side2)')
 
 def plotColoredPath(runData, cond=[2,3], color='On'):
     state = runData['stateinfo']
@@ -305,36 +540,50 @@ def plotSidePreference(jsonData):
     pyplot.ylim([0,1])
     pyplot.ylabel('Time on color (%)')
 
-def getVelMulti(datasets, tRange=None, smoothWinLen=15, smoothWinType='flat'):
+def getMedianVelMulti(datasets, tRange=None, smoothWinLen=1, smoothWinType='flat'):
+    """
+    Return the median velocity in the time range.
+    tRange: species time range relative to t_0. Negative values are relative to t_end.
+    smoothWinLen: length of smoothing window.  smothing applied to position priod to computing vel.
+    smoothWinType: flat, hanning, hamming, etc.
+    """
     medVel = []
     for d in datasets:
-        w = d['warpedTracking']
-        if smoothWinLen>1:
-            if smoothWinType=='flat':
-                smoothWin = np.ones(smoothWinLen,'d')
-            else:
-                smoothWin = eval('np.'+smoothWinType+'(smoothWinLen)')
-            w_new = np.zeros([w.shape[0]-smoothWinLen+1, w.shape[1]])
-            w_new[:,0] = np.convolve(smoothWin/smoothWin.sum(),w[:,0],mode='valid')
-            w_new[:,1] = np.convolve(smoothWin/smoothWin.sum(),w[:,1],mode='valid')
-            w_new[:,2] = np.convolve(smoothWin/smoothWin.sum(),w[:,2],mode='valid')
-            w = w_new
-        if tRange:
-            bNdxWin = np.logical_and(w[:,0]>tRange[0]+w[0,0], w[:,0]<tRange[1]+w[0,0])
-            vel = np.sqrt(pow(np.diff(w[bNdxWin,1]),2) + pow(np.diff(w[bNdxWin,2]),2)) / np.diff(w[bNdxWin,0])
-        else:
-            vel = np.sqrt(pow(np.diff(w[:,1]),2) + pow(np.diff(w[:,2]),2)) / np.diff(w[:,0])
-        medVel.append(np.median(vel))     
-    return medVel
+        [vel,vt] = getVelRaw(d, tRange, smoothWinLen, smoothWinType)
+        medVel.append(np.median(vel))
+    return np.array(medVel)
 
-def getVelRaw(d, tRange=None):
+def getVelRaw(dataset, tRange=None, smoothWinLen=1, smoothWinType='flat'):
+    """
+    Return array containing velocity at each frame.
+    tRange: species time range relative to t_0. Negative values are relative to t_end.
+    smoothWinLen: length of smoothing window.  smothing applied to position priod to computing vel.
+    smoothWinType: flat, hanning, hamming, etc.
+    """
+    d = dataset
     w = d['warpedTracking']
+    if smoothWinLen>1:
+        if smoothWinType=='flat':
+            smoothWin = np.ones(smoothWinLen,'d')
+        else:
+            smoothWin = eval('np.'+smoothWinType+'(smoothWinLen)')
+        w_new = np.zeros([w.shape[0]-smoothWinLen+1, w.shape[1]])
+        w_new[:,0] = np.convolve(smoothWin/smoothWin.sum(),w[:,0],mode='valid')
+        w_new[:,1] = np.convolve(smoothWin/smoothWin.sum(),w[:,1],mode='valid')
+        w_new[:,2] = np.convolve(smoothWin/smoothWin.sum(),w[:,2],mode='valid')
+        w = w_new
     if tRange:
+        if tRange[0]<0:
+            tRange[0] = max(w[:,0]) - w[0,0] + tRange[0]
+        if tRange[1]<0 or (tRange[1]==0 and tRange[1]<tRange[0]):    
+            tRange[1] = max(w[:,0]) - w[0,0] + tRange[1]
         bNdxWin = np.logical_and(w[:,0]>tRange[0]+w[0,0], w[:,0]<tRange[1]+w[0,0])
         vel = np.sqrt(pow(np.diff(w[bNdxWin,1]),2) + pow(np.diff(w[bNdxWin,2]),2)) / np.diff(w[bNdxWin,0])
+        vt = w[bNdxWin[:-1],0]
     else:
         vel = np.sqrt(pow(np.diff(w[:,1]),2) + pow(np.diff(w[:,2]),2)) / np.diff(w[:,0])
-    return vel
+        vt = w[:-1,0]
+    return vel, vt
 
 #####################
 # AVOIDANCE METHODS

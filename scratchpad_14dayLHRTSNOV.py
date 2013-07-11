@@ -173,7 +173,7 @@ ax.set_xticks((0,1))
 ax.set_xticklabels(('exper','control'))
 ax.set_yticks((0,24,48))
 pylab.show()
-
+"""
 def getVelMulti(datasets, tRange=None):
     medVel = []
     for d in datasets:
@@ -194,7 +194,7 @@ def getVelRaw(d, tRange=None):
     else:
         vel = np.sqrt(pow(np.diff(w[:,1]),2) + pow(np.diff(w[:,2]),2)) / np.diff(w[:,0])
     return vel
-
+"""
 def getmintime(d):
     tracking = aba.getTracking(d)
     frametime = tracking[:,0]
@@ -204,6 +204,7 @@ def getmintime(d):
 #velocity analysis for shock periods, last n min, covering different acclimation times
 n=15
 minutes = n * 60
+sm = 15; #smooth over 15 frames
 e_maxtimes = []
 for n in range(len(e_shock)):
     mtime = getmintime(e_shock[n])
@@ -212,7 +213,7 @@ e_mintimes = [x - minutes for x in e_maxtimes]
 
 eShockVel = []
 for n in range(len(e_shock)):
-    velocity = getVelRaw(e_shock[n], (e_mintimes[n], e_maxtimes[n]))
+    velocity = aba.getVelRaw(e_shock[n], tRange=(e_mintimes[n], e_maxtimes[n]),smoothWinLen=sm)
     eShockVel.append(np.median(velocity))
 
 c_maxtimes = []
@@ -223,12 +224,13 @@ c_mintimes = [x - minutes for x in c_maxtimes]
 
 cShockVel = []
 for n in range(len(c_shock)):
-    cvelocity = getVelRaw(c_shock[n], (c_mintimes[n], c_maxtimes[n]))
+    cvelocity = aba.getVelRaw(c_shock[n], tRange=(c_mintimes[n], c_maxtimes[n]),smoothWinLen=sm)
     cShockVel.append(np.median(cvelocity))
 
 #velocity analysis for starting shock periods, last m min, covering different acclimation times
 m=15
 mins = m * 60
+"""
 e_shocktimemin = []
 for n in range(len(e_shock)):
     acclimate = e_shock[n]['parameters']['acclimate (m)']*60
@@ -237,7 +239,7 @@ e_shocktimemax = [x + minutes for x in e_shocktimemin]
 
 eStartShockVel = []
 for k in range(len(e_shock)):
-    eshockvel = getVelRaw(e_shock[k], (e_shocktimemin[k], e_shocktimemax[k]))
+    eshockvel = aba.getVelRaw(e_shock[k], tRange=(e_shocktimemin[k], e_shocktimemax[k]), smoothWinLen=sm)
     eStartShockVel.append(np.median(eshockvel))
 
 c_shocktimemin = []
@@ -248,28 +250,28 @@ c_shocktimemax = [y + minutes for y in c_shocktimemin]
 
 cStartShockVel = []
 for n in range(len(c_shock)):
-    csvelocity = getVelRaw(c_shock[n], (c_shocktimemin[n], c_shocktimemax[n]))
+    csvelocity = aba.getVelRaw(c_shock[n], tRange=(c_shocktimemin[n], c_shocktimemax[n]), smoothWinLen=sm)
     cStartShockVel.append(np.median(csvelocity))
-
+"""
 
 #velocity locomation analysis
-#eStartShockVel = starting shock velocity
-eBaseVel = getVelMulti(e_shock, (0,900))
-#eShockVel = getVelMulti(e_shock, (2700,3600))
-eLHVel = getVelMulti(e_RT)
-eNovVel = getVelMulti(e_novel, (0,900))
-eNovVellate = getVelMulti(e_novel, (2700,3600))
-eNov = getVelMulti(e_novel)
-#eLHVel2 = getVelMulti(e_RT2, (0,900))
+eStartShockVel = aba.getMedianVelMulti(e_shock, tRange=[-mins,0], smoothWinLen=sm)
+eBaseVel = aba.getMedianVelMulti(e_shock, tRange=(0,900),smoothWinLen=sm)
+eShockVel = aba.getMedianVelMulti(e_shock, tRange=[-mins,0],smoothWinLen=sm)
+eLHVel = aba.getMedianVelMulti(e_RT,smoothWinLen=sm)
+eNovVel = aba.getMedianVelMulti(e_novel, tRange=(0,900),smoothWinLen=sm)
+eNovVellate = aba.getMedianVelMulti(e_novel, tRange=(2700,3600),smoothWinLen=sm)
+eNov = aba.getMedianVelMulti(e_novel,smoothWinLen=sm)
+#eLHVel2 = aba.getMedianVelMulti(e_RT2, tRange=(0,900),smoothWinLen=sm)
 
-test = getVelRaw(e_shock[0])
-
-cBaseVel = getVelMulti(c_shock, (0, 900))
-#cShockVel = getVelMulti(c_shock, (2700,3600))
-cLHVel = getVelMulti(c_RT)
-cNovVel = getVelMulti(c_novel, (0,900))
-cNovVellate = getVelMulti(c_novel, (2700,3600))
-cNov = getVelMulti(c_novel)
+#test = getVelRaw(e_shock[0])
+cStartShockVel = aba.getMedianVelMulti(c_shock, tRange=[-mins,0], smoothWinLen=sm)
+cBaseVel = aba.getMedianVelMulti(c_shock, tRange=(0, 900),smoothWinLen=sm)
+cShockVel = aba.getMedianVelMulti(c_shock, tRange=[-mins,0],smoothWinLen=sm)
+cLHVel = aba.getMedianVelMulti(c_RT,smoothWinLen=sm)
+cNovVel = aba.getMedianVelMulti(c_novel,tRange=(0,900),smoothWinLen=sm)
+cNovVellate = aba.getMedianVelMulti(c_novel, tRange=(2700,3600),smoothWinLen=sm)
+cNov = aba.getMedianVelMulti(c_novel,smoothWinLen=sm)
 
 [tv, e_Base_RT] = scipy.stats.ttest_ind(eBaseVel, eLHVel)
 [tv, e_Base_Nov] = scipy.stats.ttest_ind(eBaseVel, eNov)
@@ -331,7 +333,7 @@ pylab.plot(2,[eShockVel], 'r.')
 pylab.plot(3,[eLHVel], 'r.')
 #pylab.plot(4,[eNovVel],'r.')
 pylab.plot(4,[eNovVellate],'r.')
-pylab.plot([0,1,2,3,4],[np.mean(eBaseVel), np.mean(eStartShockVel), np.mean(eShockVel),np.mean(eLHVel), np.mean(eNovVellate)],'o-k', lw=3)
+pylab.plot([0,1,2,3,4],[np.mean(eBaseVel), scipy.stats.nanmean(eStartShockVel), scipy.stats.nanmean(eShockVel),np.mean(eLHVel), np.mean(eNovVellate)],'o-k', lw=3)
 pylab.axvline(3.5, ls= '-', c ='k', lw=2)
 ax.set_xticks((0,1,2,3,4))
 ax.set_xticklabels(('baseline','0-15 min\nshock', '15-30 min\nshock','avoidance\ntest', 'novel\ncontext'))

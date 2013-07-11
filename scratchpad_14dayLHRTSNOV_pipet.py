@@ -173,7 +173,7 @@ ax.set_xticks((0,1))
 ax.set_xticklabels(('exper RTS\nwith pipetting','exper RTS\nin novel context'))
 ax.set_yticks((0,24,48))
 pylab.show()
-
+"""
 def getVelMulti(datasets, tRange=None):
     medVel = []
     for d in datasets:
@@ -194,19 +194,20 @@ def getVelRaw(d, tRange=None):
     else:
         vel = np.sqrt(pow(np.diff(w[:,1]),2) + pow(np.diff(w[:,2]),2)) / np.diff(w[:,0])
     return vel
-
+"""
 #velocity locomation analysis
 n = 15 # minutes to look at
-eBaseVelN = getVelMulti(e_shockN, (0,900))
-eStartShockVelN = getVelMulti(e_shockN, (900, 60*(15+n)))
-eShockVelN = getVelMulti(e_shockN, (60*(45-n), 60*45))
-eLHVelN = getVelMulti(e_RTN)
-eVellate = getVelMulti(e_long, (2700,3600))
-#eNovVel = getVelMulti(e_novel, (0,900))
-eBaseVelR = getVelMulti(e_shockR, (0, 900))
-eStartShockR = getVelMulti(e_shockR, (900, 60*(15+n)))
-eShockR = getVelMulti(e_shockR, (60*(45-n), 60*45))
-eLHVelR = getVelMulti(e_RTR)
+sm = 15; #smooth over 15 frames.
+eBaseVelN = aba.getMedianVelMulti(e_shockN, tRange=(0,900), smoothWinLen=sm)
+eStartShockVelN = aba.getMedianVelMulti(e_shockN, tRange=(900, 60*(15+n)), smoothWinLen=sm)
+eShockVelN = aba.getMedianVelMulti(e_shockN, tRange=(60*(45-n), 60*45), smoothWinLen=sm)
+eLHVelN = aba.getMedianVelMulti(e_RTN, smoothWinLen=sm)
+eVellate = aba.getMedianVelMulti(e_long, tRange=(2700,3600), smoothWinLen=sm)
+#eNovVel = aba.getMedianVelMulti(e_novel, (0,900))
+eBaseVelR = aba.getMedianVelMulti(e_shockR, tRange=(0, 900), smoothWinLen=sm)
+eStartShockR = aba.getMedianVelMulti(e_shockR, tRange=(900, 60*(15+n)), smoothWinLen=sm)
+eShockR = aba.getMedianVelMulti(e_shockR, tRange=(60*(45-n), 60*45), smoothWinLen=sm)
+eLHVelR = aba.getMedianVelMulti(e_RTR, smoothWinLen=sm)
 
 #same context
 [tv, e_Base_RTN] = scipy.stats.ttest_ind(eBaseVelN, eLHVelN)
@@ -256,6 +257,7 @@ pylab.axvline(2.5, ls= '-', c ='k', lw=2)
 ax.set_xticks((0,1,2,3,4))
 ax.set_xticklabels(('baseline', '0-15 min\nshock', '15-30 min\nshock','avoidance\ntest', 'novel\ncontext'))
 pylab.xlim((-.25,4.5))
+pylab.ylim((0,4.5))
 pylab.ylabel('Median Velocity (mm/s)')
 pylab.title('Experimental fish avoidance-tested in same tank')
 patch1 = mpl.patches.Rectangle((2.5,0), 1,5, color = 'g', fill=True, alpha=0.5)
@@ -271,6 +273,7 @@ pylab.axvline(2.5, ls= '-', c ='k', lw=2)
 ax.set_xticks((0,1,2,3))
 ax.set_xticklabels(('baseline', '0-15 min\nshock', '15-30 min\nshock','avoidance test\n(novel tank)',))
 pylab.xlim((-.25,3.5))
+pylab.ylim((0,4.5))
 pylab.ylabel('Median Velocity (mm/s)')
 pylab.title('Experimental fish avoidance-tested in novel tank')
 patch3 = mpl.patches.Rectangle((2.5,0), 1,5, color = 'g', fill=True, alpha=0.5)
