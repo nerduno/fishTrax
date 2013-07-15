@@ -134,7 +134,7 @@ void executeCmd(int* cmdValues, int numValues) {
           digitalWrite(pin, HIGH);
           bPulsing[pin] = false;
           if (numValues>=3) {
-            delay(7);
+            delay(10);
             val = analogRead(cmdValues[3]);
             Serial.println(val);
           }
@@ -150,7 +150,7 @@ void executeCmd(int* cmdValues, int numValues) {
           digitalWrite(pin, HIGH);
           bPulseHigh[pin] = true;
           if (numValues>=5) {
-              delay(7);
+              delay(10);
               val = analogRead(cmdValues[5]);
               Serial.println(val);
           }
