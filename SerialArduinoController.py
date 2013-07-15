@@ -5,7 +5,7 @@ Summary:
 Python interface to the arduino sketch named serialPinController.
 
 Command are written as:
-#,...,#M
+#,...,#M0000000000000000000000000000000
 type,arguments,...,cmd_END
 
 SET:
@@ -97,11 +97,17 @@ class SerialArduinoController:
     def isConnected(self):
         return bool(self.ser) and self.ser.isOpen()
 
-    def pinHigh(self,pinNumber): 
+    def pinHigh(self,pinNumber,feedbackPin=-1,scale=(0,5)): 
         if not self.isConnected(): return False
         if not pinNumber in validPins: print 'Invalid Pin'; return False
-        self.ser.write('%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_HIGH,cmd_END))
-        return self.confirmMessageRecv()
+        if feedbackPin>=0:
+            self.ser.write('%d,%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_HIGH,
+                                            feedbackPin,cmd_END))
+            time.sleep(0.007)
+            return self.readAnalogIn(scale)
+        else:
+            self.ser.write('%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_HIGH,cmd_END))
+            return self.confirmMessageRecv()
 
     def pinLow(self,pinNumber):
         if not self.isConnected(): return False
@@ -109,14 +115,21 @@ class SerialArduinoController:
         self.ser.write('%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_LOW,cmd_END))
         return self.confirmMessageRecv()
 
-    def pinPulse(self,pinNumber, pulsePeriod=1000, pulseDuration=50):
+    def pinPulse(self,pinNumber, pulsePeriod=1000, pulseDuration=50, 
+                 feedbackPin=-1, scale=(0,5)):
         if not self.isConnected(): return False
         if not pinNumber in validPins: print 'Invalid Pin'; return False
-        self.ser.write('%d,%d,%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,
+        if feedbackPin>=0:
+            self.ser.write('%d,%d,%d,%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,
+                                           pulseDuration,feedbackPin,cmd_END))
+            time.sleep(0.007)
+            print cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,pulseDuration,feedbackPin,cmd_END
+            return self.readAnalogIn(scale)
+        else:
+            self.ser.write('%d,%d,%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,
                                            pulseDuration,cmd_END))
-        print '%d,%d,%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,
-                                  pulseDuration,cmd_END)
-        return self.confirmMessageRecv()	
+            print cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,pulseDuration,cmd_END
+            return self.confirmMessageRecv()	
 
     def analogRead(self, pinNumber, scale=(0,5)):
         if not self.isConnected(): return None
@@ -126,10 +139,24 @@ class SerialArduinoController:
         if not val == None:
             return (val/1023.0)*(scale[1]-scale[0]) + scale[0]
         """
-        val = self.ser.readline()
+        return self.readAnalogIn(scale)
+
+    def readAnalogIn(self, scale=(0,5)):
+        attempts = 0
+        val = -1
+        bImmediateSuccess = True
+        while attempts < 10 and val==-1:
+            try:
+                val = self.ser.readline()
+            except:
+                print 'SerialArduinoController:readAnalogIn: readline failed (maybe due to interrupt?)'
+                traceback.print_exc()
+                attempts+=1
+                print 'Retrying, attempt #:', attempts
+                bImmediateSuccess = False
         print val
         bSuccess = self.confirmMessageRecv()
-        if bSuccess:
+        if bSuccess and bImmediateSuccess:
             val = float(val)
             return (val/1023.0)*(scale[1]-scale[0]) + scale[0]
         else:

@@ -208,8 +208,12 @@ class ClassicalConditioningController(ArenaController.ArenaController):
         self.paramLayout.addWidget(self.paramShockChan1, 7,0,1,2)
         self.paramShockChan2 = LabeledSpinBox(None, 'ShockChan2', 0,10000,13,60)
         self.paramLayout.addWidget(self.paramShockChan2, 7,2,1,2)
+        self.paramCurrChan1 = LabeledSpinBox(None, 'CurrChan Side 1', 0,16,0,60)
+        self.paramLayout.addWidget(self.paramCurrChan1,8,0,1,2)
+        self.paramCurrChan2 = LabeledSpinBox(None, 'CurrChan Side 2', 0,16,0,60)
+        self.paramLayout.addWidget(self.paramCurrChan2,8,2,1,2)
         self.paramShockV = LabeledSpinBox(None, 'ShockV', 0,100, 10,60)
-        self.paramLayout.addWidget(self.paramShockV, 8,0,1,2)
+        self.paramLayout.addWidget(self.paramShockV, 9,0,1,2)
 
         #Colors
         self.paramColorUS = QtGui.QComboBox()
@@ -783,18 +787,22 @@ class ClassicalConditioningController(ArenaController.ArenaController):
             return
 
         if bSide1:
-            self.arenaMain.ard.pinPulse(self.paramShockChan1.value(), 
+            curr1 = self.arenaMain.ard.pinPulse(self.paramShockChan1.value(), 
                                         self.paramShockPeriod.value(), 
-                                        self.paramShockDuration.value())
+                                        self.paramShockDuration.value(), 
+                                        feedbackPin = self.paramCurrChan1.value())
         else:
             self.arenaMain.ard.pinLow(self.paramShockChan1.value())
+            curr1 = 0
         if bSide2:
-            self.arenaMain.ard.pinPulse(self.paramShockChan2.value(), 
+            curr2 = self.arenaMain.ard.pinPulse(self.paramShockChan2.value(), 
                                            self.paramShockPeriod.value(), 
-                                           self.paramShockDuration.value())
+                                           self.paramShockDuration.value(), 
+                                           feedbackPin = self.paramCurrChan2.value())
         else:
             self.arenaMain.ard.pinLow(self.paramShockChan2.value()) 
-        self.arenaData['shockinfo'].append((time.time(), bSide1, bSide2))
+            curr2 = 0
+        self.arenaData['shockinfo'].append((time.time(), bSide1, bSide2, curr1, curr2))
 
     def getBrush(self, colorNdx):
         if colorNdx == 0:
