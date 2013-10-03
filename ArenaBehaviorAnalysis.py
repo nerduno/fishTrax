@@ -644,7 +644,7 @@ def plotSidePreference(jsonData):
     pyplot.ylim([0,1])
     pyplot.ylabel('Time on color (%)')
 
-def getMedianVelMulti(datasets, tRange=None, smoothWinLen=1, smoothWinType='flat'):
+def getMedianVelMulti(datasets, tRange=None, stateRange=None, smoothWinLen=1, smoothWinType='flat'):
     """
     Return the median velocity in the time range.
     tRange: species time range relative to t_0. Negative values are relative to t_end.
@@ -653,11 +653,12 @@ def getMedianVelMulti(datasets, tRange=None, smoothWinLen=1, smoothWinType='flat
     """
     medVel = []
     for d in datasets:
-        [vel,vt] = getVelRaw(d, tRange, smoothWinLen, smoothWinType)
+        [vel,vt] = getVelRaw(d, tRange=tRange, stateRange=stateRange, 
+                             smoothWinLen=smoothWinLen, smoothWinType=smoothWinType)
         medVel.append(np.median(vel))
     return np.array(medVel)
 
-def getVelRaw(dataset, tRange=None, smoothWinLen=1, smoothWinType='flat'):
+def getVelRaw(dataset, tRange=None, stateRange=None, smoothWinLen=1, smoothWinType='flat'):
     """
     Return array containing velocity at each frame.
     tRange: species time range relative to t_0. Negative values are relative to t_end.
@@ -676,17 +677,19 @@ def getVelRaw(dataset, tRange=None, smoothWinLen=1, smoothWinType='flat'):
         w_new[:,1] = np.convolve(smoothWin/smoothWin.sum(),w[:,1],mode='valid')
         w_new[:,2] = np.convolve(smoothWin/smoothWin.sum(),w[:,2],mode='valid')
         w = w_new
+    bNdxWin = np.ones(w.shape[0],dtype=bool)
     if tRange:
         if tRange[0]<0:
             tRange[0] = max(w[:,0]) - w[0,0] + tRange[0]
         if tRange[1]<0 or (tRange[1]==0 and tRange[1]<tRange[0]):    
             tRange[1] = max(w[:,0]) - w[0,0] + tRange[1]
         bNdxWin = np.logical_and(w[:,0]>tRange[0]+w[0,0], w[:,0]<tRange[1]+w[0,0])
-        vel = np.sqrt(pow(np.diff(w[bNdxWin,1]),2) + pow(np.diff(w[bNdxWin,2]),2)) / np.diff(w[bNdxWin,0])
-        vt = w[bNdxWin[:-1],0]
-    else:
-        vel = np.sqrt(pow(np.diff(w[:,1]),2) + pow(np.diff(w[:,2]),2)) / np.diff(w[:,0])
-        vt = w[:-1,0]
+    elif stateRange is not None:
+        st,_,_,_ = state_to_time(dataset, stateRange[0])
+        _,et,_,_ = state_to_time(dataset, stateRange[1])
+        bNdxWin = np.logical_and(w[:,0]>st, w[:,0]<et)        
+    vel = np.sqrt(pow(np.diff(w[bNdxWin,1]),2) + pow(np.diff(w[bNdxWin,2]),2)) / np.diff(w[bNdxWin,0])
+    vt = w[bNdxWin[:-1],0]
     return vel, vt
 
 def getOMRScoreStatsMulti(datasets, tRange=None,stateRange=None, timePoint = None): 
