@@ -67,7 +67,7 @@ class FishTrackerWidget(QtGui.QGroupBox):
         self.trackMaxArea = LabeledSpinBox(None,'MaxArea',0,600000,600000,75)
         self.updateCheckbox = QtGui.QCheckBox('Use Updating BG')
         self.numFish = LabeledSpinBox(None,'NumFish',0,20,1,60)
-        self.fishSize = LabeledSpinBox(None,'FG Size',0,1000,50,60)
+        self.fishSize = LabeledSpinBox(None,'FG Size',0,1000,30,60)
         self.learningRate = LabeledDoubleSpinBox(None,'Learning rate',0,1,0.1,60)
 
         self.trackLayout.addWidget(self.trackThreshold,2,0,1,2)

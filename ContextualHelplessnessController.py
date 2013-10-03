@@ -88,12 +88,12 @@ class ContextualHelplessnessController(ArenaController.ArenaController):
         self.projPosL = QtGui.QLabel('Pos')
         self.projX = QtGui.QSpinBox()
         self.projX.setRange(0,1000)
-        self.projX.setValue(0)
+        self.projX.setValue(250)
         self.projX.setMaximumWidth(50)
         self.projY = QtGui.QSpinBox()
-        self.projY.setValue(0)
-        self.projY.setMaximumWidth(50)
         self.projY.setRange(0,1000)
+        self.projY.setValue(250)
+        self.projY.setMaximumWidth(50)
         self.projLayout.addWidget(self.projPosL,1,0)
         self.projLayout.addWidget(self.projX,1,1)
         self.projLayout.addWidget(self.projY,1,2)
@@ -102,11 +102,11 @@ class ContextualHelplessnessController(ArenaController.ArenaController):
         self.projSizeL = QtGui.QLabel('Size L,W')
         self.projLen = QtGui.QSpinBox()
         self.projLen.setRange(0,1000)
-        self.projLen.setValue(110)
+        self.projLen.setValue(220)
         self.projLen.setMaximumWidth(50)
         self.projWid = QtGui.QSpinBox()
         self.projWid.setRange(0,1000)
-        self.projWid.setValue(55)
+        self.projWid.setValue(115)
         self.projWid.setMaximumWidth(50)
         self.projLen.valueChanged.connect(self.projectorPositionChanged)
         self.projWid.valueChanged.connect(self.projectorPositionChanged)
@@ -116,15 +116,15 @@ class ContextualHelplessnessController(ArenaController.ArenaController):
         self.projRotL = QtGui.QLabel('Rotation')
         self.projRot = QtGui.QSpinBox()
         self.projRot.setRange(0,360)
-        self.projRot.setValue(0)
+        self.projRot.setValue(270)
         self.projRot.setMaximumWidth(50)
         self.projLayout.addWidget(self.projRotL,2,3)
         self.projLayout.addWidget(self.projRot,2,4)
         self.projRot.valueChanged.connect(self.projectorPositionChanged)
         
-        self.tankLength = LabeledSpinBox(None, 'Tank Len (mm)', 0,100,48,60)
+        self.tankLength = LabeledSpinBox(None, 'Tank Len (mm)', 0,100,46,60)
         self.projLayout.addWidget(self.tankLength, 3,0,1,2)
-        self.tankWidth = LabeledSpinBox(None, 'Tank Wid (mm)', 0,100,24,60)
+        self.tankWidth = LabeledSpinBox(None, 'Tank Wid (mm)', 0,100,21,60)
         self.projLayout.addWidget(self.tankWidth, 3,2,1,2)
 
         self.projLayout.setColumnStretch(6,1)
@@ -158,29 +158,32 @@ class ContextualHelplessnessController(ArenaController.ArenaController):
         self.paramLayout.setVerticalSpacing(2)
 
         #high level flow - acclimate -> pretest -> [b/t] -> train -> [b/t] -> posttest 
-        self.paramAcclimate = LabeledSpinBox(None, 'Acclimate (m)', 0, 240, 30, 60)
+        self.paramAcclimate = LabeledSpinBox(None, 'Acclimate (m)', 0, 240, 0, 60)
         self.paramLayout.addWidget(self.paramAcclimate, 0,0,1,2)
         self.paramBetweenTime = LabeledSpinBox(None,'BetweenTime (m)',0, 1440, 0, 60) #time between pre , train and post periods
         self.paramLayout.addWidget(self.paramBetweenTime,0,2,1,2)
         self.paramPreDuration = LabeledSpinBox(None,'PreTest (m)',0,120,15,60) #number of side switches pre test
         self.paramLayout.addWidget(self.paramPreDuration,1,0,1,2)
         self.paramPreOMR = QtGui.QCheckBox('PreOMR')
+        self.paramPreOMR.setCheckState(2)
         self.paramLayout.addWidget(self.paramPreOMR,1,2,1,2)
         self.paramNumTrain = LabeledSpinBox(None,'NumTrain',0,100,30,60)
         self.paramLayout.addWidget(self.paramNumTrain,2,0,1,2)
         self.paramTrainOMR = QtGui.QCheckBox('TrainOMR')
+        self.paramTrainOMR.setCheckState(2)
         self.paramLayout.addWidget(self.paramTrainOMR,2,2,1,2)
-        self.paramPostDuration = LabeledSpinBox(None,'PostTest (m)',0,120,15,60) #number of side switches post teset
+        self.paramPostDuration = LabeledSpinBox(None,'PostTest (m)',0,120,5,60) #number of side switches post teset
         self.paramLayout.addWidget(self.paramPostDuration,3,0,1,2)
         self.paramPostOMR = QtGui.QCheckBox('PostOMR')
+        self.paramPostOMR.setCheckState(2)
         self.paramLayout.addWidget(self.paramPostOMR,3,2,1,2)
 
         #omr parameters  
-        self.paramOMRInterval = LabeledSpinBox(None,'OMR Interval (s)',0,600,120,60) #time between OMR tests
-        self.paramOMRDuration = LabeledSpinBox(None,'OMR Duration (s)',0,600,30,60) #duration of OMR tests
+        self.paramOMRInterval = LabeledSpinBox(None,'OMR Interval (s)',0,600,48,60) #time between OMR tests
+        self.paramOMRDuration = LabeledSpinBox(None,'OMR Duration (s)',0,600,12,60) #duration of OMR tests
         self.paramOMRPeriod = LabeledSpinBox(None,'OMR Grating Period (mm)',0,50,5,60) #spacing between grating bars
         self.paramOMRDutyCycle = LabeledSpinBox(None, 'OMR DutyCycle %',0,100,50,60) #width of grating bars
-        self.paramOMRVelocity = LabeledSpinBox(None, 'OMR Speed (mm/s)',0,50,10,60) #velocity of moving gratings.
+        self.paramOMRVelocity = LabeledSpinBox(None, 'OMR Speed (mm/s)',0,50,5,60) #velocity of moving gratings.
         self.paramLayout.addWidget(self.paramOMRInterval,4,0,1,2)
         self.paramLayout.addWidget(self.paramOMRDuration,4,2,1,2)        
         self.paramLayout.addWidget(self.paramOMRPeriod,5,0,1,2) 
@@ -188,49 +191,49 @@ class ContextualHelplessnessController(ArenaController.ArenaController):
         self.paramLayout.addWidget(self.paramOMRVelocity,6,0,1,2)
 
         #training parameters
-        self.paramUSTime = LabeledSpinBox(None, 'US Time (s)', 1,3600,30,60)
+        self.paramUSTime = LabeledSpinBox(None, 'US Time (s)', 1,3600,60,60)
         self.paramLayout.addWidget(self.paramUSTime,7,0,1,2)
-        self.paramNeutralMinTime = LabeledSpinBox(None, 'Neutral Min (s)',1,3600,30,60)
+        self.paramNeutralMinTime = LabeledSpinBox(None, 'Neutral Min (s)',1,3600,2,60)
         self.paramLayout.addWidget(self.paramNeutralMinTime, 8,0,1,2)
-        self.paramNeutralMaxTime = LabeledSpinBox(None, 'Neutral Max (s)',1,3600,60,60)
+        self.paramNeutralMaxTime = LabeledSpinBox(None, 'Neutral Max (s)',1,3600,5,60)
         self.paramLayout.addWidget(self.paramNeutralMaxTime, 8,2,1,2)
         self.paramShockPeriod = LabeledSpinBox(None, 'Shock Period (ms)', 0,5000,1000,60)
         self.paramLayout.addWidget(self.paramShockPeriod, 9,0,1,2)
         self.paramShockDuration = LabeledSpinBox(None, 'ShockDuration (ms)', 0,1000,50,60)
         self.paramLayout.addWidget(self.paramShockDuration, 9,2,1,2)
-        self.paramShockChan1 = LabeledSpinBox(None, 'ShockChan1', 0,10000,12,60)
+        self.paramShockChan1 = LabeledSpinBox(None, 'ShockChan1', 0,10000,53,60)
         self.paramLayout.addWidget(self.paramShockChan1, 10,0,1,2)
-        self.paramShockChan2 = LabeledSpinBox(None, 'ShockChan2', 0,10000,13,60)
+        self.paramShockChan2 = LabeledSpinBox(None, 'ShockChan2', 0,10000,52,60)
         self.paramLayout.addWidget(self.paramShockChan2, 10,2,1,2)
-        self.paramCurrChan1 = LabeledSpinBox(None, 'CurrChan Side 1', 0,16,0,60)
+        self.paramCurrChan1 = LabeledSpinBox(None, 'CurrChan Side 1', 0,16,15,60)
         self.paramLayout.addWidget(self.paramCurrChan1,11,0,1,2)
-        self.paramCurrChan2 = LabeledSpinBox(None, 'CurrChan Side 2', 0,16,0,60)
+        self.paramCurrChan2 = LabeledSpinBox(None, 'CurrChan Side 2', 0,16,14,60)
         self.paramLayout.addWidget(self.paramCurrChan2,11,2,1,2)
-        self.paramShockV = LabeledSpinBox(None, 'ShockV', 0,100, 10,60)
+        self.paramShockV = LabeledSpinBox(None, 'ShockV', 0,100, 5,60)
         self.paramLayout.addWidget(self.paramShockV, 12,0,1,2)
 
         #Colors
-        (self.paramColorAcclimate,self.labelColorAcclimate) = self.getColorComboBox('AcclimateColor', 5)
+        (self.paramColorAcclimate,self.labelColorAcclimate) = self.getColorComboBox('AcclimateColor', 0)
         self.paramLayout.addWidget(self.paramColorAcclimate,13,0)
         self.paramLayout.addWidget(self.labelColorAcclimate,13,1)
 
-        (self.paramColorPreTest,self.labelColorPreTest) = self.getColorComboBox('PreTestColor', 5)
+        (self.paramColorPreTest,self.labelColorPreTest) = self.getColorComboBox('PreTestColor', 0)
         self.paramLayout.addWidget(self.paramColorPreTest,13,2)
         self.paramLayout.addWidget(self.labelColorPreTest,13,3)
 
-        (self.paramColorTrain,self.labelColorTrain) = self.getColorComboBox('TrainColor', 5)
+        (self.paramColorTrain,self.labelColorTrain) = self.getColorComboBox('TrainColor', 0)
         self.paramLayout.addWidget(self.paramColorTrain,14,0)
         self.paramLayout.addWidget(self.labelColorTrain,14,1)
 
-        (self.paramColorPostTest,self.labelColorPostTest) = self.getColorComboBox('PostTestColor', 5)
+        (self.paramColorPostTest,self.labelColorPostTest) = self.getColorComboBox('PostTestColor', 0)
         self.paramLayout.addWidget(self.paramColorPostTest,14,2)
         self.paramLayout.addWidget(self.labelColorPostTest,14,3)
 
-        (self.paramColorBetween,self.labelColorBetween) = self.getColorComboBox('BetweenColor', 5)
+        (self.paramColorBetween,self.labelColorBetween) = self.getColorComboBox('BetweenColor', 0)
         self.paramLayout.addWidget(self.paramColorBetween,15,0)
         self.paramLayout.addWidget(self.labelColorBetween,15,1)
 
-        (self.paramColorOMR,self.labelColorOMR) = self.getColorComboBox('OMRColor', 4)
+        (self.paramColorOMR,self.labelColorOMR) = self.getColorComboBox('OMRColor', 5)
         self.paramLayout.addWidget(self.paramColorOMR,15,2)
         self.paramLayout.addWidget(self.labelColorOMR,15,3)
 
@@ -268,13 +271,13 @@ class ContextualHelplessnessController(ArenaController.ArenaController):
         self.infoGroup.setLayout(self.infoLayout)
 
         self.settingsLayout = QtGui.QGridLayout()
-        self.settingsLayout.addWidget(self.startButton,0,0,1,1)
-        self.settingsLayout.addWidget(self.pauseButton,1,0,1,1)
-        self.settingsLayout.addWidget(self.autoPauseCheckBox,1,1,1,1)
-        self.settingsLayout.addWidget(self.arenaGroup,2,0,1,2)
-        self.settingsLayout.addWidget(self.trackWidget,3,0,1,2)
-        self.settingsLayout.addWidget(self.paramGroup,4,0,1,2)
-        self.settingsLayout.addWidget(self.infoGroup,5,0,1,2)
+        self.settingsLayout.addWidget(self.arenaGroup,0,0,1,2)
+        self.settingsLayout.addWidget(self.trackWidget,1,0,1,2)
+        self.settingsLayout.addWidget(self.infoGroup,3,0,1,2)
+        self.settingsLayout.addWidget(self.startButton,4,0,1,1)
+        self.settingsLayout.addWidget(self.pauseButton,5,0,1,1)
+        self.settingsLayout.addWidget(self.autoPauseCheckBox,5,1,1,1)
+        self.settingsLayout.addWidget(self.paramGroup,6,0,1,2)
         self.setLayout(self.settingsLayout)
 
         self.projectorPositionChanged()
@@ -451,8 +454,8 @@ class ContextualHelplessnessController(ArenaController.ArenaController):
                     self.omrPhase += self.omrDirection[0] * (float(self.paramOMRVelocity.value())/float(self.paramOMRPeriod.value())) * 360.0 * (self.t-self.lt)
                     self.omrPhase = self.omrPhase%360.0
                     if t - self.omrLastUpdate > 0.010:
-                        if t - self.omrLastUpdate > 0.040:
-                            print 'WARNING: projector slow to update', t - self.omrLastUpdate
+                        #if t - self.omrLastUpdate > 0.040:
+                        #    print 'WARNING: projector slow to update', t - self.omrLastUpdate
                         self.updateProjectorDisplay()
                
                 #handle training shock bout state changes
@@ -541,7 +544,7 @@ class ContextualHelplessnessController(ArenaController.ArenaController):
             if self.currState == State.OFF:
                 #Draw whole tank
                 pen = QtGui.QPen(QtCore.Qt.NoPen)
-                brush = QtGui.QBrush(QtCore.Qt.black)
+                brush = QtGui.QBrush(QtCore.Qt.white)
                 painter.setBrush(brush)
                 painter.setPen(pen)
                 poly = QtGui.QPolygonF()
@@ -903,6 +906,7 @@ class ContextualHelplessnessController(ArenaController.ArenaController):
                                         self.paramShockPeriod.value(), 
                                         self.paramShockDuration.value(), 
                                         feedbackPin = self.paramCurrChan1.value())
+            print 'Shocking!!!'
         else:
             self.arenaMain.ard.pinLow(self.paramShockChan1.value())
             curr1 = 0
@@ -911,6 +915,7 @@ class ContextualHelplessnessController(ArenaController.ArenaController):
                                            self.paramShockPeriod.value(), 
                                            self.paramShockDuration.value(), 
                                            feedbackPin = self.paramCurrChan2.value())
+            print 'Shocking!!!'
         else:
             self.arenaMain.ard.pinLow(self.paramShockChan2.value()) 
             curr2 = 0

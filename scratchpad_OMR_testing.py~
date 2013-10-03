@@ -1,0 +1,70 @@
+import ArenaBehaviorAnalysis as aba
+import pylab
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as pyplot
+import pylab
+import scipy
+
+#5mm bars 30 on 60 off
+c_omr_5mm = ['/home/vburns/Dropbox/ConchisData/2013-09-30/f00641/f00641_2013-09-30-11-27-45.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00642/f00642_2013-09-30-11-27-58.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00643/f00643_2013-09-30-11-28-08.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00644/f00644_2013-09-30-11-28-19.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00645/f00645_2013-09-30-11-28-27.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00646/f00646_2013-09-30-11-28-34.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00647/f00647_2013-09-30-11-28-41.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00648/f00648_2013-09-30-11-28-52.json']
+c_omr_5mm = aba.loadMultipleDataFiles(c_omr_5mm)
+
+c_omr_2mm = ['/home/vburns/Dropbox/ConchisData/2013-09-30/f00649/f00649_2013-09-30-11-30-50.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00650/f00650_2013-09-30-11-31-37.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00651/f00651_2013-09-30-11-31-42.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00652/f00652_2013-09-30-11-31-52.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00653/f00653_2013-09-30-11-32-07.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00654/f00654_2013-09-30-11-32-17.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00655/f00655_2013-09-30-11-32-24.json',
+             '/home/vburns/Dropbox/ConchisData/2013-09-30/f00656/f00656_2013-09-30-11-32-31.json']
+c_omr_2mm = aba.loadMultipleDataFiles(c_omr_2mm)
+
+#omr analysis
+[eBaseMaxDist, eBaseTotalDist, eBaseFrac] = aba.getAvgOMRScoreMulti(c_omr_5mm, stateRange=[3,3])
+[eEndMaxDist, eEndTotalDist, eEndFrac] = aba.getAvgOMRScoreMulti(c_omr_5mm, stateRange=[8,8])
+[cBaseMaxDist, cBaseTotalDist, cBaseFrac] = aba.getAvgOMRScoreMulti(c_omr_2mm, stateRange=[3,3])
+[cEndMaxDist, cEndTotalDist, cEndFrac] = aba.getAvgOMRScoreMulti(c_omr_2mm, stateRange=[8,8])
+
+#get info for nonOMR times
+[eBaseMaxDistNon, eBaseTotalDistNon, eBaseFracNon] = aba.getAvgOMRScoreMulti(c_omr_5mm, stateRange=[3,3],useOMR=False)
+[eEndMaxDistNon, eEndTotalDistNon, eEndFracNon] = aba.getAvgOMRScoreMulti(c_omr_5mm, stateRange=[8,8], useOMR=False)
+[cBaseMaxDistNon, cBaseTotalDistNon, cBaseFracNon] = aba.getAvgOMRScoreMulti(c_omr_2mm, stateRange=[3,3],useOMR=False)
+[cEndMaxDistNon, cEndTotalDistNon, cEndFracNon] = aba.getAvgOMRScoreMulti(c_omr_2mm, stateRange=[8,8], useOMR=False)
+
+def plotOMRMetric(cond1base, cond1end, cond2base, cond2end, title, baseTitle, endTitle, cond1label, cond2label):
+    ax = gca()
+    ax.plot([0,1],[np.mean(cond1base), np.mean(cond1end)],'o-k',lw=3, label=cond1label)
+    sem2 = (2*scipy.stats.sem(cond1base), 2*scipy.stats.sem(cond1end))
+    pyplot.errorbar([0,1],[np.mean(cond1base), np.mean(cond1end)],fmt='ok',yerr=sem2, lw=3)
+
+    ax.plot([0,1],[np.mean(cond2base), np.mean(cond2end)],'o-k',lw=3, label=cond2label)
+    sem2 = (2*scipy.stats.sem(cond2base), 2*scipy.stats.sem(cond2end))
+    pyplot.errorbar([0,1],[np.mean(cond2base), np.mean(cond2end)],fmt='ok',yerr=sem2, lw=3)
+   
+    handles, labels= ax.get_legend_handles_labels()
+    ax.legend(handles, labels)
+    ax.set_xticks((0,1))
+    ax.set_xticklabels((baseTitle, endTitle))
+    pylab.xlim((-.25,1.5))
+    pylab.title(title)
+
+pylab.figure()
+pylab.suptitle('Is OMR working?')
+pylab.subplot(231)
+plotOMRMetric(cBaseMaxDist, cEndMaxDist, cBaseMaxDistNon, cEndMaxDistNon, '2mm maxdist', 'pre', 'post', 'omr', 'nonomr')
+pylab.subplot(232)
+plotOMRMetric(cBaseTotalDist, cEndTotalDist, cBaseTotalDistNon, cEndTotalDistNon, '2mm totaldist', 'pre', 'post', 'omr', 'nonomr')
+pylab.subplot(234)
+plotOMRMetric(eBaseMaxDist, eEndMaxDist, eBaseMaxDistNon, eEndMaxDistNon, '5mm maxdist', 'pre', 'post', 'omr', 'nonomr')
+pylab.subplot(235)
+plotOMRMetric(eBaseTotalDist, eEndTotalDist, eBaseTotalDistNon, eEndTotalDistNon, '5mm totaldist', 'pre', 'post', 'omr', 'nonomr')
+pylab.show()
+

@@ -18,13 +18,29 @@ def loadDataFromFile(filename, arena_mm = defArena):
     f = open(filename)
     jsonData = json.load(f)
     f.close()
+    if 'tankSize_mm' in jsonData.keys():
+        arena_mm = [(0                           ,0),
+                    (0                           ,jsonData['tankSize_mm'][1]),
+                    (jsonData['tankSize_mm'][0]  ,jsonData['tankSize_mm'][1]),
+                    (jsonData['tankSize_mm'][0]  ,0)]
+        print 'Ignoring arena_mm.  Using tankSize_mm field.'
+    else:
+        jsonData['tankSize_mm'] = [arena_mm[2][0], arena_mm[2][1]]
     jsonData['warpedTracking'] = getWarpedAndCleanedTracking(jsonData, warpTarget=arena_mm)
+    jsonData['filename'] = filename
     return jsonData
 
 def loadDataFromFile_AvgMultiFish(filename, arena_mm = defArena):
     f = open(filename)
     jsonData = json.load(f)
     f.close()
+
+    if 'tankSize_mm' in jsonData.keys():
+        arena_mm = [(0,0),(0,jsonData['tankSize_mm'][1]),(jsonData['tankSize_mm'][0],jsonData['tankSize_mm'][1]),(jsonData['tankSize_mm'][0],jsonData['tankSize_mm'][1])]
+        print 'Ignoring arena_mm.  Using tankSize_mm field.'
+    else:
+        jsonData['tankSize_mm'] = [arena_mm[2][0], arena_mm[2][1]]
+
     for nFrame in range(len(jsonData['tracking'])):
         jsonData['tracking'][nFrame] = (jsonData['tracking'][nFrame][0],
                                         np.mean(jsonData['tracking'][nFrame][1:-1:2]),
@@ -46,8 +62,7 @@ def loadDataFromFolder(foldername, whichJson=0,arena_mm = defArena):
 
 def loadDataFromFile_UI(filename, arena_mm=defArena):
     f = tkFileDialog.askopenfile()
-    jsonData = json.load(f)
-    f.close()
+    jsonData = loadDataFromFile(f, arena_mm)
     return jsonData
 
 def loadDataSmart(datestr,fishNum, arena_mm=defArena):
@@ -280,23 +295,45 @@ def plotFishXPosition(jsonData, startState=1, endState=0, midLine=24, smooth=0):
     Plot x position over time.
     """
     state = jsonData['stateinfo']
+    midLine = (jsonData['tankSize_mm'][0])/2.0
+   
+    st,_,nS,_ = state_to_time(jsonData,startState)
+    _,et,_,nE = state_to_time(jsonData,endState)
 
-    #HACK
-    for nS in range(len(state)):
-        if state[nS][1] == startState:
-            break
-
-    for nE in reversed(range(len(state))):
-        if state[nE][1] == endState:
-            break
-
-    st = state[nS][0]
-    et = state[nE][0]
     tracking = getTracking(jsonData)
     tracking = tracking[np.logical_and(tracking[:,0] > st, tracking[:,0] < et),:].copy()
     frametime = tracking[:,0] - st
     positionx = tracking[:,1]
     positiony = tracking[:,2]
+    
+    if 'OMRinfo' in jsonData.keys():
+        results = getOMRinfo(jsonData, tankLength =midLine*2)
+        color = {-1:'red', 1:'blue'}
+        hatch = {-1:'\\', 1:'/'}
+        os = results['omrResults']['st']
+        oe = results['omrResults']['et']
+        od = results['omrResults']['dir']
+        for n in range(len(os)):
+            p1 = mpl.patches.Rectangle((os[n]-st,0),
+                                       width=oe[n]-os[n],
+                                       height=midLine*2,alpha=0.5,
+                                       color=color[od[n]],hatch=hatch[od[n]])
+            pyplot.gca().add_patch(p1)
+            pyplot.text(os[n]-st, midLine, '%0.2f'%results['omrResults']['maxdist'][n])
+
+        color = {-1:'green', 1:'yellow'}
+        hatch = {-1:'\\', 1:'/'}
+        os = results['omrControl']['st']
+        oe = results['omrControl']['et']
+        od = results['omrControl']['dir']
+        for n in range(len(os)):
+            p1 = mpl.patches.Rectangle((os[n]-st,0),
+                                       width=oe[n]-os[n],
+                                       height=midLine*2,alpha=0.5,
+                                       color=color[od[n]],hatch=hatch[od[n]])
+            pyplot.gca().add_patch(p1)
+            pyplot.text(os[n]-st, midLine, '%0.2f'%results['omrControl']['maxdist'][n])
+
     for i in range(nS,nE):
         c1 = state[i][2]
         c2 = state[i][3]
@@ -325,96 +362,80 @@ def plotFishXPosition(jsonData, startState=1, endState=0, midLine=24, smooth=0):
     pyplot.ylabel('Fish position (mm)')
     pyplot.xlabel('Time (s)')
 
-def plotFishSummary(jsonData, startState=1, endState=0, midLine=24, smooth=0, xl=None):
+def plotOMRmetrics(runData, startState=1, endState=0, omrTimepoint=None):
+    st,_,_,_ = state_to_time(runData,startState)
+    _,et,_,_ = state_to_time(runData,endState)
+    results = getOMRinfo(runData, timePoint = omrTimepoint)
+    os = results['omrResults']['st']
+    oe = results['omrResults']['et']
+    ndx = np.nonzero(np.logical_and(os>st,oe<et))
+    for k,c in zip(['norm','maxdist','ratio','sub'],['r','b','k','c']):
+        omrScore = results['omrResults'][k]
+        pyplot.plot(os[ndx] - st, omrScore[ndx],c)
+        pyplot.axhline(omrScore[ndx].mean(), color=c)
+    for k,c in zip(['norm','maxdist'],['r','b']):
+        nonScore = results['omrControl'][k]
+        pyplot.plot(os[ndx] - st, nonScore[ndx],c,linestyle=':')
+        pyplot.axhline(nonScore[ndx].mean(), color=c,linestyle=':')
+    import scipy.stats
+    _,p = scipy.stats.ttest_rel(results['omrResults']['norm'],results['omrControl']['norm'])
+    pyplot.title('p=%0.3f'%p)
+
+def state_to_time(jsonData, state):
+    """
+    Returns the start time of the first occurence of the given state and the end time of the last occurance.
+    Also returns the index of the first occurance and the index of the last occurance.
+    """
+    stateinfo = jsonData['stateinfo']
+    ndx = np.nonzero(np.array(stateinfo)[:,1].astype('int')==state)[0]
+    st = stateinfo[ndx[0]][0]
+    if ndx[-1]+1 < len(stateinfo):
+        et = stateinfo[ndx[-1]+1][0]
+    else:
+        et = stateinfo[ndx[-1]][0]
+    return (st,et,ndx[0],ndx[-1])
+
+
+def plotFishSummary(jsonData, startState=1, endState=0, midLine=24, smooth=0, xl=None, omrTimePoint=None):
     """
     For RealTime and ClassicalConditioning Data
     Plot x position over time.
     """
     state = jsonData['stateinfo']
     shockinfo = jsonData['shockinfo']
+    midLine = (jsonData['tankSize_mm'][0])/2.0
     
-    for nS in range(len(state)):
-        if state[nS][1] == startState:
-            break
-    for nE in reversed(range(len(state))):
-        if state[nE][1] == endState:
-            break
-    st = state[nS][0]
-    et = state[nE][0]
-
+    st,_,_,_ = state_to_time(jsonData,startState)
+    _,et,_,_ = state_to_time(jsonData,endState)
+    
     tracking = getTracking(jsonData)
     t0 = tracking[0,0]
     tracking = tracking[np.logical_and(tracking[:,0] > st, tracking[:,0] < et),:].copy()
-    frametime = tracking[:,0] - st
-    positionx = tracking[:,1]
-    positiony = tracking[:,2]
-    [vel, vt] = getVelRaw(jsonData, tRange=[max(0,st-t0),et-t0], smoothWinLen=1)
-    [velsm, vtsm] = getVelRaw(jsonData, tRange=[max(0,st-t0),et-t0], smoothWinLen=smooth)
-   
-    foundTrue=False
-    for i in range(len(shockinfo)):
-        if shockinfo[i][1] == True:
-            foundTrue = True
-            curravail = True
-            sizen = 4
-        elif foundTrue==False:
-            curravail = False
-            sizen = 3
-
+    
+    sizen = 4
     pyplot.figure()
-    #plot position
+
+    #plot x position
     ax = pyplot.subplot(sizen,1,1)
-    for i in range(nS,nE):
-        c1 = state[i][2]
-        c2 = state[i][3]
-        c1 = 'Yellow' if c1=='On' else c1
-        c1 = 'White' if c1=='Off' else c1
-        c2 = 'Yellow' if c2=='On' else c2
-        c2 = 'White' if c2=='Off' else c2
-        p1 = mpl.patches.Rectangle((state[i][0]-st,0),
-                                   width=state[i+1][0]-state[i][0],
-                                   height=midLine,alpha=0.5,
-                                   color=c1)
-        p2 = mpl.patches.Rectangle((state[i][0]-st,midLine),
-                                   width=state[i+1][0]-state[i][0],
-                                   height=midLine,alpha=0.5,
-                                   color=c2)
-        pyplot.gca().add_patch(p1)
-        pyplot.gca().add_patch(p2)
-    pyplot.plot(frametime, positionx, 'k.')
-    if smooth>0:
-        import scipy
-        pyplot.plot(frametime, scipy.convolve(positionx,np.ones(smooth)/smooth, mode='same'), 'g-')
-    pyplot.ylim([0,midLine*2])
-    pyplot.xlim([0,et-st])
-    pyplot.plot([0,et-st],[midLine,midLine],'y-')
-    pyplot.ylabel('Fish x position (mm)')
-    pyplot.xlabel('Time (s)')
-    #plot y
+    plotFishXPosition(jsonData, startState, endState, midLine, smooth)
+    pyplot.title(jsonData['filename'])
+
+    #plot y position
     pyplot.subplot(sizen,1,2,sharex=ax)
-    pyplot.plot(frametime, positiony, 'k.')
+    pyplot.plot(tracking[:,0] - st, tracking[:,2], 'k.')
     if smooth>0:
         import scipy
-        pyplot.plot(frametime, scipy.convolve(positiony,np.ones(smooth)/smooth, mode='same'), 'g-')
+        pyplot.plot(tracking[:,0] - st, scipy.convolve(tracking[:,2],np.ones(smooth)/smooth, mode='same'), 'g-')
     pyplot.ylabel('Fish y position (mm)')
     pyplot.xlabel('Time (s)')
-    #plot velocity
-    pyplot.subplot(sizen,1,3, sharex=ax)
-    pyplot.plot(vt-st,vel, 'k.')
-    pyplot.plot(vtsm-st,velsm,'g-')
-    pyplot.ylim([0,30])
-    pyplot.xlim([0,et-st])
-    pyplot.ylabel('Instant Velocity (mm/s)')
-    pyplot.xlabel('Time (s)')
-    if sizen!=3: 
-        pyplot.subplot(sizen, 1, 4)
-        plotCurrent(jsonData)
-    print vt[0]
-    print len(vt)
-    print len(vel)
-    print st
-    print frametime[0]
 
+    #plot omr metric
+    pyplot.subplot(sizen,1,3, sharex=ax)
+    plotOMRmetrics(jsonData, startState, endState, omrTimePoint)
+    
+    pyplot.subplot(sizen, 1, 4)
+    plotCurrent(jsonData)
+    
 def plotCurrent(jsonData, cond=[5], ylm=1):
     #input is voltage?
     resistor =1000.0
@@ -457,6 +478,7 @@ def plotColoredPath(runData, cond=[2,3], color='On'):
 
 def plotFlippedPath(runData, tankLength=48, cond=[2,3], color='On'):
     state = runData['stateinfo']
+    tankLength = jsonData['tankSize_mm'][0]
     ndx = np.nonzero([x in cond for x in [y[1] for y in state]])[0]
     w = runData['warpedTracking']
     for switchNdx in ndx:
@@ -466,6 +488,85 @@ def plotFlippedPath(runData, tankLength=48, cond=[2,3], color='On'):
         else:
             pyplot.plot(tankLength-w[bNdxWin,1],w[bNdxWin,2],'k')
 
+
+def computeOMRmetrics(OMRfp, direction, tankLength=48, timePoint=None):
+    """
+    Compute several measure of OMR performance.
+    OMRfp - position of the fish during the time window to be scored each row consists of (time, xpos, ypos)
+    direction - either 1 or -1, 1 indicates the fish should be moving toward side 2.
+    """      
+    if timePoint is not None:
+        OMRfp = OMRfp[OMRfp[:,0] < OMRfp[0,0]+timePoint,:].copy()
+
+    #compute max distance as score
+    if direction == 1: 
+        maxdist = (np.max(OMRfp[:,1])-OMRfp[0,1])/(tankLength-OMRfp[0,1])
+    elif direction==-1:
+        maxdist = (OMRfp[0,1]-np.min(OMRfp[:,1]))/OMRfp[0,1]
+    else: 
+        print "unknown direction"
+        1/0
+
+    #compute total distance
+    if direction == 1:
+        totalDist = (OMRfp[-1,1]-OMRfp[0,1])*direction/(tankLength-OMRfp[0,1])
+    else:
+        totalDist = (OMRfp[-1,1]-OMRfp[0,1])*direction/OMRfp[0,1]
+
+    #compute time moving in correct direction
+    dt = np.diff(OMRfp[:,0])
+    dx = np.diff(OMRfp[:,1])
+    movingtime = np.sum(dt[np.nonzero(dx*direction>0)])/(OMRfp[-1,0]-OMRfp[0,0])
+    return (maxdist, totalDist, movingtime)
+
+def getNumOMRBouts(runData):
+    OMRdata = runData['OMRinfo']
+    num = 0
+    for omr in OMRdata:
+        num += omr[1]
+    return num
+
+def getOMRinfo(runData, tankLength=48, timePoint=None):
+    """
+    Extract regions of OMR and compute preformance metric for each OMR region. 
+    Use with contextual learned helplessness arena.
+    Timepoint is number of seconds following OMR onset at which beavioe is assessed (by default full session is used)
+    """
+    tankLength = runData['tankSize_mm'][0]
+    OMRdata = runData['OMRinfo'] #time, T/F, [directionX,direcctionY]
+    fp = getTracking(runData)
+    results = {}
+    numOMR = getNumOMRBouts(runData)
+    results['omrResults'] = np.zeros(numOMR, dtype=[('st','f8'),('et','f8'),('dir','f8'),('maxdist','f8'),('totdist','f8'),('fractime','f8'),('ratio','f8'),('sub','f8'),('norm','f8')])
+    results['omrControl'] = np.zeros(numOMR, dtype=[('st','f8'),('et','f8'),('dir','f8'),('maxdist','f8'),('totdist','f8'),('fractime','f8'),('norm','f8')])
+    results['omrRandom']  = np.zeros(numOMR, dtype=[('st','f8'),('et','f8'),('dir','f8'),('maxdist','f8'),('totdist','f8'),('fractime','f8')])
+    ndx = 0
+    for i in range(len(OMRdata)-1):
+        if OMRdata[i][1]:
+            prevOMREndTime = OMRdata[i-1][0]
+            startTime = OMRdata[i][0]
+            endTime = OMRdata[i+1][0]
+            direction = OMRdata[i][2][0]
+
+            #get data regarding nonOMR period as control
+            cntlStartTime = startTime - (endTime-startTime) 
+            cntlEndTime = startTime
+            cntlOMRfp = fp[np.logical_and(fp[:,0] > cntlStartTime, fp[:,0] < cntlEndTime),:].copy()
+            cntlDirection = np.sign(tankLength/2.0 - cntlOMRfp[0,1])
+            (cMaxdist, cTotalDist, cMovingtime) = computeOMRmetrics(cntlOMRfp, cntlDirection, tankLength, timePoint)
+            results['omrControl'][ndx] = (cntlStartTime,cntlEndTime,cntlDirection,cMaxdist,cTotalDist,cMovingtime,cMaxdist/(cMaxdist+1))
+
+            randDir = random.choice([-1,1])
+            (rMaxdist, rTotalDist, rMovingtime) = computeOMRmetrics(cntlOMRfp, randDir, tankLength, timePoint)
+            results['omrRandom'][ndx]  = (cntlStartTime,cntlEndTime,randDir,rMaxdist,rTotalDist,rMovingtime)
+
+            #get data regarding OMR period
+            OMRfp = fp[np.logical_and(fp[:,0] > startTime, fp[:,0] < endTime),:].copy()
+            (maxdist, totalDist, movingtime) = computeOMRmetrics(OMRfp, direction, tankLength, timePoint)
+            results['omrResults'][ndx] = (startTime,endTime,direction,maxdist,totalDist,movingtime,maxdist/(cMaxdist+0.001),maxdist-cMaxdist,maxdist/(cMaxdist+1))
+            ndx+=1
+    return results
+
 def getSidePreference(runData, tankLength=48, cond=[3,8], refState='Red',sideFrac=.5):
     """
     cond specifies for which state the preference will be extracted
@@ -474,6 +575,8 @@ def getSidePreference(runData, tankLength=48, cond=[3,8], refState='Red',sideFra
     data should be warped so that side1 is always 0 to midline.
     returns (timeOnRefState1, timeOnSide1, switchDuration, distFromRefState1, distFromSide1, startTime)
     """
+    tankLength = jsonData['tankSize_mm'][0]
+
     timeOnSide1 = []
     switchDuration = []
     timeOnColor1 = []
@@ -518,6 +621,7 @@ def getSidePreference(runData, tankLength=48, cond=[3,8], refState='Red',sideFra
     return (timeOnColor1, timeOnSide1, switchDuration, distFromColor1, distFromSide1, startTime)
 
 def getSidePreference_Multi(datasets, tankLength=48, cond=[3,4], refState='On',sideFrac=.5):
+    tankLength = jsonData['tankSize_mm'][0]
     fracOnRef = []; distFromRef = []
     for n in range(len(datasets)):
         [rt,s1t,t,rd,s1d,t0] = getSidePreference(datasets[n], tankLength=tankLength, cond=cond, refState=refState, sideFrac=sideFrac)
@@ -584,6 +688,65 @@ def getVelRaw(dataset, tRange=None, smoothWinLen=1, smoothWinType='flat'):
         vel = np.sqrt(pow(np.diff(w[:,1]),2) + pow(np.diff(w[:,2]),2)) / np.diff(w[:,0])
         vt = w[:-1,0]
     return vel, vt
+
+def getOMRScoreStatsMulti(datasets, tRange=None,stateRange=None, timePoint = None): 
+    stats = {}
+    stats['omrResults'] = np.zeros(len(datasets),
+                                   dtype = [('avgmaxdist',float),('avgtotdist',float),
+                                            ('avgfractime',float),('avgratio',float),
+                                            ('avgsub',float),('avgnorm',float)])
+    stats['omrControl'] = np.zeros(len(datasets),
+                                   dtype = [('avgmaxdist',float),('avgtotdist',float),
+                                            ('avgfractime',float),('avgnorm',float)])
+    stats['omrRandom'] = np.zeros(len(datasets),
+                                  dtype = [('avgmaxdist',float),('avgtotdist',float),
+                                           ('avgfractime',float)])                                                
+    for i,d in enumerate(datasets):
+        s = getOMRScoreStats(d, tRange,stateRange,timePoint)
+        stats['omrResults'][i] = s['omrResults']
+        stats['omrControl'][i] = s['omrControl']
+        stats['omrRandom'][i] = s['omrRandom']
+    return stats
+
+def getOMRScoreStats(runData,tRange=None,stateRange=None, timePoint=None):
+    t = runData['warpedTracking']
+    results = getOMRinfo(runData,timePoint=timePoint)
+    
+    os=results['omrResults']['st']-t[0,0]
+    ndx = range(len(os))
+
+    if tRange is not None:
+        ndx=np.nonzero(np.logical_and(os>tRange[0],os<tRange[1]))
+
+    if stateRange is not None:
+        st,_,_,_ = state_to_time(runData, stateRange[0])
+        _,et,_,_ = state_to_time(runData, stateRange[1])
+        st = st - t[0,0]
+        et = et - t[0,0]
+        ndx=np.nonzero(np.logical_and(os>st,os<et))        
+
+    stats = {}
+    stats['omrResults'] = np.array((results['omrResults']['maxdist'][ndx].mean(), 
+                                    results['omrResults']['totdist'][ndx].mean(), 
+                                    results['omrResults']['fractime'][ndx].mean(), 
+                                    results['omrResults']['ratio'][ndx].mean(), 
+                                    results['omrResults']['sub'][ndx].mean(), 
+                                    results['omrResults']['norm'][ndx].mean()),
+                                   dtype = [('avgmaxdist',float),('avgtotdist',float),
+                                            ('avgfractime',float),('avgratio',float),
+                                            ('avgsub',float),('avgnorm',float)])
+    stats['omrControl'] = np.array((results['omrControl']['maxdist'][ndx].mean(), 
+                                    results['omrControl']['totdist'][ndx].mean(), 
+                                    results['omrControl']['fractime'][ndx].mean(),
+                                    results['omrControl']['norm'][ndx].mean()),
+                                   dtype = [('avgmaxdist',float),('avgtotdist',float),
+                                            ('avgfractime',float),('avgnorm',float)])
+    stats['omrRandom'] = np.array((results['omrRandom']['maxdist'][ndx].mean(), 
+                                   results['omrRandom']['totdist'][ndx].mean(), 
+                                   results['omrRandom']['fractime'][ndx].mean()),
+                                  dtype = [('avgmaxdist',float),('avgtotdist',float),
+                                           ('avgfractime',float)])                                                
+    return stats  
 
 #####################
 # AVOIDANCE METHODS
