@@ -9,383 +9,383 @@ import scipy
 
 #safe tank, shocking protocol, shocking, safe
 e_safe_first= [
-'/home/vburns/Dropbox/ConchisData/2013-05-06/f00390/f00390_2013-05-06-10-19-26.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00391/f00391_2013-05-06-10-19-33.json', #current
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00392/f00392_2013-05-06-10-19-39.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00393/f00393_2013-05-06-10-19-47.json', #red color
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00394/f00394_2013-05-06-10-21-26.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00395/f00395_2013-05-06-10-21-17.json', #low velocity
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00396/f00396_2013-05-06-10-21-06.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00397/f00397_2013-05-06-10-21-03.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00406/f00406_2013-05-07-14-18-31.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-07/f00407/f00407_2013-05-07-14-18-22.json', #current imbalance
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00408/f00408_2013-05-07-14-18-20.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00409/f00409_2013-05-07-14-18-18.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-07/f00410/f00410_2013-05-07-14-15-15.json', #tracking
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00411/f00411_2013-05-07-14-15-17.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00412/f00412_2013-05-07-14-15-19.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00413/f00413_2013-05-07-14-15-21.json',
-'/home/vburns/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-14-53-59.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-14-54-03.json', #current imbalance 
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-14-54-06.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-14-54-09.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-14-55-26.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-14-56-20.json', #tracking
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-14-55-11.json', #low velocity
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-14-55-03.json', #low velocity in second 15
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-12-03-35.json', #low velocity
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-12-03-42.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-12-03-49.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-12-03-55.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-12-05-29.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-12-05-31.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-12-05-33.json',#low velocity
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-12-05-35.json',
+'~/Dropbox/ConchisData/2013-05-06/f00390/f00390_2013-05-06-10-19-26.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00391/f00391_2013-05-06-10-19-33.json', #current
+ '~/Dropbox/ConchisData/2013-05-06/f00392/f00392_2013-05-06-10-19-39.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00393/f00393_2013-05-06-10-19-47.json', #red color
+ '~/Dropbox/ConchisData/2013-05-06/f00394/f00394_2013-05-06-10-21-26.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00395/f00395_2013-05-06-10-21-17.json', #low velocity
+ '~/Dropbox/ConchisData/2013-05-06/f00396/f00396_2013-05-06-10-21-06.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00397/f00397_2013-05-06-10-21-03.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00406/f00406_2013-05-07-14-18-31.json',
+# '~/Dropbox/ConchisData/2013-05-07/f00407/f00407_2013-05-07-14-18-22.json', #current imbalance
+ '~/Dropbox/ConchisData/2013-05-07/f00408/f00408_2013-05-07-14-18-20.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00409/f00409_2013-05-07-14-18-18.json',
+# '~/Dropbox/ConchisData/2013-05-07/f00410/f00410_2013-05-07-14-15-15.json', #tracking
+ '~/Dropbox/ConchisData/2013-05-07/f00411/f00411_2013-05-07-14-15-17.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00412/f00412_2013-05-07-14-15-19.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00413/f00413_2013-05-07-14-15-21.json',
+'~/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-14-53-59.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-14-54-03.json', #current imbalance 
+ '~/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-14-54-06.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-14-54-09.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-14-55-26.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-14-56-20.json', #tracking
+#'~/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-14-55-11.json', #low velocity
+# '~/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-14-55-03.json', #low velocity in second 15
+# '~/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-12-03-35.json', #low velocity
+ '~/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-12-03-42.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-12-03-49.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-12-03-55.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-12-05-29.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-12-05-31.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-12-05-33.json',#low velocity
+ '~/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-12-05-35.json',
 ]
 e_safe_first = aba.loadMultipleDataFiles(e_safe_first)
 
 e_safe_shock = [
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00390/f00390_2013-05-06-10-55-27.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00391/f00391_2013-05-06-10-55-29.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00392/f00392_2013-05-06-10-55-31.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00393/f00393_2013-05-06-10-55-33.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00394/f00394_2013-05-06-10-56-35.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00395/f00395_2013-05-06-10-56-33.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00396/f00396_2013-05-06-10-56-31.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00397/f00397_2013-05-06-10-56-29.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00406/f00406_2013-05-07-14-49-23.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-07/f00407/f00407_2013-05-07-14-49-29.json',
-'/home/vburns/Dropbox/ConchisData/2013-05-07/f00408/f00408_2013-05-07-14-49-35.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00409/f00409_2013-05-07-14-49-43.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-07/f00410/f00410_2013-05-07-14-46-49.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00411/f00411_2013-05-07-14-46-43.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00412/f00412_2013-05-07-14-46-41.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00413/f00413_2013-05-07-14-46-38.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-15-25-03.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-15-25-06.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-15-25-12.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-15-25-19.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-15-27-52.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-15-28-02.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-15-28-06.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-15-28-10.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-12-35-41.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-12-35-35.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-12-35-26.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-12-35-21.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-12-36-50.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-12-36-57.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-12-36-46.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-12-36-40.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00390/f00390_2013-05-06-10-55-27.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00391/f00391_2013-05-06-10-55-29.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00392/f00392_2013-05-06-10-55-31.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00393/f00393_2013-05-06-10-55-33.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00394/f00394_2013-05-06-10-56-35.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00395/f00395_2013-05-06-10-56-33.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00396/f00396_2013-05-06-10-56-31.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00397/f00397_2013-05-06-10-56-29.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00406/f00406_2013-05-07-14-49-23.json',
+# '~/Dropbox/ConchisData/2013-05-07/f00407/f00407_2013-05-07-14-49-29.json',
+'~/Dropbox/ConchisData/2013-05-07/f00408/f00408_2013-05-07-14-49-35.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00409/f00409_2013-05-07-14-49-43.json',
+# '~/Dropbox/ConchisData/2013-05-07/f00410/f00410_2013-05-07-14-46-49.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00411/f00411_2013-05-07-14-46-43.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00412/f00412_2013-05-07-14-46-41.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00413/f00413_2013-05-07-14-46-38.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-15-25-03.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-15-25-06.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-15-25-12.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-15-25-19.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-15-27-52.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-15-28-02.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-15-28-06.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-15-28-10.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-12-35-41.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-12-35-35.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-12-35-26.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-12-35-21.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-12-36-50.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-12-36-57.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-12-36-46.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-12-36-40.json',
 ]
 e_safe_shock = aba.loadMultipleDataFiles(e_safe_shock)
 
 e_safe_sec = [
-'/home/vburns/Dropbox/ConchisData/2013-05-06/f00390/f00390_2013-05-06-11-51-02.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00391/f00391_2013-05-06-11-51-19.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00392/f00392_2013-05-06-11-51-45.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00393/f00393_2013-05-06-11-51-39.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00394/f00394_2013-05-06-11-50-14.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00395/f00395_2013-05-06-11-50-08.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00396/f00396_2013-05-06-11-50-01.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00397/f00397_2013-05-06-11-49-53.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00406/f00406_2013-05-07-15-44-22.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-07/f00407/f00407_2013-05-07-15-44-15.json',
-'/home/vburns/Dropbox/ConchisData/2013-05-07/f00408/f00408_2013-05-07-15-44-02.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00409/f00409_2013-05-07-15-43-50.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-07/f00410/f00410_2013-05-07-15-40-09.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00411/f00411_2013-05-07-15-40-02.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00412/f00412_2013-05-07-15-39-55.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00413/f00413_2013-05-07-15-39-49.json',
-'/home/vburns/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-16-18-18.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-16-18-11.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-16-18-05.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-16-17-59.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-16-21-54.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-16-21-48.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-16-21-41.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-16-21-33.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-13-29-00.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-13-29-08.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-13-29-15.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-13-29-25.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-13-31-08.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-13-31-17.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-13-31-28.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-13-31-38.json',
+'~/Dropbox/ConchisData/2013-05-06/f00390/f00390_2013-05-06-11-51-02.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00391/f00391_2013-05-06-11-51-19.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00392/f00392_2013-05-06-11-51-45.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00393/f00393_2013-05-06-11-51-39.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00394/f00394_2013-05-06-11-50-14.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00395/f00395_2013-05-06-11-50-08.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00396/f00396_2013-05-06-11-50-01.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00397/f00397_2013-05-06-11-49-53.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00406/f00406_2013-05-07-15-44-22.json',
+# '~/Dropbox/ConchisData/2013-05-07/f00407/f00407_2013-05-07-15-44-15.json',
+'~/Dropbox/ConchisData/2013-05-07/f00408/f00408_2013-05-07-15-44-02.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00409/f00409_2013-05-07-15-43-50.json',
+# '~/Dropbox/ConchisData/2013-05-07/f00410/f00410_2013-05-07-15-40-09.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00411/f00411_2013-05-07-15-40-02.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00412/f00412_2013-05-07-15-39-55.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00413/f00413_2013-05-07-15-39-49.json',
+'~/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-16-18-18.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-16-18-11.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-16-18-05.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-16-17-59.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-16-21-54.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-16-21-48.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-16-21-41.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-16-21-33.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-13-29-00.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-13-29-08.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-13-29-15.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-13-29-25.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-13-31-08.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-13-31-17.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-13-31-28.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-13-31-38.json',
 ]
 e_safe_sec = aba.loadMultipleDataFiles(e_safe_sec)
 
 e_safe_third = [
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00390/f00390_2013-05-06-12-22-28.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00391/f00391_2013-05-06-12-22-35.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00392/f00392_2013-05-06-12-22-41.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00393/f00393_2013-05-06-12-22-47.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00394/f00394_2013-05-06-12-21-01.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00395/f00395_2013-05-06-12-21-08.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00396/f00396_2013-05-06-12-21-20.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00397/f00397_2013-05-06-12-21-26.json',
-'/home/vburns/Dropbox/ConchisData/2013-05-07/f00406/f00406_2013-05-07-16-16-12.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-07/f00407/f00407_2013-05-07-16-16-06.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00408/f00408_2013-05-07-16-16-00.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00409/f00409_2013-05-07-16-15-54.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-07/f00410/f00410_2013-05-07-16-11-17.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00411/f00411_2013-05-07-16-11-10.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00412/f00412_2013-05-07-16-11-04.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-07/f00413/f00413_2013-05-07-16-10-55.json',
-'/home/vburns/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-16-49-49.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-16-49-54.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-16-50-02.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-16-50-10.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-16-54-03.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-16-54-05.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-16-53-50.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-16-53-38.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-14-00-14.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-14-00-09.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-14-00-05.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-14-00-00.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-14-02-30.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-14-02-24.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-14-02-19.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-14-02-13.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00390/f00390_2013-05-06-12-22-28.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00391/f00391_2013-05-06-12-22-35.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00392/f00392_2013-05-06-12-22-41.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00393/f00393_2013-05-06-12-22-47.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00394/f00394_2013-05-06-12-21-01.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00395/f00395_2013-05-06-12-21-08.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00396/f00396_2013-05-06-12-21-20.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00397/f00397_2013-05-06-12-21-26.json',
+'~/Dropbox/ConchisData/2013-05-07/f00406/f00406_2013-05-07-16-16-12.json',
+#'~/Dropbox/ConchisData/2013-05-07/f00407/f00407_2013-05-07-16-16-06.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00408/f00408_2013-05-07-16-16-00.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00409/f00409_2013-05-07-16-15-54.json',
+# '~/Dropbox/ConchisData/2013-05-07/f00410/f00410_2013-05-07-16-11-17.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00411/f00411_2013-05-07-16-11-10.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00412/f00412_2013-05-07-16-11-04.json',
+ '~/Dropbox/ConchisData/2013-05-07/f00413/f00413_2013-05-07-16-10-55.json',
+'~/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-16-49-49.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-16-49-54.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-16-50-02.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-16-50-10.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-16-54-03.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-16-54-05.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-16-53-50.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-16-53-38.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-14-00-14.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-14-00-09.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-14-00-05.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-14-00-00.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-14-02-30.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-14-02-24.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-14-02-19.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-14-02-13.json',
 ]
 e_safe_third = aba.loadMultipleDataFiles(e_safe_third)
 
 #safe, shocking protocol, shocking, shocking
 e_same_first = [
-'/home/vburns/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-14-53-59.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-14-54-03.json', #current imbalance 
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-14-54-06.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-14-54-09.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-14-55-26.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-14-56-20.json', #tracking
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-14-55-11.json', #low velocity
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-14-55-03.json', #low velocity in second 15
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-12-03-35.json', #low velocity
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-12-03-42.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-12-03-49.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-12-03-55.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-12-05-29.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-12-05-31.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-12-05-33.json',#low velocity
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-12-05-35.json',
+'~/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-14-53-59.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-14-54-03.json', #current imbalance 
+ '~/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-14-54-06.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-14-54-09.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-14-55-26.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-14-56-20.json', #tracking
+#'~/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-14-55-11.json', #low velocity
+# '~/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-14-55-03.json', #low velocity in second 15
+# '~/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-12-03-35.json', #low velocity
+ '~/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-12-03-42.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-12-03-49.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-12-03-55.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-12-05-29.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-12-05-31.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-12-05-33.json',#low velocity
+ '~/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-12-05-35.json',
 ]
 e_same_first = aba.loadMultipleDataFiles(e_same_first)
 
 e_same_shock = [
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-15-25-03.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-15-25-06.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-15-25-12.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-15-25-19.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-15-27-52.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-15-28-02.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-15-28-06.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-15-28-10.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-12-35-41.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-12-35-35.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-12-35-26.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-12-35-21.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-12-36-50.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-12-36-57.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-12-36-46.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-12-36-40.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-15-25-03.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-15-25-06.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-15-25-12.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-15-25-19.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-15-27-52.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-15-28-02.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-15-28-06.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-15-28-10.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-12-35-41.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-12-35-35.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-12-35-26.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-12-35-21.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-12-36-50.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-12-36-57.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-12-36-46.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-12-36-40.json',
 ]
 e_same_shock = aba.loadMultipleDataFiles(e_same_shock)
 
 e_same_sec = [
-'/home/vburns/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-16-18-18.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-16-18-11.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-16-18-05.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-16-17-59.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-16-21-54.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-16-21-48.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-16-21-41.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-16-21-33.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-13-29-00.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-13-29-08.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-13-29-15.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-13-29-25.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-13-31-08.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-13-31-17.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-13-31-28.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-13-31-38.json',
+'~/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-16-18-18.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-16-18-11.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-16-18-05.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-16-17-59.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-16-21-54.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-16-21-48.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-16-21-41.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-16-21-33.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-13-29-00.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-13-29-08.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-13-29-15.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-13-29-25.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-13-31-08.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-13-31-17.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-13-31-28.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-13-31-38.json',
 ]
 e_same_sec = aba.loadMultipleDataFiles(e_same_sec)
 
 e_same_third = [
-'/home/vburns/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-16-49-49.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-16-49-54.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-16-50-02.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-16-50-10.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-16-54-03.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-16-54-05.json',
-#'/home/vburns/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-16-53-50.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-16-53-38.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-14-00-14.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-14-00-09.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-14-00-05.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-14-00-00.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-14-02-30.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-14-02-24.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-14-02-19.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-14-02-13.json',
+'~/Dropbox/ConchisData/2013-05-06/f00398/f00398_2013-05-06-16-49-49.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00399/f00399_2013-05-06-16-49-54.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00400/f00400_2013-05-06-16-50-02.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00401/f00401_2013-05-06-16-50-10.json',
+ '~/Dropbox/ConchisData/2013-05-06/f00402/f00402_2013-05-06-16-54-03.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00403/f00403_2013-05-06-16-54-05.json',
+#'~/Dropbox/ConchisData/2013-05-06/f00404/f00404_2013-05-06-16-53-50.json',
+# '~/Dropbox/ConchisData/2013-05-06/f00405/f00405_2013-05-06-16-53-38.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00462/f00462_2013-05-21-14-00-14.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00463/f00463_2013-05-21-14-00-09.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00464/f00464_2013-05-21-14-00-05.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00465/f00465_2013-05-21-14-00-00.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00466/f00466_2013-05-21-14-02-30.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00467/f00467_2013-05-21-14-02-24.json',
+# '~/Dropbox/ConchisData/2013-05-21/f00468/f00468_2013-05-21-14-02-19.json',
+ '~/Dropbox/ConchisData/2013-05-21/f00469/f00469_2013-05-21-14-02-13.json',
 ]
 e_same_third = aba.loadMultipleDataFiles(e_same_third)
 
 e_safeshock_first = [
-'/home/vburns/Dropbox/ConchisData/2013-05-15/f00414/f00414_2013-05-15-10-17-16.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-15/f00415/f00415_2013-05-15-10-17-24.json', #low velocity in second base
-# '/home/vburns/Dropbox/ConchisData/2013-05-15/f00416/f00416_2013-05-15-10-17-34.json', #tracking
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00417/f00417_2013-05-15-10-17-43.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00418/f00418_2013-05-15-10-20-55.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-15/f00419/f00419_2013-05-15-10-20-58.json', #low starting velocity
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00420/f00420_2013-05-15-10-21-03.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00421/f00421_2013-05-15-10-21-07.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00438/f00438_2013-05-16-14-13-03.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-16/f00439/f00439_2013-05-16-14-13-09.json', #low velocity in second base
-# '/home/vburns/Dropbox/ConchisData/2013-05-16/f00440/f00440_2013-05-16-14-13-20.json', #tracking
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00441/f00441_2013-05-16-14-13-27.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00442/f00442_2013-05-16-14-16-16.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00444/f00444_2013-05-16-14-16-04.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00445/f00445_2013-05-16-14-15-59.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-12-47-21.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-12-47-23.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-12-47-25.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-12-47-27.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-12-49-05.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-12-49-07.json', #current imbalance and tracking
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-12-49-08.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-12-49-10.json',
+'~/Dropbox/ConchisData/2013-05-15/f00414/f00414_2013-05-15-10-17-16.json',
+# '~/Dropbox/ConchisData/2013-05-15/f00415/f00415_2013-05-15-10-17-24.json', #low velocity in second base
+# '~/Dropbox/ConchisData/2013-05-15/f00416/f00416_2013-05-15-10-17-34.json', #tracking
+ '~/Dropbox/ConchisData/2013-05-15/f00417/f00417_2013-05-15-10-17-43.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00418/f00418_2013-05-15-10-20-55.json',
+# '~/Dropbox/ConchisData/2013-05-15/f00419/f00419_2013-05-15-10-20-58.json', #low starting velocity
+ '~/Dropbox/ConchisData/2013-05-15/f00420/f00420_2013-05-15-10-21-03.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00421/f00421_2013-05-15-10-21-07.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00438/f00438_2013-05-16-14-13-03.json',
+# '~/Dropbox/ConchisData/2013-05-16/f00439/f00439_2013-05-16-14-13-09.json', #low velocity in second base
+# '~/Dropbox/ConchisData/2013-05-16/f00440/f00440_2013-05-16-14-13-20.json', #tracking
+ '~/Dropbox/ConchisData/2013-05-16/f00441/f00441_2013-05-16-14-13-27.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00442/f00442_2013-05-16-14-16-16.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00444/f00444_2013-05-16-14-16-04.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00445/f00445_2013-05-16-14-15-59.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-12-47-21.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-12-47-23.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-12-47-25.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-12-47-27.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-12-49-05.json',
+# '~/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-12-49-07.json', #current imbalance and tracking
+ '~/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-12-49-08.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-12-49-10.json',
 ]
 e_safeshock_first = aba.loadMultipleDataFiles(e_safeshock_first)
 
 e_safeshock_shock = [
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00414/f00414_2013-05-15-10-49-21.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-15/f00415/f00415_2013-05-15-10-49-28.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-15/f00416/f00416_2013-05-15-10-49-35.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00417/f00417_2013-05-15-10-49-44.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00418/f00418_2013-05-15-10-52-28.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-15/f00419/f00419_2013-05-15-10-52-38.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00420/f00420_2013-05-15-10-52-49.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00421/f00421_2013-05-15-10-52-55.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00438/f00438_2013-05-16-14-44-45.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-16/f00439/f00439_2013-05-16-14-44-52.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-16/f00440/f00440_2013-05-16-14-45-06.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00441/f00441_2013-05-16-14-45-12.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00442/f00442_2013-05-16-14-47-01.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00444/f00444_2013-05-16-14-47-14.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00445/f00445_2013-05-16-14-47-19.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-13-19-35.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-13-19-41.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-13-19-48.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-13-19-56.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-13-20-38.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-13-20-42.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-13-20-48.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-13-21-04.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00414/f00414_2013-05-15-10-49-21.json',
+# '~/Dropbox/ConchisData/2013-05-15/f00415/f00415_2013-05-15-10-49-28.json',
+# '~/Dropbox/ConchisData/2013-05-15/f00416/f00416_2013-05-15-10-49-35.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00417/f00417_2013-05-15-10-49-44.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00418/f00418_2013-05-15-10-52-28.json',
+# '~/Dropbox/ConchisData/2013-05-15/f00419/f00419_2013-05-15-10-52-38.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00420/f00420_2013-05-15-10-52-49.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00421/f00421_2013-05-15-10-52-55.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00438/f00438_2013-05-16-14-44-45.json',
+# '~/Dropbox/ConchisData/2013-05-16/f00439/f00439_2013-05-16-14-44-52.json',
+# '~/Dropbox/ConchisData/2013-05-16/f00440/f00440_2013-05-16-14-45-06.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00441/f00441_2013-05-16-14-45-12.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00442/f00442_2013-05-16-14-47-01.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00444/f00444_2013-05-16-14-47-14.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00445/f00445_2013-05-16-14-47-19.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-13-19-35.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-13-19-41.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-13-19-48.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-13-19-56.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-13-20-38.json',
+# '~/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-13-20-42.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-13-20-48.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-13-21-04.json',
 ]
 e_safeshock_shock = aba.loadMultipleDataFiles(e_safeshock_shock)
 
 e_safeshock_sec = [
-'/home/vburns/Dropbox/ConchisData/2013-05-15/f00414/f00414_2013-05-15-11-42-17.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-15/f00415/f00415_2013-05-15-11-42-23.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-15/f00416/f00416_2013-05-15-11-42-27.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00417/f00417_2013-05-15-11-42-33.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00418/f00418_2013-05-15-11-45-27.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-15/f00419/f00419_2013-05-15-11-45-32.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00420/f00420_2013-05-15-11-45-38.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00421/f00421_2013-05-15-11-45-44.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00438/f00438_2013-05-16-15-39-01.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-16/f00439/f00439_2013-05-16-15-39-10.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-16/f00440/f00440_2013-05-16-15-39-32.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00441/f00441_2013-05-16-15-39-28.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00442/f00442_2013-05-16-15-40-39.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00444/f00444_2013-05-16-15-40-51.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00445/f00445_2013-05-16-15-40-57.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-14-12-34.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-14-12-40.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-14-12-45.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-14-12-49.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-14-13-30.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-14-13-46.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-14-13-49.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-14-13-55.json',
+'~/Dropbox/ConchisData/2013-05-15/f00414/f00414_2013-05-15-11-42-17.json',
+# '~/Dropbox/ConchisData/2013-05-15/f00415/f00415_2013-05-15-11-42-23.json',
+# '~/Dropbox/ConchisData/2013-05-15/f00416/f00416_2013-05-15-11-42-27.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00417/f00417_2013-05-15-11-42-33.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00418/f00418_2013-05-15-11-45-27.json',
+# '~/Dropbox/ConchisData/2013-05-15/f00419/f00419_2013-05-15-11-45-32.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00420/f00420_2013-05-15-11-45-38.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00421/f00421_2013-05-15-11-45-44.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00438/f00438_2013-05-16-15-39-01.json',
+# '~/Dropbox/ConchisData/2013-05-16/f00439/f00439_2013-05-16-15-39-10.json',
+# '~/Dropbox/ConchisData/2013-05-16/f00440/f00440_2013-05-16-15-39-32.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00441/f00441_2013-05-16-15-39-28.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00442/f00442_2013-05-16-15-40-39.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00444/f00444_2013-05-16-15-40-51.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00445/f00445_2013-05-16-15-40-57.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-14-12-34.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-14-12-40.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-14-12-45.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-14-12-49.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-14-13-30.json',
+# '~/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-14-13-46.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-14-13-49.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-14-13-55.json',
 ]
 e_safeshock_sec = aba.loadMultipleDataFiles(e_safeshock_sec)
 
 e_safeshock_third = [
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00414/f00414_2013-05-15-12-14-44.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-15/f00415/f00415_2013-05-15-12-14-33.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-15/f00416/f00416_2013-05-15-12-14-22.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00417/f00417_2013-05-15-12-14-11.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00418/f00418_2013-05-15-12-18-10.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-15/f00419/f00419_2013-05-15-12-17-58.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00420/f00420_2013-05-15-12-17-46.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-15/f00421/f00421_2013-05-15-12-17-32.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00438/f00438_2013-05-16-16-11-08.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-16/f00439/f00439_2013-05-16-16-11-18.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-16/f00440/f00440_2013-05-16-16-11-25.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00441/f00441_2013-05-16-16-11-36.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00442/f00442_2013-05-16-16-13-15.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00444/f00444_2013-05-16-16-13-26.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-16/f00445/f00445_2013-05-16-16-13-31.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-14-44-34.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-14-44-27.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-14-44-18.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-14-44-14.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-14-45-26.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-14-45-33.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-14-45-36.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-14-45-41.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00414/f00414_2013-05-15-12-14-44.json',
+# '~/Dropbox/ConchisData/2013-05-15/f00415/f00415_2013-05-15-12-14-33.json',
+# '~/Dropbox/ConchisData/2013-05-15/f00416/f00416_2013-05-15-12-14-22.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00417/f00417_2013-05-15-12-14-11.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00418/f00418_2013-05-15-12-18-10.json',
+# '~/Dropbox/ConchisData/2013-05-15/f00419/f00419_2013-05-15-12-17-58.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00420/f00420_2013-05-15-12-17-46.json',
+ '~/Dropbox/ConchisData/2013-05-15/f00421/f00421_2013-05-15-12-17-32.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00438/f00438_2013-05-16-16-11-08.json',
+# '~/Dropbox/ConchisData/2013-05-16/f00439/f00439_2013-05-16-16-11-18.json',
+# '~/Dropbox/ConchisData/2013-05-16/f00440/f00440_2013-05-16-16-11-25.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00441/f00441_2013-05-16-16-11-36.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00442/f00442_2013-05-16-16-13-15.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00444/f00444_2013-05-16-16-13-26.json',
+ '~/Dropbox/ConchisData/2013-05-16/f00445/f00445_2013-05-16-16-13-31.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-14-44-34.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-14-44-27.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-14-44-18.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-14-44-14.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-14-45-26.json',
+# '~/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-14-45-33.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-14-45-36.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-14-45-41.json',
 ]
 e_safeshock_third = aba.loadMultipleDataFiles(e_safeshock_third)
 
 e_safesafe_first = [
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-12-47-21.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-12-47-23.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-12-47-25.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-12-47-27.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-12-49-05.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-12-49-07.json', #current imbalance and tracking
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-12-49-08.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-12-49-10.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-12-47-21.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-12-47-23.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-12-47-25.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-12-47-27.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-12-49-05.json',
+# '~/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-12-49-07.json', #current imbalance and tracking
+ '~/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-12-49-08.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-12-49-10.json',
 ]
 e_safesafe_first = aba.loadMultipleDataFiles(e_safesafe_first)
 
 e_safesafe_shock = [
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-13-19-35.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-13-19-41.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-13-19-48.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-13-19-56.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-13-20-38.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-13-20-42.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-13-20-48.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-13-21-04.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-13-19-35.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-13-19-41.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-13-19-48.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-13-19-56.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-13-20-38.json',
+# '~/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-13-20-42.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-13-20-48.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-13-21-04.json',
 ]
 e_safesafe_shock = aba.loadMultipleDataFiles(e_safesafe_shock)
 
 e_safesafe_sec = [
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-14-12-34.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-14-12-40.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-14-12-45.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-14-12-49.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-14-13-30.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-14-13-46.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-14-13-49.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-14-13-55.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-14-12-34.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-14-12-40.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-14-12-45.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-14-12-49.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-14-13-30.json',
+# '~/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-14-13-46.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-14-13-49.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-14-13-55.json',
 ]
 e_safesafe_sec = aba.loadMultipleDataFiles(e_safesafe_sec)
 
 e_safesafe_third = [
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-14-44-34.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-14-44-27.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-14-44-18.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-14-44-14.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-14-45-26.json',
-# '/home/vburns/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-14-45-33.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-14-45-36.json',
- '/home/vburns/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-14-45-41.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00446/f00446_2013-05-17-14-44-34.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00447/f00447_2013-05-17-14-44-27.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00448/f00448_2013-05-17-14-44-18.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00449/f00449_2013-05-17-14-44-14.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00450/f00450_2013-05-17-14-45-26.json',
+# '~/Dropbox/ConchisData/2013-05-17/f00451/f00451_2013-05-17-14-45-33.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00452/f00452_2013-05-17-14-45-36.json',
+ '~/Dropbox/ConchisData/2013-05-17/f00453/f00453_2013-05-17-14-45-41.json',
 ]
 e_safesafe_third = aba.loadMultipleDataFiles(e_safesafe_third)
 
@@ -624,4 +624,30 @@ patch2 = mpl.patches.Rectangle((1.5,0), 2,10, color = 'g', fill=True, alpha=0.5)
 pyplot.gca().add_patch(patch2)
 
 pylab.show()
+
+f = pylab.figure(215)
+f.set_facecolor('w')
+
+#example fish paths
+pyplot.subplot2grid((5,2),(0,0))
+aba.plotFishXPosition(e_safe_shock[14],fmt='-r')
+pyplot.subplot2grid((5,2),(1,0))
+aba.plotFishYPosition(e_safe_shock[14],fmt='-r')
+
+pyplot.subplot2grid((5,2),(0,1))
+aba.plotFishXPosition(e_safe_sec[14],fmt='-r')
+pyplot.subplot2grid((5,2),(1,1))
+aba.plotFishYPosition(e_safe_sec[14],fmt='-r')
+
+pyplot.subplot2grid((5,2),(3,0))
+aba.plotFishXPosition(e_safeshock_shock[5],fmt='-b')
+pyplot.subplot2grid((5,2),(4,0))
+aba.plotFishYPosition(e_safeshock_shock[5],fmt='-b')
+
+pyplot.subplot2grid((5,2),(3,1))
+aba.plotFishXPosition(e_safeshock_sec[5],fmt='-b')
+pyplot.subplot2grid((5,2),(4,1))
+aba.plotFishYPosition(e_safeshock_sec[5],fmt='-b')
+
+
 

@@ -15,9 +15,9 @@ import traceback
 defArena= [(0,0),(0,22),(48,22),(48,0)]
 
 def loadDataFromFile(filename, arena_mm = defArena):
-    f = open(filename)
-    jsonData = json.load(f)
-    f.close()
+    with open(os.path.expanduser(filename)) as f:
+        jsonData = json.load(f)
+
     if 'tankSize_mm' in jsonData.keys():
         arena_mm = [(0                           ,0),
                     (0                           ,jsonData['tankSize_mm'][1]),
@@ -31,9 +31,8 @@ def loadDataFromFile(filename, arena_mm = defArena):
     return jsonData
 
 def loadDataFromFile_AvgMultiFish(filename, arena_mm = defArena):
-    f = open(filename)
-    jsonData = json.load(f)
-    f.close()
+    with open(os.path.expanduser(filename)) as f:
+        jsonData = json.load(f)
 
     if 'tankSize_mm' in jsonData.keys():
         arena_mm = [(0,0),(0,jsonData['tankSize_mm'][1]),(jsonData['tankSize_mm'][0],jsonData['tankSize_mm'][1]),(jsonData['tankSize_mm'][0],jsonData['tankSize_mm'][1])]
@@ -289,13 +288,19 @@ def generateFishPathMovie(jsonData, filename, trange = None, fps=10, trail_len=5
     finally:
         pyplot.ion()
 
-def plotFishXPosition(jsonData, startState=1, endState=0, midLine=24, smooth=0):
+def plotFishXPosition(jsonData, startState=1, endState=0, smooth=0, fmt='k.'):
+    plotFishPositionVsTime(jsonData, startState=1, endState=0, smooth=0, axis=0, fmt=fmt)
+
+def plotFishYPosition(jsonData, startState=1, endState=0, smooth=0, fmt='k.'):
+    plotFishPositionVsTime(jsonData, startState=1, endState=0, smooth=0, axis=1, fmt=fmt)
+
+def plotFishPositionVsTime(jsonData, startState=1, endState=0, smooth=0, axis=0, fmt='k.'):
     """
     For RealTime and ClassicalConditioning Data
     Plot x position over time.
     """
     state = jsonData['stateinfo']
-    midLine = (jsonData['tankSize_mm'][0])/2.0
+    midLine = (jsonData['tankSize_mm'][axis])/2.0
    
     st,_,nS,_ = state_to_time(jsonData,startState)
     _,et,_,nE = state_to_time(jsonData,endState)
@@ -303,8 +308,7 @@ def plotFishXPosition(jsonData, startState=1, endState=0, midLine=24, smooth=0):
     tracking = getTracking(jsonData)
     tracking = tracking[np.logical_and(tracking[:,0] > st, tracking[:,0] < et),:].copy()
     frametime = tracking[:,0] - st
-    positionx = tracking[:,1]
-    positiony = tracking[:,2]
+    position = tracking[:,axis+1]
     
     if 'OMRinfo' in jsonData.keys():
         results = getOMRinfo(jsonData, tankLength =midLine*2)
@@ -352,14 +356,16 @@ def plotFishXPosition(jsonData, startState=1, endState=0, midLine=24, smooth=0):
                                    color=c2)
         pyplot.gca().add_patch(p1)
         pyplot.gca().add_patch(p2)
-    pyplot.plot(frametime, positionx, 'k.')
+    pyplot.plot(frametime, position, fmt)
     if smooth>0:
         import scipy
-        pyplot.plot(frametime, scipy.convolve(positionx,np.ones(smooth)/smooth, mode='same'), 'g-')
+        pyplot.plot(frametime, scipy.convolve(position,np.ones(smooth)/smooth, mode='same'), 'g-')
     pyplot.ylim([0,midLine*2])
     pyplot.xlim([0,et-st])
-    pyplot.plot([0,et-st],[midLine,midLine],'y-')
-    pyplot.ylabel('Fish position (mm)')
+    if axis==0:
+        pyplot.ylabel('x (mm)')
+    else:
+        pyplot.ylabel('y (mm)')
     pyplot.xlabel('Time (s)')
 
 def plotOMRmetrics(runData, startState=1, endState=0, omrTimepoint=None):
@@ -396,7 +402,7 @@ def state_to_time(jsonData, state):
     return (st,et,ndx[0],ndx[-1])
 
 
-def plotFishSummary(jsonData, startState=1, endState=0, midLine=24, smooth=0, xl=None, omrTimePoint=None):
+def plotFishSummary(jsonData, startState=1, endState=0, smooth=0, xl=None, omrTimePoint=None):
     """
     For RealTime and ClassicalConditioning Data
     Plot x position over time.
@@ -417,21 +423,17 @@ def plotFishSummary(jsonData, startState=1, endState=0, midLine=24, smooth=0, xl
 
     #plot x position
     ax = pyplot.subplot(sizen,1,1)
-    plotFishXPosition(jsonData, startState, endState, midLine, smooth)
+    plotFishXPosition(jsonData, startState, endState, smooth)
     pyplot.title(jsonData['filename'])
 
     #plot y position
     pyplot.subplot(sizen,1,2,sharex=ax)
-    pyplot.plot(tracking[:,0] - st, tracking[:,2], 'k.')
-    if smooth>0:
-        import scipy
-        pyplot.plot(tracking[:,0] - st, scipy.convolve(tracking[:,2],np.ones(smooth)/smooth, mode='same'), 'g-')
-    pyplot.ylabel('Fish y position (mm)')
-    pyplot.xlabel('Time (s)')
+    plotFishYPosition(jsonData, startState, endState, smooth)
 
-    #plot omr metric
-    pyplot.subplot(sizen,1,3, sharex=ax)
-    plotOMRmetrics(jsonData, startState, endState, omrTimePoint)
+    if 'OMRinfo' in jsonData.keys(): 
+        #plot omr metric
+        pyplot.subplot(sizen,1,3, sharex=ax)
+        plotOMRmetrics(jsonData, startState, endState, omrTimePoint)
     
     pyplot.subplot(sizen, 1, 4)
     plotCurrent(jsonData)
