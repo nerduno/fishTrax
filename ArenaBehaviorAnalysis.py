@@ -64,7 +64,7 @@ def loadDataFromFile_UI(filename, arena_mm=defArena):
     jsonData = loadDataFromFile(f, arena_mm)
     return jsonData
 
-def loadDataSmart(datestr,fishNum, arena_mm=defArena):
+def loadDataSmart(datestr,fishNum, arena_mm=defArena, bAuto=False):
     smartdir = os.path.expanduser('~'+os.sep+'Dropbox'+os.sep+'ConchisData'+os.sep+datestr+os.sep)
     datedirlist = glob.glob(smartdir+'f%05d'%fishNum+'*.json')
     fishdirlist = glob.glob(smartdir+'f%05d'%fishNum+os.sep+'f%05d'%fishNum+'*.json')
@@ -72,10 +72,18 @@ def loadDataSmart(datestr,fishNum, arena_mm=defArena):
     datedirlist.sort() 
     fishdirlist.sort()
     filelist = datedirlist + fishdirlist
+  
+    if bAuto:
+        if len(filelist) == 1:
+            return [loadDataFromFile(filelist[0], arena_mm), filelist[0]]
+        else:
+            raise Exception('loadDataSmart: Multiple datafiles found.')
+
     if len(filelist) == 0:
         print 'No files found'
         return (None,None)
     n = 0 
+
     print 'List of found files:' 
     for filename in filelist:
         print '   ',n,filename
@@ -1013,6 +1021,26 @@ def plotAvgVel(jsonData, win_1, win_2):
         win_2_vel.append(vel2)
     pyplot.plot(range(jsonData['parameters']['numtrials']), win_1_vel, label='window1')
     pyplot.plot(range(jsonData['parameters']['numtrials']), win_2_vel, label='window2')
+
+def detectThresholdCrossings(sig, fThres, bAbove=True):
+    """                                                                                   Returns indices of values above or below threshold.  LeadingEdge indices              are those that first cross the threshold.  FallingEdge contains the indices of        the last value to be above (below) the thres.                                         """
+    sig = np.array(sig)
+    leadingEdgeNdx = []
+    fallingEdgeNdx = []
+    if bAbove:
+	exceedsThres = np.nonzero(sig>fThres)
+    else:
+        exceedsThres = np.nonzero(sig<fThres)
+
+    if len(exceedsThres[0])>0:
+        ndx = np.nonzero(np.diff(exceedsThres[0])>1)
+        leadingEdgeNdx = exceedsThres[0][ndx[0] + 1]
+        leadingEdgeNdx = np.hstack(([exceedsThres[0][0]], leadingEdgeNdx))
+        fallingEdgeNdx = exceedsThres[0][ndx[0]]
+        fallingEdgeNdx = np.hstack((fallingEdgeNdx, [exceedsThres[0][-1]]))
+
+    return [leadingEdgeNdx, fallingEdgeNdx]
+
 
 #TODO
 #YES:  Create movie of particular path
