@@ -362,7 +362,8 @@ class ContextualHelplessnessController(ArenaController.ArenaController):
                 else:
                     self.omrDirection = (-1,0)
             self.arenaData['OMRinfo'].append((self.t, self.bOMR, self.omrDirection))
-        
+            self.updateProjectorDisplay()
+
     def stopOMR(self):
         self.nextOMRTime = float('inf')
         self.bOMR = False

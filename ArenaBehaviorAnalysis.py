@@ -14,10 +14,18 @@ import traceback
 
 defArena= [(0,0),(0,22),(48,22),(48,0)]
 
-def loadDataFromFile(filename, arena_mm = defArena):
+def loadDataFromFile(filename, arena_mm = defArena, bAcqArenaPoly = False):
     with open(os.path.expanduser(filename)) as f:
         jsonData = json.load(f)
 
+    #Add file info to the dataset.
+    jsonData['filename'] = filename
+    (p,f) = os.path.split(jsonData['filename'])
+    (f,e) = os.path.splitext(f)
+    jsonData['backimg'] = os.path.join(p, f + '_BackImg_' + f.split('_')[-1] + '.tiff')
+    jsonData['fishimg'] = os.path.join(p, f + '_FishImg_' + f.split('_')[-1] + '.tiff')
+
+    #Add tank size if not in dataset (true of older data sets)
     if 'tankSize_mm' in jsonData.keys():
         arena_mm = [(0                           ,0),
                     (0                           ,jsonData['tankSize_mm'][1]),
@@ -26,8 +34,14 @@ def loadDataFromFile(filename, arena_mm = defArena):
         print 'Ignoring arena_mm.  Using tankSize_mm field.'
     else:
         jsonData['tankSize_mm'] = [arena_mm[2][0], arena_mm[2][1]]
+
+    #Acquire precision tank border if requested.
+    if bAcqArenaPoly:
+        jsonData['trackingParameters']['arenaPoly'] = getArenaPoly(jsonData)
+
+    #Normalize tracking information.
     jsonData['warpedTracking'] = getWarpedAndCleanedTracking(jsonData, warpTarget=arena_mm)
-    jsonData['filename'] = filename
+   
     return jsonData
 
 def loadDataFromFile_AvgMultiFish(filename, arena_mm = defArena):
@@ -139,12 +153,24 @@ def loadMultipleDataFiles_Smart(arena_mm=defArena):
 
     return (datasets, filenames)
 
-def loadMultipleDataFiles(filenames,arena_mm=defArena):
+def loadMultipleDataFiles(filenames,arena_mm=defArena,bAcqArenaPoly = False):
     datasets = []
     for fn in filenames:
-        datasets.append(loadDataFromFile(fn,arena_mm=arena_mm))
+        datasets.append(loadDataFromFile(fn,arena_mm=arena_mm,bAcqArenaPoly=bAcqArenaPoly))
     return datasets
 
+def getArenaPoly(jsonData):
+    f = pyplot.figure();
+    img = pyplot.imread(jsonData['backimg'])
+    img = img[::-1,:,:]
+    pyplot.imshow(img,origin='upper')
+    arena = np.array(jsonData['trackingParameters']['arenaPoly'])
+    pyplot.plot(arena[:,0],arena[:,1],'r-')
+    pyplot.plot(arena[0,0],arena[0,1],'ro')
+    poly = pyplot.ginput(4,timeout=3600)
+    pyplot.close(f)
+    return poly
+    
 def getWarpedAndCleanedTracking(jsonData, warpTarget, tracking=[]):
     #Get and clean up data
     if not tracking:
@@ -181,21 +207,26 @@ def getFrameRate(jsonData):
     missedFrames = np.sum(np.logical_or(fr[:,1]==0, fr[:,1]==-1))
     print "fraction of frames where tracking failed: " , missedFrames, 'of', totalFrames, ':', float(missedFrames)/totalFrames
 
-def plotFishPath(jsonData, trange = None, tracking = []):
+def plotFishPath(jsonData, trange = None, tracking = [], color='k', style ='-', bClean=False,  smoothWinLen=1, smoothWinType='flat'):
     """
     Plot the path of the fish -- used warped tracking data if available.
     trange - tuple of len 2 indicating the time range to be plotted in seconds relative to T0.
     tracking - optional override for default tracking info.
     """
     if tracking == []:
-        tracking = getTracking(jsonData)
+        tracking = getSmoothPath(jsonData, smoothWinLen=smoothWinLen, smoothWinType=smoothWinType)
     
     if not trange:
         tndx = range(tracking.shape[0])
     else:
         trange = trange + tracking[0,0]
         tndx = np.logical_and(tracking[:,0]>=trange[0], tracking[:,0]<trange[1])
-    pyplot.plot(tracking[tndx,1],tracking[tndx,2],'k-')
+
+    pyplot.plot(tracking[tndx,1],tracking[tndx,2],color=color,ls=style)
+    pyplot.xlim((0,jsonData['tankSize_mm'][0]))
+    pyplot.ylim((0,jsonData['tankSize_mm'][1]))
+    pyplot.xlabel('x (mm)')
+    pyplot.ylabel('y (mm)')
 
 def plotFishPathHeatmap(jsonData, trange = None, bins=50, tracking=[]):
     """
@@ -296,20 +327,20 @@ def generateFishPathMovie(jsonData, filename, trange = None, fps=10, trail_len=5
     finally:
         pyplot.ion()
 
-def plotFishXPosition(jsonData, startState=1, endState=0, smooth=0, fmt='k.'):
+def plotFishXPosition(jsonData, startState=1, endState=0, smooth=0, fmt='k.',wid=1):
     plotFishPositionVsTime(jsonData, startState=1, endState=0, smooth=0, axis=0, fmt=fmt)
 
 def plotFishYPosition(jsonData, startState=1, endState=0, smooth=0, fmt='k.'):
     plotFishPositionVsTime(jsonData, startState=1, endState=0, smooth=0, axis=1, fmt=fmt)
 
-def plotFishPositionVsTime(jsonData, startState=1, endState=0, smooth=0, axis=0, fmt='k.'):
+def plotFishPositionVsTime(jsonData, startState=1, endState=0, smooth=0, axis=0, fmt='k.',wid=1):
     """
     For RealTime and ClassicalConditioning Data
     Plot x position over time.
     """
     state = jsonData['stateinfo']
     midLine = (jsonData['tankSize_mm'][axis])/2.0
-   
+
     st,_,nS,_ = state_to_time(jsonData,startState)
     _,et,_,nE = state_to_time(jsonData,endState)
 
@@ -331,7 +362,7 @@ def plotFishPositionVsTime(jsonData, startState=1, endState=0, smooth=0, axis=0,
                                        height=midLine*2,alpha=0.5,
                                        color=color[od[n]],hatch=hatch[od[n]])
             pyplot.gca().add_patch(p1)
-            pyplot.text(os[n]-st, midLine, '%0.2f'%results['omrResults']['maxdist'][n])
+            pyplot.text(os[n]-st+(oe[n]-os[n])/3, 45, '%0.2f'%results['omrResults']['maxdist'][n])
 
         color = {-1:'green', 1:'yellow'}
         hatch = {-1:'\\', 1:'/'}
@@ -344,7 +375,7 @@ def plotFishPositionVsTime(jsonData, startState=1, endState=0, smooth=0, axis=0,
                                        height=midLine*2,alpha=0.5,
                                        color=color[od[n]],hatch=hatch[od[n]])
             pyplot.gca().add_patch(p1)
-            pyplot.text(os[n]-st, midLine, '%0.2f'%results['omrControl']['maxdist'][n])
+            pyplot.text(os[n]-st+(oe[n]-os[n])/3, 45, '%0.2f'%results['omrControl']['maxdist'][n])
 
     for i in range(nS,nE):
         c1 = state[i][2]
@@ -364,14 +395,14 @@ def plotFishPositionVsTime(jsonData, startState=1, endState=0, smooth=0, axis=0,
                                    color=c2)
         pyplot.gca().add_patch(p1)
         pyplot.gca().add_patch(p2)
-    pyplot.plot(frametime, position, fmt)
+    pyplot.plot(frametime, position, fmt, lw=1)
     if smooth>0:
         import scipy
         pyplot.plot(frametime, scipy.convolve(position,np.ones(smooth)/smooth, mode='same'), 'g-')
     pyplot.ylim([0,midLine*2])
     pyplot.xlim([0,et-st])
     if axis==0:
-        pyplot.ylabel('x (mm)')
+        pyplot.ylabel('Distance in x (mm)')
     else:
         pyplot.ylabel('y (mm)')
     pyplot.xlabel('Time (s)')
@@ -540,7 +571,7 @@ def getOMRinfo(runData, tankLength=48, timePoint=None):
     """
     Extract regions of OMR and compute preformance metric for each OMR region. 
     Use with contextual learned helplessness arena.
-    Timepoint is number of seconds following OMR onset at which beavioe is assessed (by default full session is used)
+    Timepoint is number of seconds following OMR onset at which beavior is assessed (by default full session is used)
     """
     tankLength = runData['tankSize_mm'][0]
     OMRdata = runData['OMRinfo'] #time, T/F, [directionX,direcctionY]
@@ -562,18 +593,23 @@ def getOMRinfo(runData, tankLength=48, timePoint=None):
             cntlStartTime = startTime - (endTime-startTime) 
             cntlEndTime = startTime
             cntlOMRfp = fp[np.logical_and(fp[:,0] > cntlStartTime, fp[:,0] < cntlEndTime),:].copy()
-            cntlDirection = np.sign(tankLength/2.0 - cntlOMRfp[0,1])
-            (cMaxdist, cTotalDist, cMovingtime) = computeOMRmetrics(cntlOMRfp, cntlDirection, tankLength, timePoint)
-            results['omrControl'][ndx] = (cntlStartTime,cntlEndTime,cntlDirection,cMaxdist,cTotalDist,cMovingtime,cMaxdist/(cMaxdist+1))
+            if len(cntlOMRfp) == 0:
+                results['omrControl'][ndx] = (cntlStartTime,cntlEndTime,1,0,0,0,0)
+                results['omrRandom'][ndx]  = (cntlStartTime,cntlEndTime,1,0,0,0)
+                results['omrResults'][ndx] = (startTime,endTime,direction,0,0,0,0,0,0)
+            else:
+                cntlDirection = np.sign(tankLength/2.0 - cntlOMRfp[0,1])
+                (cMaxdist, cTotalDist, cMovingtime) = computeOMRmetrics(cntlOMRfp, cntlDirection, tankLength, timePoint)
+                results['omrControl'][ndx] = (cntlStartTime,cntlEndTime,cntlDirection,cMaxdist,cTotalDist,cMovingtime,cMaxdist/(cMaxdist+1))
+                
+                randDir = random.choice([-1,1])
+                (rMaxdist, rTotalDist, rMovingtime) = computeOMRmetrics(cntlOMRfp, randDir, tankLength, timePoint)
+                results['omrRandom'][ndx]  = (cntlStartTime,cntlEndTime,randDir,rMaxdist,rTotalDist,rMovingtime)
 
-            randDir = random.choice([-1,1])
-            (rMaxdist, rTotalDist, rMovingtime) = computeOMRmetrics(cntlOMRfp, randDir, tankLength, timePoint)
-            results['omrRandom'][ndx]  = (cntlStartTime,cntlEndTime,randDir,rMaxdist,rTotalDist,rMovingtime)
-
-            #get data regarding OMR period
-            OMRfp = fp[np.logical_and(fp[:,0] > startTime, fp[:,0] < endTime),:].copy()
-            (maxdist, totalDist, movingtime) = computeOMRmetrics(OMRfp, direction, tankLength, timePoint)
-            results['omrResults'][ndx] = (startTime,endTime,direction,maxdist,totalDist,movingtime,maxdist/(cMaxdist+0.001),maxdist-cMaxdist,maxdist/(cMaxdist+1))
+                #get data regarding OMR period
+                OMRfp = fp[np.logical_and(fp[:,0] > startTime, fp[:,0] < endTime),:].copy()
+                (maxdist, totalDist, movingtime) = computeOMRmetrics(OMRfp, direction, tankLength, timePoint)
+                results['omrResults'][ndx] = (startTime,endTime,direction,maxdist,totalDist,movingtime,maxdist/(cMaxdist+0.001),maxdist-cMaxdist,maxdist/(cMaxdist+1))
             ndx+=1
     return results
 
@@ -668,13 +704,7 @@ def getMedianVelMulti(datasets, tRange=None, stateRange=None, smoothWinLen=1, sm
         medVel.append(np.median(vel))
     return np.array(medVel)
 
-def getVelRaw(dataset, tRange=None, stateRange=None, smoothWinLen=1, smoothWinType='flat'):
-    """
-    Return array containing velocity at each frame.
-    tRange: species time range relative to t_0. Negative values are relative to t_end.
-    smoothWinLen: length of smoothing window.  smothing applied to position priod to computing vel.
-    smoothWinType: flat, hanning, hamming, etc.
-    """
+def getSmoothPath(dataset, smoothWinLen=1, smoothWinType='flat'):
     d = dataset
     w = d['warpedTracking']
     if smoothWinLen>1:
@@ -687,6 +717,18 @@ def getVelRaw(dataset, tRange=None, stateRange=None, smoothWinLen=1, smoothWinTy
         w_new[:,1] = np.convolve(smoothWin/smoothWin.sum(),w[:,1],mode='valid')
         w_new[:,2] = np.convolve(smoothWin/smoothWin.sum(),w[:,2],mode='valid')
         w = w_new
+    return w
+
+def getVelRaw(dataset, tRange=None, stateRange=None, smoothWinLen=1, smoothWinType='flat'):
+    """
+    Return array containing velocity at each frame.
+    tRange: species time range relative to t_0. Negative values are relative to t_end.
+    smoothWinLen: length of smoothing window.  smothing applied to position priod to computing vel.
+    smoothWinType: flat, hanning, hamming, etc.
+    """
+    d = dataset
+    w = getSmoothPath(d,smoothWinLen=smoothWinLen, smoothWinType = smoothWinType)
+    
     bNdxWin = np.ones(w.shape[0],dtype=bool)
     if tRange:
         if tRange[0]<0:
@@ -701,6 +743,64 @@ def getVelRaw(dataset, tRange=None, stateRange=None, smoothWinLen=1, smoothWinTy
     vel = np.sqrt(pow(np.diff(w[bNdxWin,1]),2) + pow(np.diff(w[bNdxWin,2]),2)) / np.diff(w[bNdxWin,0])
     vt = w[bNdxWin[:-1],0]
     return vel, vt
+
+def getPercentTimeinCenter(jsonData, tRange=None, stateRange=None):
+    tracking = jsonData['warpedTracking']
+    states = jsonData['stateinfo']
+    centersizeX = 23.0 #max 48
+    centersizeY= 11.0 #max 24
+    xdim = 46.0 #max 48
+    ydim = 22.0 #max 24
+
+    os = tracking[:,0]-tracking[0,0]
+    ndx=range(len(os))
+    if tRange is not None:
+         ndx=np.nonzero(np.logical_and(os>tRange[0],os<tRange[1]))
+
+    if stateRange is not None:
+        st,_,_,_ = state_to_time(runData, stateRange[0])
+        _,et,_,_ = state_to_time(runData, stateRange[1])
+        st = st - tracking[0,0]
+        et = et - tracking[0,0]
+        ndx=np.nonzero(np.logical_and(os>st,os<et))        
+
+    #define center, find points in center
+    fishinfo = tracking[ndx]
+    cndx = np.logical_and(
+            np.logical_and(fishinfo[:,1]<(xdim/2+centersizeX/2),fishinfo[:,1]>(xdim/2 - centersizeX/2)),
+            np.logical_and(fishinfo[:,2]<(ydim/2+centersizeY/2),fishinfo[:,2]>(ydim/2 - centersizeX/2)))
+    cndx = cndx[:-1]
+        
+    duration = np.diff(fishinfo[:,0])
+    totalduration = np.sum(duration)
+    centertime=np.sum(duration[cndx])/totalduration
+    return centertime
+
+def plotTimeinCenter(jsonData, windowSize = None, tRange=None, stateRange=None):
+    tracking = jsonData['warpedTracking']
+
+    windowsize = 60
+    if windowSize is not None: 
+        windowsize = windowSize
+    endWindow = tracking[-1,0]-tracking[0,0]
+    if tRange is not None: 
+        endWindow = tRange[-1]
+    if stateRange is not None: 
+        _,et,_,_ = state_to_time(runData, stateRange[1])
+        endWindow = et-tracking[0,0]
+    ticks = np.arange(0,endWindow, windowsize)
+
+    eTimeinCenter = np.zeros(len(ticks)-1)
+    for i in range(len(ticks)-1):
+        startT = ticks[i]
+        endT = ticks[i+1]
+        eTimeinCenter[i] = getPercentTimeinCenter(jsonData, tRange=[startT, endT])
+    
+    pyplot.figure()
+    pyplot.suptitle('Time in Center')
+    pyplot.plot(ticks[1:], eTimeinCenter)
+    pyplot.xlabel('Time (s)')
+    pyplot.ylabel('Percent time in center')
 
 def getOMRScoreStatsMulti(datasets, tRange=None,stateRange=None, timePoint = None): 
     stats = {}
