@@ -1,7 +1,7 @@
 fishTrax provides a closed loop system for monitoring and recording the position of fish in a tank while simultanouely delivering sensory stimuli both visual and electric.
 
 fishTrax works with the following hardware:
-Camera - AVT or OpenCV High gui comopatible.
+Camera - OpenCV High gui compatible.
 Projector or Monitor
 Arduino
 (Todo: Labjack or Nidaq (window only)
@@ -9,7 +9,8 @@ Arduino
 fishTrax is designed to abstract away all the complexity of interfacing with the hardware and tracking the fish, so that it is easy to create new experiments.
 
 To start it run:
-python ArenaControllerMainWindow.py
+cd code/fishTrax
+python fishTrax.py
 
 To create an experiment:
 For each experiment you want to run, you need to write a controller object.  To do this you need to extend subclass the contorller class, and fill in the missing functions:
@@ -26,6 +27,8 @@ Analysis tools:
 Hardware compatibility:
 
 TODO:
+Utilize AVT python wrappers to increase frame rate to 60Hz.
+Extract head direction as part of fish tracker.
 Saving settings and areans
 More tank shapes
 

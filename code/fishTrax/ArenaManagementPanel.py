@@ -1,9 +1,9 @@
 from PyQt4 import QtCore, QtGui
-import AvoidanceController
-import CocaineController
-import ClassicalConditioningController
-import ContextualHelplessnessController
-import RealTimeShockController
+import controllers.AvoidanceController as AvoidanceController
+import controllers.CocaineController as CocaineController
+import controllers.ClassicalConditioningController as ClassicalConditioningController
+import controllers.ContextualHelplessnessController as ContextualHelplessnessController
+import controllers.RealTimeShockController as RealTimeShockController
 
 class ArenaManagementPanel(QtGui.QWidget):
     """
