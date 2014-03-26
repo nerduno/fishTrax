@@ -1,0 +1,33 @@
+import ArenaBehaviorAnalysis as aba
+from scipy.io.matlab import loadmat
+
+prefix = '/Users/andalman';
+EXP = 1;
+CNT = 2;
+data = cell(2);
+data{CNT} = {};
+data{EXP} = {};
+
+data{EXP}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140218/f00970.mat']); %embedded twice
+data{EXP}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140219/f00974.mat']); %delayed recording
+data{EXP}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140219/f00977.mat']); %embedded twice
+data{EXP}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140219/f00982.mat']);
+data{EXP}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140219/f00985.mat']); %embedded twice
+data{EXP}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140219/f00990.mat']);
+data{EXP}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140219/f00992.mat']);
+data{EXP}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140219/f00996.mat']);
+data{EXP}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140220/f01002.mat']);
+data{EXP}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140220/f01006.mat']);
+data{EXP}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140220/f01010.mat']);
+data{EXP}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140220/f01014.mat']);
+
+%data{CNT}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140219/f00975.mat']);
+data{CNT}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140219/f00979.mat']);
+data{CNT}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140219/f00983.mat']); %escaped at very end of recordings
+data{CNT}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140219/f00987.mat']);
+data{CNT}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140219/f00998.mat']);
+data{CNT}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140220/f01000.mat']);
+data{CNT}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140220/f01003.mat']);
+data{CNT}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140220/f01007.mat']);
+data{CNT}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140220/f01011.mat']);% embedded twice
+data{CNT}{end+1} = load([prefix,'/Dropbox/Pisces Data/FishVR/20140220/f01015.mat']);% embedded twice
