@@ -5,7 +5,6 @@ import scipy.stats as stats
 import matplotlib as mpl
 import matplotlib.pyplot as pyplot
 import matplotlib.patches
-import tkFileDialog
 import PerspectiveTransform
 import pdb
 import glob
@@ -74,6 +73,7 @@ def loadDataFromFolder(foldername, whichJson=0,arena_mm = defArena):
     return loadDataFromFile(fishDir + os.sep + filelist[whichJson], arena_mm)
 
 def loadDataFromFile_UI(filename, arena_mm=defArena):
+    import tkFileDialog
     f = tkFileDialog.askopenfile()
     jsonData = loadDataFromFile(f, arena_mm)
     return jsonData
