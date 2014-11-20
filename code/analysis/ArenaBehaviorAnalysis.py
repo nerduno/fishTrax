@@ -72,9 +72,12 @@ def loadDataFromFolder(foldername, whichJson=0,arena_mm = defArena):
         print 'Warning multiple JSONs found, using first by default.'
     return loadDataFromFile(fishDir + os.sep + filelist[whichJson], arena_mm)
 
-def loadDataFromFile_UI(filename, arena_mm=defArena):
-    import tkFileDialog
-    f = tkFileDialog.askopenfile()
+def loadDataFromFile_UI(initialdir=None, arena_mm=defArena):
+    if initialdir is not None:
+        initialdir = os.path.expanduser(initialdir)
+    f = tkFileDialog.askopenfilename(initialdir=initialdir, defaultextension='json', title="Pick a json file:")
+    if f == '':
+        return None
     jsonData = loadDataFromFile(f, arena_mm)
     return jsonData
 
@@ -1162,3 +1165,6 @@ def detectThresholdCrossings(sig, fThres, bAbove=True):
 #average velocity histogram
 #average X-velocity histogram
 #average MovementsPerSec histogram for all fish on a particular trial.
+
+#time lapse of movement
+
