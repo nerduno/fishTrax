@@ -702,6 +702,8 @@ def getMedianVelMulti(datasets, tRange=None, stateRange=None, smoothWinLen=1, sm
     """
     medVel = []
     for d in datasets:
+        vel = []
+        vt = []
         [vel,vt] = getVelRaw(d, tRange=tRange, stateRange=stateRange, 
                              smoothWinLen=smoothWinLen, smoothWinType=smoothWinType)
         medVel.append(np.median(vel))
@@ -729,17 +731,19 @@ def getVelRaw(dataset, tRange=None, stateRange=None, smoothWinLen=1, smoothWinTy
     smoothWinLen: length of smoothing window.  smothing applied to position priod to computing vel.
     smoothWinType: flat, hanning, hamming, etc.
     """
+    
     d = dataset
     w = getSmoothPath(d,smoothWinLen=smoothWinLen, smoothWinType = smoothWinType)
-    
     bNdxWin = np.ones(w.shape[0],dtype=bool)
     if tRange:
+        tRange = np.copy(tRange)
         if tRange[0]<0:
             tRange[0] = max(w[:,0]) - w[0,0] + tRange[0]
         if tRange[1]<0 or (tRange[1]==0 and tRange[1]<tRange[0]):    
             tRange[1] = max(w[:,0]) - w[0,0] + tRange[1]
         bNdxWin = np.logical_and(w[:,0]>tRange[0]+w[0,0], w[:,0]<tRange[1]+w[0,0])
     elif stateRange is not None:
+        stateRange= np.copy(stateRange)
         st,_,_,_ = state_to_time(dataset, stateRange[0])
         _,et,_,_ = state_to_time(dataset, stateRange[1])
         bNdxWin = np.logical_and(w[:,0]>st, w[:,0]<et)        
