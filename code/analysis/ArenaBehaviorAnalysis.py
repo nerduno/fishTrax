@@ -216,13 +216,14 @@ def plotFishPath(jsonData, trange = None, tracking = [], color='k', style ='-', 
     trange - tuple of len 2 indicating the time range to be plotted in seconds relative to T0.
     tracking - optional override for default tracking info.
     """
+    time0 = jsonData['stateinfo'][0][0]
     if tracking == []:
         tracking = getSmoothPath(jsonData, smoothWinLen=smoothWinLen, smoothWinType=smoothWinType)
     
     if not trange:
         tndx = range(tracking.shape[0])
     else:
-        trange = trange + tracking[0,0]
+        trange = trange + time0
         tndx = np.logical_and(tracking[:,0]>=trange[0], tracking[:,0]<trange[1])
 
     pyplot.plot(tracking[tndx,1],tracking[tndx,2],color=color,ls=style)
@@ -239,13 +240,14 @@ def plotFishPathHeatmap(jsonData, trange = None, bins=50, tracking=[]):
     tracking - optional override for default tracking info.
     return heatmap, xedges, yedges (See np.histogram2d)
     """
+    time0 = jsonData['stateinfo'][0][0]
     if tracking == []:
         tracking = getTracking(jsonData)
     
     if not trange:
         tndx = range(tracking.shape[0])
     else:
-        trange = trange + tracking[0,0]
+        trange = trange + time0
         tndx = np.logical_and(tracking[:,0]>=trange[0], tracking[:,0]<trange[1])
     heatmap, xedges, yedges = np.histogram2d(tracking[tndx,1],tracking[tndx,2],bins=bins,normed=True)
     extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
@@ -265,6 +267,7 @@ def generateFishPathMovie(jsonData, filename, trange = None, fps=10, trail_len=5
     track_color - the color of the entire prior track -- None to hide
     tracking - optional override of jsondata.getTracking.
     """
+    time0 = jsonData['stateinfo'][0][0]
     import tempfile
     tmpdir = tempfile.mkdtemp(prefix='tmpfishpath')
     
@@ -274,13 +277,13 @@ def generateFishPathMovie(jsonData, filename, trange = None, fps=10, trail_len=5
     if not trange:
         tndx = range(tracking.shape[0])
     else:
-        trange = trange + tracking[0,0]
+        trange = trange + time0
         tndx = np.logical_and(tracking[:,0]>=trange[0], tracking[:,0]<trange[1])
 
     tracking=tracking[tndx,:]
 
     #save individual frames to temporary directory
-    frametimes = np.arange(tracking[0,0],tracking[-1,0],1.0/fps)
+    frametimes = np.arange(time0,tracking[-1,0],1.0/fps)
     ###HIGHLY INEFFICIENT
     pyplot.ioff()
     f = pyplot.figure(1)
@@ -298,7 +301,7 @@ def generateFishPathMovie(jsonData, filename, trange = None, fps=10, trail_len=5
         if yl is not None:
             pyplot.ylim(yl)
         pyplot.savefig(output_template%i)
-        print i, t-tracking[0,0]
+        print i, t-time0
 
     #create the movie
     cmd  = ['ffmpeg']
@@ -457,7 +460,7 @@ def plotFishSummary(jsonData, startState=1, endState=0, smooth=0, xl=None, omrTi
     _,et,_,_ = state_to_time(jsonData,endState)
     
     tracking = getTracking(jsonData)
-    t0 = tracking[0,0]
+    t0 = state[0][0]
     tracking = tracking[np.logical_and(tracking[:,0] > st, tracking[:,0] < et),:].copy()
     
     sizen = 4
@@ -634,6 +637,7 @@ def getSidePreference(runData, tankLength=48, cond=[3,8], refState='Red',sideFra
     startTime = []
 
     state = runData['stateinfo']
+    time0 = state[0][0]
 
     #HACK
     ndx = np.nonzero([x in cond for x in [y[1] for y in state]])[0]
@@ -646,7 +650,7 @@ def getSidePreference(runData, tankLength=48, cond=[3,8], refState='Red',sideFra
     bSide2Ndx = w[0:-1,1]>tankLength*(1-sideFrac)
     print 'Max dt=%f'%np.max(np.diff(w[:,0]))
     for switchNdx in ndx:
-        startTime.append(state[switchNdx][0] - w[0,0])
+        startTime.append(state[switchNdx][0] - time0)
         switchDuration.append(state[switchNdx+1][0]-state[switchNdx][0])
         bNdxWin = np.logical_and(w[:,0]>state[switchNdx][0], w[:,0]<state[switchNdx+1][0])
         bNdxWinDiff = np.logical_and(w[0:-1,0]>state[switchNdx][0], w[0:-1,0]<state[switchNdx+1][0])
@@ -733,20 +737,21 @@ def getVelRaw(dataset, tRange=None, stateRange=None, smoothWinLen=1, smoothWinTy
     """
     
     d = dataset
+    time0 = dataset['stateinfo'][0][0]
     w = getSmoothPath(d,smoothWinLen=smoothWinLen, smoothWinType = smoothWinType)
     bNdxWin = np.ones(w.shape[0],dtype=bool)
     if tRange:
         tRange = np.copy(tRange)
         if tRange[0]<0:
-            tRange[0] = max(w[:,0]) - w[0,0] + tRange[0]
+            tRange[0] = max(w[:,0]) - time0 + tRange[0]
         if tRange[1]<0 or (tRange[1]==0 and tRange[1]<tRange[0]):    
-            tRange[1] = max(w[:,0]) - w[0,0] + tRange[1]
-        bNdxWin = np.logical_and(w[:,0]>tRange[0]+w[0,0], w[:,0]<tRange[1]+w[0,0])
+            tRange[1] = max(w[:,0]) - time0 + tRange[1]
+        bNdxWin = np.logical_and(w[:,0]>tRange[0]+time0, w[:,0]<tRange[1]+time0)
     elif stateRange is not None:
         stateRange= np.copy(stateRange)
         st,_,_,_ = state_to_time(dataset, stateRange[0])
         _,et,_,_ = state_to_time(dataset, stateRange[1])
-        bNdxWin = np.logical_and(w[:,0]>st, w[:,0]<et)        
+        bNdxWin = np.logical_and(w[:,0]>st, w[:,0]<et)
     vel = np.sqrt(pow(np.diff(w[bNdxWin,1]),2) + pow(np.diff(w[bNdxWin,2]),2)) / np.diff(w[bNdxWin,0])
     vt = w[bNdxWin[:-1],0]
     return vel, vt
@@ -759,7 +764,8 @@ def getPercentTimeinCenter(jsonData, tRange=None, stateRange=None):
     xdim = 46.0 #max 48
     ydim = 22.0 #max 24
 
-    os = tracking[:,0]-tracking[0,0]
+    time0 = states[0][0]
+    os = tracking[:,0]-time0
     ndx=range(len(os))
     if tRange is not None:
          ndx=np.nonzero(np.logical_and(os>tRange[0],os<tRange[1]))
@@ -767,8 +773,8 @@ def getPercentTimeinCenter(jsonData, tRange=None, stateRange=None):
     if stateRange is not None:
         st,_,_,_ = state_to_time(runData, stateRange[0])
         _,et,_,_ = state_to_time(runData, stateRange[1])
-        st = st - tracking[0,0]
-        et = et - tracking[0,0]
+        st = st - time0
+        et = et - time0
         ndx=np.nonzero(np.logical_and(os>st,os<et))        
 
     #define center, find points in center
@@ -785,16 +791,17 @@ def getPercentTimeinCenter(jsonData, tRange=None, stateRange=None):
 
 def plotTimeinCenter(jsonData, windowSize = None, tRange=None, stateRange=None):
     tracking = jsonData['warpedTracking']
+    time0 = jsonData['stateinfo'][0][0]
 
     windowsize = 60
     if windowSize is not None: 
         windowsize = windowSize
-    endWindow = tracking[-1,0]-tracking[0,0]
+    endWindow = tracking[-1,0]-time0
     if tRange is not None: 
         endWindow = tRange[-1]
     if stateRange is not None: 
         _,et,_,_ = state_to_time(runData, stateRange[1])
-        endWindow = et-tracking[0,0]
+        endWindow = et-time0
     ticks = np.arange(0,endWindow, windowsize)
 
     eTimeinCenter = np.zeros(len(ticks)-1)
@@ -830,9 +837,10 @@ def getOMRScoreStatsMulti(datasets, tRange=None,stateRange=None, timePoint = Non
 
 def getOMRScoreStats(runData,tRange=None,stateRange=None, timePoint=None):
     t = runData['warpedTracking']
+    time0 = runData['stateinfo'][0][0]
     results = getOMRinfo(runData,timePoint=timePoint)
     
-    os=results['omrResults']['st']-t[0,0]
+    os=results['omrResults']['st']-time0
     ndx = range(len(os))
 
     if tRange is not None:
@@ -841,8 +849,8 @@ def getOMRScoreStats(runData,tRange=None,stateRange=None, timePoint=None):
     if stateRange is not None:
         st,_,_,_ = state_to_time(runData, stateRange[0])
         _,et,_,_ = state_to_time(runData, stateRange[1])
-        st = st - t[0,0]
-        et = et - t[0,0]
+        st = st - time0
+        et = et - time0
         ndx=np.nonzero(np.logical_and(os>st,os<et))        
 
     stats = {}
