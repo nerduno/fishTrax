@@ -4,6 +4,7 @@ import controllers.CocaineController as CocaineController
 import controllers.ClassicalConditioningController as ClassicalConditioningController
 import controllers.ContextualHelplessnessController as ContextualHelplessnessController
 import controllers.RealTimeShockController as RealTimeShockController
+import controllers.YokedAvoidanceController as YokedAvoidanceController
 
 class ArenaManagementPanel(QtGui.QWidget):
     """
@@ -23,6 +24,7 @@ class ArenaManagementPanel(QtGui.QWidget):
         self.arenaType = QtGui.QComboBox()
         self.arenaType.addItem('Cocaine')
         self.arenaType.addItem('Avoidance')
+        self.arenaType.addItem('YokedAvoidance')
         self.arenaType.addItem('Classical')
         self.arenaType.addItem('ContextualLH')
         self.arenaType.addItem('RealTimeShock')
@@ -95,6 +97,19 @@ class ArenaManagementPanel(QtGui.QWidget):
             a = ContextualHelplessnessController.ContextualHelplessnessController(self, self.arenaMain)
         elif str(self.arenaType.currentText()) == 'RealTimeShock':
             a = RealTimeShockController.RealTimeShockController(self, self.arenaMain)
+        elif str(self.arenaType.currentText()) == 'YokedAvoidance':
+            a = YokedAvoidanceController.YokedAvoidanceController(self, self.arenaMain, False)
+            b = YokedAvoidanceController.YokedAvoidanceController(self, self.arenaMain, True)
+            a.setPartnerTank(b)
+            b.setPartnerTank(a)
+            self.arenaCounter+=1
+            self.arenas.append(a)
+            self.selArena.addItem('Arena %d'%self.arenaCounter)
+            self.arenaStack.addWidget(a)
+            self.arenaCounter+=1
+            self.arenas.append(b)
+            self.selArena.addItem('Arena %d'%self.arenaCounter)
+            self.arenaStack.addWidget(b)
         else:
             return
         self.arenaCounter+=1

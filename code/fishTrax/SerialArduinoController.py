@@ -68,7 +68,7 @@ class SerialArduinoController:
             #ipdb.set_trace()
        	    self.ser = serial.Serial(port=self.portName, baudrate=cBaud, bytesize=8, 
                                      parity='N', stopbits=1, timeout=1)
-            print self.ser
+            #print self.ser
             time.sleep(1)
             self.ser.flushInput()
             self.ser.flushOutput()
@@ -123,12 +123,12 @@ class SerialArduinoController:
             self.ser.write('%d,%d,%d,%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,
                                            pulseDuration,feedbackPin,cmd_END))
             time.sleep(0.007)
-            print cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,pulseDuration,feedbackPin,cmd_END
+            #print cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,pulseDuration,feedbackPin,cmd_END
             return self.readAnalogIn(scale)
         else:
             self.ser.write('%d,%d,%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,
                                            pulseDuration,cmd_END))
-            print cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,pulseDuration,cmd_END
+            #print cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,pulseDuration,cmd_END
             return self.confirmMessageRecv()	
 
     def analogRead(self, pinNumber, scale=(0,5)):
@@ -154,7 +154,7 @@ class SerialArduinoController:
                 attempts+=1
                 print 'Retrying, attempt #:', attempts
                 bImmediateSuccess = False
-        print val
+        #print val
         bSuccess = self.confirmMessageRecv()
         if bSuccess and bImmediateSuccess:
             val = float(val)
@@ -174,13 +174,13 @@ class SerialArduinoController:
                     if val == None:
                         val = 0
                     val = val*10 + int(r)
-                    print r
-                    print val
+                    #print r
+                    #print val
                 elif r == '.':
                     bReachedDecimalPoint = True
-                    print 'dec'
+                    #print 'dec'
                 elif r == cmd_END:
-                    print 'returning', val
+                    #print 'returning', val
                     return val
                 elif r == cmd_FAIL:
                     return None
