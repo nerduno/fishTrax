@@ -25,6 +25,11 @@ from utility_widgets import PathSelectorWidget
 from utility_widgets import LabeledSpinBox
 from transitions import Machine
 
+# Set up logging
+import logging
+from transitions import logger
+logger.setLevel(logging.INFO)
+
 from itertools import tee, izip
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -32,12 +37,16 @@ def pairwise(iterable):
     next(b, None)
     return izip(a, b)
 
+class Side:
+    S1 = 1
+    S2 = -1
+
 class YokedAvoidanceController(ArenaController.ArenaController, Machine):
     def __init__(self, parent, arenaMain, bIsYoked):
         super(YokedAvoidanceController, self).__init__(parent, arenaMain)
 
         #calibration
-        self.arenaCamCorners = []
+        self.arenaCamCorners = None
         self.arenaMidLine = []
         self.arenaSide1Sign = 1
         self.arenaProjCorners = []
@@ -49,7 +58,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         #state
         self.mutex = Lock()
         states = ['off', 'acclimate', 'baseline', 'trial_running', 'trial_CS', 'trial_CS_and_US', 'trial_US', 'trial_between','post']
-        Machine.__init__(self, states=states, initial='off')
+        Machine.__init__(self, states=states, initial='off', after_state_change='update_and_save')
         self.add_transition('begin', 'off', 'acclimate', conditions='isReadyToStart')
         self.add_transition('next', 'acclimate', 'baseline')
         self.add_transition('next', 'baseline', 'trial_running')
@@ -57,8 +66,8 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.add_transition('start_shock', 'trial_CS', 'trial_CS_and_US', after='on_start_shock')
         self.add_transition('start_escape', 'trial_running', 'trial_CS', after='on_start_escape')
         self.add_transition('start_escape', 'trial_US', 'trial_CS_and_US', after='on_start_escape')
-        self.add_transition('escape', ['trial_CS','trial_CS_and_US'], 'trial_between')
-        self.add_transition('end_trial', ['trial_running','trial_CS','trial_US','trial_CS_and_US'], 'trial_between')
+        self.add_transition('escape', ['trial_CS','trial_CS_and_US'], 'trial_between', before='on_escape')
+        self.add_transition('end_trial', ['trial_running','trial_CS','trial_US','trial_CS_and_US'], 'trial_between', before='on_end_trial')
         self.add_transition('start_trial', 'trial_between', 'trial_running')
         self.add_transition('next', 'trial_between','post')
         self.add_transition('next', 'post', 'off')
@@ -67,7 +76,6 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.fishPos = (0,0)
         self.fishPosBuffer = []
         self.fishPosBufferT = []
-        self.allFish = []
         self.currCvFrame = None
         #Note additional state variable will be created during state transitions (like nextStateTime)
 
@@ -158,7 +166,6 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         #start button for individual tank
         self.startButton = QtGui.QPushButton('Start')
         self.startButton.setMaximumWidth(150)
-        self.startButton.setCheckable(True)
         self.startButton.clicked.connect(self.startstop)
         if self.bIsYoked:
             self.startButton.setDisabled(True)
@@ -191,7 +198,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             self.paramLayout.addWidget(self.paramPost,3,2,1,2)
 
             #trial parameters - (optional cs or us) -> cs and us -> on escape or end ITI.
-            self.paramTrialDura = LabeledSpinBox(None, 'Trial Duration (s)', 1,3600,60,60)
+            self.paramTrialDura = LabeledSpinBox(None, 'Trial (s)', 1,3600,60,60)
             self.paramLayout.addWidget(self.paramTrialDura,4,0,1,2)
             self.paramShockOnset = LabeledSpinBox(None, 'Shock onset (s)',0,3600,0,60)
             self.paramLayout.addWidget(self.paramShockOnset, 5,0,1,2)
@@ -201,41 +208,41 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             self.paramLayout.addWidget(self.paramITIMin, 6,0,1,2)
             self.paramITIMax = LabeledSpinBox(None, 'ITI Max (s)',0,3600,30,60)
             self.paramLayout.addWidget(self.paramITIMax, 6,2,1,2)
-            self.paramShockPeriod = LabeledSpinBox(None, 'Shock Period (ms)', 0,5000,1000,60)
+            self.paramShockPeriod = LabeledSpinBox(None, 'ShockPeriod (ms)', 0,5000,1000,60)
             self.paramLayout.addWidget(self.paramShockPeriod, 7,0,1,2)
-            self.paramShockDuration = LabeledSpinBox(None, 'ShockDuration (ms)', 0,1000,50,60)
-            self.paramLayout.addWidget(self.paramShockDuration, 8,2,1,2)
+            self.paramShockDuration = LabeledSpinBox(None, 'ShockPulse (ms)', 0,1000,50,60)
+            self.paramLayout.addWidget(self.paramShockDuration, 7,2,1,2)
 
             self.paramShockV = LabeledSpinBox(None, 'ShockV', 0,100, 5,60)
             self.paramLayout.addWidget(self.paramShockV, 8,0,1,2)
-            (self.paramColorNeutral,self.labelColorNeutral) = self.getColorComboBox('Neutral Color', 0)
+            (self.paramColorNeutral,self.labelColorNeutral) = self.getColorComboBox('Neutral', 0)
             self.paramLayout.addWidget(self.paramColorNeutral,9,0)
             self.paramLayout.addWidget(self.labelColorNeutral,9,1)
-            (self.paramColorAvoid,self.labelColorAvoid) = self.getColorComboBox('Avoid Color', 2)
+            (self.paramColorEscape,self.labelColorEscape) = self.getColorComboBox('Escape', 0)
+            self.paramLayout.addWidget(self.paramColorEscape,9,2)
+            self.paramLayout.addWidget(self.labelColorEscape,9,3)
+            (self.paramColorAvoid,self.labelColorAvoid) = self.getColorComboBox('Avoid', 2)
             self.paramLayout.addWidget(self.paramColorAvoid,10,0)
             self.paramLayout.addWidget(self.labelColorAvoid,10,1)
-            (self.paramColorEscape,self.labelColorEscape) = self.getColorComboBox('Escape Color', 0)
-            self.paramLayout.addWidget(self.paramColorEscape,11,2)
-            self.paramLayout.addWidget(self.labelColorEscape,11,3)
             self.paramDynamic= QtGui.QCheckBox('Dynamic Escape')
-            self.paramLayout.addWidget(self.paramDynamic,12,0,1,2)
+            self.paramLayout.addWidget(self.paramDynamic,11,0,1,2)
             self.paramEscapePos = QtGui.QDoubleSpinBox()
             self.paramEscapePos.setRange(0,1)
             self.paramEscapePos.setValue(.5)
             self.labelEscapePos = QtGui.QLabel('escape pos (0-1)')
-            self.paramLayout.addWidget(self.paramEscapePos,12,2)
-            self.paramLayout.addWidget(self.labelEscapePos,12,3)
+            self.paramLayout.addWidget(self.paramEscapePos,11,2)
+            self.paramLayout.addWidget(self.labelEscapePos,11,3)
             self.paramDynamicDraw = QtGui.QCheckBox('Dynamic Draw')
             self.paramDynamicDraw.setChecked(True)
-            self.paramLayout.addWidget(self.paramDynamicDraw,13,0,1,2)
+            self.paramLayout.addWidget(self.paramDynamicDraw,12,0,1,2)
             self.paramDebug = QtGui.QPushButton('Debug')
             self.paramDebug.setMaximumWidth(150)
             self.paramDebug.setCheckable(True)
-            self.paramLayout.addWidget(self.paramDebug,13,2,1,2)
+            self.paramLayout.addWidget(self.paramDebug,12,2,1,2)
             self.paramDebug.clicked.connect(self.useDebugParams)
         else:
             self.paramYokedLabel = QtGui.QLabel('Other params are yoked to another tank')
-            self.paramLayout.addWidget(self.paramYokedLabel,3,0,1,2)
+            self.paramLayout.addWidget(self.paramYokedLabel,3,0,1,4)
         self.paramGroup.setLayout(self.paramLayout)
 
         #Experimental info group
@@ -246,7 +253,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.infoLayout.setVerticalSpacing(3)
 
         self.labelDir = QtGui.QLabel('Dir: ')
-        self.infoDir = PathSelectorWidget(browseCaption='Experimental Data Directory')
+        self.infoDir = PathSelectorWidget(browseCaption='Experimental Data Directory', default=os.path.expanduser('~/data/test'))
         self.infoLayout.addWidget(self.labelDir,0,0)
         self.infoLayout.addWidget(self.infoDir,0,1)
 
@@ -274,6 +281,9 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.settingsLayout.addWidget(self.paramGroup,4,0,1,2)
         self.setLayout(self.settingsLayout)
 
+        #HACK Couldn't quick initialize arena lcation until after frist image arrives, so stuck in onNewFrame
+
+        #initialize projector
         self.projectorPositionChanged()
         self.t = 0
 
@@ -315,29 +325,37 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             if found:
                 self.fishPosUpdate = found
                 self.fishPos = pos
-                self.allFish = allFish
-                fishPosBuffer.append(pos)
-                fishPosBufferT.append(time)
-
-            #keep track of the average fish speed
-            if fishPosBufferT[-1] - fishPosBufferT[0] > 60:
+                #if experiment is running then keep track of the average fish speed in one minute blocks
                 if not self.is_off():
-                    fishPosBuffer = [np.sqrt((f1[0]-f0[0])**2 + (f1[1]-f0[1])**2) for f0, f1 in pairwise(fishPosBuffer)]
-                    self.averageSpeed.append(np.mean(fishPosBuffer))
-                fishPosBuffer = []
-                fishPosBufferT = []
+                    self.fishPosBuffer.append(pos)
+                    self.fishPosBufferT.append(time)
+                    if (self.fishPosBufferT[-1] - self.fishPosBufferT[0]) > 20:                       
+                        self.fishPosBuffer = [np.sqrt((f1[0]-f0[0])**2 + (f1[1]-f0[1])**2) for f0, f1 in pairwise(self.fishPosBuffer)]
+                        self.averageSpeed.append(np.mean(self.fishPosBuffer)/(self.fishPosBufferT[-1] - self.fishPosBufferT[0])) #pixels/sec
+                        print self.averageSpeed
+                        self.fishPosBuffer = []
+                        self.fishPosBufferT = []
 
             if not self.is_off():
                 #record location
                 self.arenaData['video'].append((self.frameTime, None)) 
                 d = [self.frameTime, pos[0], pos[1]]
-                for nFish in range(1, min(self.paramNumFish.value(),len(allFish))):
-                    d.append(allFish[nFish][0])
-                    d.append(allFish[nFish][1])
                 self.arenaData['tracking'].append(tuple(d))
-                self.movie_logger.write_frame(gray2rgb(currCvFrame))
+                img = np.array(self.currCvFrame[:,:]) #convert IplImage into numpy array
+                self.movie_logger.write_frame(img)
 
             self.arenaView = view
+
+            #HACK: couldn't quickly initilize cam corner before currCvFrame is set, so I stuck it here.
+            #not a great place since conditoin will be checked frequently
+            if self.arenaCamCorners is None:
+                lowerleft = np.array((np.random.randint(100,900), np.random.randint(500,900)))
+                corners = (tuple(lowerleft),
+                           tuple(lowerleft+(200,0)),
+                           tuple(lowerleft+(200,-400)), 
+                           tuple(lowerleft+(0,-400))) 
+                self.setArenaCamCorners(corners) #corners must be tuple or opencv breaks non-gracefully
+
         except:
             print 'ClassicalConditioningController:onNewFrame failed'
             traceback.print_exc()
@@ -358,48 +376,60 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         if not self.is_off():
             self.mutex.acquire()
             try:
-                t = time.time()
-                self.lt = self.t
-                self.t = t
+                self.t = time.time()
+                if self.yokedTank:
+                    self.yokedTank.t = self.t
 
                 #Check if it time to transition to next high level state (acclimate->baseline->trials->post->off)
-                if t > self.nextStateTime:
-                    self.next(); self.yokedTank.next()
+                if self.t > self.nextStateTime:
+                    self.next(); 
+                    if self.yokedTank: 
+                        self.yokedTank.next()
 
                 #If we are between trials, check if it is time to start next trial
                 if self.is_trial_between() and self.t > self.nextTrialTime:
-                    self.start_trial(); self.yokedTank.start_trial();
+                    self.start_trial(); 
+                    if self.yokedTank: 
+                        self.yokedTank.start_trial();
 
                 #If we are current running a trial...
                 if self.is_trial_running() or self.is_trial_US() or self.is_trial_CS() or self.is_trial_CS_and_US():
                     #then check it is time to make escape possible (CS)...
                     if (self.is_trial_running() or self.is_trial_US()) and self.t > self.trialStartEscapeTime:
-                        self.start_escape(); self.yokedTank.start_escape();
+                        self.start_escape(); 
+                        if self.yokedTank: 
+                            self.yokedTank.start_escape();
                     #then check if is time to start shocking (US)...
                     if (self.is_trial_running() or self.is_trial_CS()) and self.t > self.trialStartShockTime:
-                        self.start_shock(); self.yokedTank.start_shock();
+                        self.start_shock(); 
+                        if self.yokedTank: 
+                            self.yokedTank.start_shock();
 
                     #If escape is possible then check if fish escaped...
                     bEscaped=False
-                    if self.is_trial_CS() or self.is_trail_CS_and_US():
+                    if self.is_trial_CS() or self.is_trial_CS_and_US():
                         if self.fishPosUpdate:
                             #if updateState is called more freq then on_new_Frame then this condition saves computation
                             self.fishPosUpdate = False
                             bEscaped = self.isOnSide(self.fishPos, self.escapeLine, self.escapeSign)
                             if bEscaped:
-                                self.arenaData['trials'][self.nTrial]['bEscaped']=True
-                                self.escape(); self.yokedTank.escape()
+                                self.escape(); 
+                                if self.yokedTank: 
+                                    self.yokedTank.end_trial() #yoked fish never escape
 
                     #If trial is over and fish didn't escape then transition to trial_between...
-                    if self.t > trialEndTime and not bEscaped:
-                        self.arenaData['trials'][self.nTrial]['bEscaped']=False
-                        self.end_trial(); self.yokedTank.end_trial()
+                    if self.t > self.trialEndTime and not bEscaped:
+                        self.end_trial(); 
+                        if self.yokedTank: 
+                            self.yokedTank.end_trial()
 
                     #if we now in between trials because fish escaped or trial ended...
                     if self.is_trial_between():
                         #then check if time to move to post:
-                        if nTrial >= self.masterTank.paramNumTrials.value() :
-                            self.next(); self.yokedTank.next()
+                        if self.nTrial >= self.masterTank.paramNumTrials.value() :
+                            self.next(); 
+                            if self.yokedTank: 
+                                self.yokedTank.next()
             except:
                 print 'ContextualHelplessnessController:updateState failed'
                 traceback.print_exc()
@@ -466,7 +496,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             side1Color = self.getSide1ColorNdx()
             side2Color = self.getSide2ColorNdx()
 
-            if self.masterTank.paramDynamicDraw.isChecked():
+            if (self.is_trial_CS() or self.is_trial_CS_and_US()) and self.masterTank.paramDynamicDraw.isChecked():
                 a = float(1-self.escapePos)
                 b = float(self.escapePos)
             else:
@@ -502,14 +532,14 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             brush = QtGui.QBrush(QtCore.Qt.red)
             painter.setBrush(brush)
             painter.setPen(QtCore.Qt.NoPen)
-            for nFish in range(min(len(self.allFish),self.paramNumFish.value())):
-                painter.drawEllipse(QtCore.QPointF(self.allFish[nFish][0],self.allFish[nFish][1]), 3,3)
-
+            painter.drawEllipse(QtCore.QPointF(self.fishPos[0],self.fishPos[1]), 3,3)
+            
         #draw escape line
-        if self.is_trial_CS() or self.is_trial_CS_and_US():
+        if self.is_trial_CS() or self.is_trial_CS_and_US(): 
             pen = QtGui.QPen()
             pen.setColor(QtCore.Qt.red)
             pen.setWidth(1)
+            painter.setPen(pen)
             l = self.escapeLine
             painter.drawLine(QtCore.QPointF(l[0][0],l[0][1]), QtCore.QPointF(l[1][0],l[1][1]))
 
@@ -538,19 +568,26 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                 if self.bIsYoked:
                     statustext = statustext + "Yoked. "
                 statustext = statustext + self.state
-                if self.is_acclimate() or self.is_baseline() or self.is_post()
-                    statustext = statustext + ": %0.2f"%(self.nextStateTime-self.t)
-                if not self.is_trial_running() or self.is_trial_between() or self.is_trial_US() or self.is_trial_CS() or self.is_trial_CS_and_US():
-                    statustext = statustext + ": %d/%d"%(self.nTrial, self.paramNumTrials.value())
+                if self.is_acclimate() or self.is_baseline():
+                    statustext = statustext + ": %0.1f"%(self.nextStateTime-self.t)
+                if self.is_trial_running() or self.is_trial_US() or self.is_trial_CS() or self.is_trial_CS_and_US():
+                    statustext = statustext + ": %d/%d %d %0.1f"%(self.nTrial, self.masterTank.paramNumTrials.value(), self.nEscape, self.trialEndTime-self.t)
+                if self.is_trial_between():
+                    statustext = statustext + ": %d/%d %d %0.1f"%(self.nTrial, self.masterTank.paramNumTrials.value(), self.nEscape, self.nextTrialTime-self.t)
+                if self.is_post():
+                    statustext = statustext + ": %0.1f %d"%(self.nextStateTime-self.t, self.nEscape)
                 painter.drawText(self.arenaCamCorners[0][0],self.arenaCamCorners[0][1],statustext)
 
                 #Plot average speed of fish overtime
                 if not self.is_off() and len(self.averageSpeed)>2:
-                    totalDuration = self.masterTank.paramAcclimate()+self.masterTank.paramBaseline()+self.masterTank.paramPost()
-                    totalDuration += self.masterTank.paramNumTrials * (self.masterTank.paramITIMax() + self.masterTank.paramTrialDura())/60.0
-                    ndx = np.range(self.averageSpeed)
-                    x = (np.arange(len(self.averageSpeed))/totalDuration) * (self.arenaCamCorners[1][0] - self.arenaCamCorners[0][0]) + self.arenaCamCorners[0][0]
-                    y = np.array(self.averageSpeed) + self.arenaCamCorners[0][0]
+                    totalDuration = self.masterTank.paramAcclimate.value()+self.masterTank.paramBaseline.value()+self.masterTank.paramPost.value()
+                    totalDuration += self.masterTank.paramNumTrials.value() * (self.masterTank.paramITIMax.value() + self.masterTank.paramTrialDura.value())/60.0
+                    totalDuration = totalDuration*(60/20.0) #averaging every 20 seconds (see onnewframe)
+                    ndx = np.arange(len(self.averageSpeed))
+                    x = (np.arange(len(self.averageSpeed))/totalDuration) 
+                    x = x * np.array((self.arenaCamCorners[1][0] - self.arenaCamCorners[0][0])) 
+                    x = x + self.arenaCamCorners[0][0]
+                    y = self.arenaCamCorners[0][1] - np.array(self.averageSpeed)
                     for ((x1,x2),(y1,y2)) in zip(pairwise(x),pairwise(y)):
                         painter.drawLine(x1,y1,x2,y2)
 
@@ -567,13 +604,13 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
     # STATE MACHINE CALLBACK METHODS
     #---------------------------------------------------
 
-     def after_state_change(self):
+    def update_and_save(self):
         # runs on every state transition...
         self.updateProjectorDisplay()
         self.arenaData['stateinfo'].append((self.t, self.getStateNumber(self.state), self.getSide1ColorName(), self.getSide2ColorName(), self.state))
         self.saveResults()
 
-    def on_enter_acclimate():
+    def on_enter_acclimate(self):
         #experiment has started so disable parts of UI
         self.paramGroup.setDisabled(True)
         self.infoGroup.setDisabled(True)
@@ -585,12 +622,12 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         [p, self.fnResults] = os.path.split(self.saveLocation)
         self.fnResults = self.fnResults + '_' + td.strftime('%Y-%m-%d-%H-%M-%S')
         self.jsonFileName = str(self.infoDir.text()) + os.sep + self.fnResults  + '.json'
+        print self.bIsYoked, self.jsonFileName
 
         #prepare to write movie
         self.movieFileName = str(self.infoDir.text()) + os.sep + self.fnResults  + '.mp4'
         from moviepy.video.io.ffmpeg_writer import FFMPEG_VideoWriter as VidWriter
-        height, width = cv.GetSize(self.currCvFrame)
-        print width,height
+        width, height = cv.GetSize(self.currCvFrame)
         self.movie_logger = VidWriter(filename=self.movieFileName,
                                       size=(width,height),
                                       fps=15,
@@ -600,17 +637,17 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.initArenaData()
         self.averageSpeed = []
         self.nextStateTime = self.t + self.masterTank.paramAcclimate.value()*60
+        self.nEscape = 0
         self.setShockState(False,False) #just to be sure
 
-    def on_enter_baseline():
+    def on_enter_baseline(self):
         self.nextStateTime = self.t + self.masterTank.paramBaseline.value()*60
 
-    def on_exit_baseline():
+    def on_exit_baseline(self):
         self.nextStateTime = float("inf") # we are now starting trials so next state will depend on num trials.
-        self.nTrial = -1 # set/reset the triil count
+        self.nTrial = 0 # set/reset the triil count
 
-    def on_enter_trial_running():
-        self.nTrial += 1
+    def on_enter_trial_running(self):
         self.trialStartEscapeTime = self.t + self.masterTank.paramEscapeOnset.value()
         self.trialStartShockTime = self.t + self.masterTank.paramShockOnset.value()
         self.trialEndTime = self.t + self.masterTank.paramTrialDura.value()
@@ -623,7 +660,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                                          'bEscaped':None,
                                          'endT':None})
 
-    def on_start_escape():
+    def on_start_escape(self):
         #determine relative fish position (0->Side1 1->Side2) (by projecting onto 1 side)
         ac = self.arenaCamCorners
         lengC = ((self.fishPos[1]-ac[0][1])**2 + (self.fishPos[0] - ac[0][0])**2)**.5 #length of fish vector
@@ -646,9 +683,9 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                 self.escapePos = 1 - self.masterTank.paramEscapePos.value()
         else:
             if self.trialSide == Side.S1:
-                self.escapePos = relPos + self.masterTank.paramEscapePos.value()
+                self.escapePos = relPos + (1-relPos)*self.masterTank.paramEscapePos.value()
             else:
-                self.escapePos = relPos - self.masterTank.paramEscapePos.value()
+                self.escapePos = relPos - relPos*self.masterTank.paramEscapePos.value()
 
         #convert relative escape position into a line
         (self.escapeLine, side1Sign) = self.processArenaCorners(self.arenaCamCorners, self.escapePos)
@@ -659,29 +696,37 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.arenaData['trials'][self.nTrial]['escape'] = (self.escapeLine, self.escapeSign)
         self.arenaData['trials'][self.nTrial]['escapeStartT'] = self.t
 
-    def on_start_shock():
+    def on_start_shock(self):
         #self.setShockState(self.trialSide == Side.S1, self.trialSide == Side.S2)
         self.setShockState(True, True)
         self.arenaData['trials'][self.nTrial]['shockStartT'] = self.t
 
-    def on_enter_trial_between():
-        self.nextTrialTime = self.t + random.randint(self.masterTank.paramITIMin.value(),self.masterTank.paramITIMax.value())
+    def on_escape(self):
+        self.nEscape+=1
+        self.arenaData['trials'][self.nTrial]['bEscaped']=True
+
+    def on_end_trial(self):
+        self.arenaData['trials'][self.nTrial]['bEscaped']=False
+
+    def on_enter_trial_between(self):
         self.escapeLine = []
         self.setShockState(False, False)
         self.arenaData['trials'][self.nTrial]['endT'] = self.t
+        self.nTrial += 1
+        self.nextTrialTime = self.t + random.randint(self.masterTank.paramITIMin.value(),self.masterTank.paramITIMax.value())
 
-    def on_enter_post():
-        self.nextTrialTime = self.t + self.masterTank.paramPost.value() * 60
+    def on_enter_post(self):
+        self.nextStateTime = self.t + self.masterTank.paramPost.value() * 60
 
-    def on_enter_off():
-        self.nextTrialTime = None
+    def on_enter_off(self):
+        self.nextStateTime = None
 
         #the off state can be forced by a button click, so we need to disable shock incase this occured mid trial.
         self.setShockState(False,False)
 
         #note: the projector colors will be reset on call to after_state_change
 
-        self.vmb_logger.close()
+        self.movie_logger.close()
 
         #experiment has ended so enable parts of UI
         self.paramGroup.setDisabled(False)
@@ -696,20 +741,20 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                 self.arenaMain.statusBar().showMessage('%s arena not ready to start.  Experiment directory does not exist and cannot be created.'%(self.getYokedStr()))
                 return False
 
-        if not self.trackWidget.getBackgroundImage():
-            self.arenaMain.statusBar().showMessage('%s arena not ready to start.  Background image has not been taken.'%(self.getYokedStr()))
-            return False
-
-        if not self.fishImg:
-            self.arenaMain.statusBar().showMessage('%s arena not ready to start.  Fish image has not been taken.'%(self.getYokedStr()))
-            return False
-
         if not self.arenaCamCorners:
             self.arenaMain.statusBar().showMessage('%s arena not ready to start.  The arena location has not been specified.'%(self.getYokedStr()))
             return False
 
-        if self.partnerTank:
-            self.partnerTank.isReadyToStart()
+        if not self.trackWidget.getBackgroundImage():
+            self.arenaMain.statusBar().showMessage('%s arena not ready to start.  Background image has not been taken.'%(self.getYokedStr()))
+            return False
+
+        #if not self.fishImg:
+        #    self.arenaMain.statusBar().showMessage('%s arena not ready to start.  Fish image has not been taken.'%(self.getYokedStr()))
+        #    return False
+
+        if not self.bIsYoked and self.yokedTank:
+            return self.yokedTank.isReadyToStart()
 
         return True
 
@@ -720,16 +765,18 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
     def startstop(self):
         self.mutex.acquire()
         try:
-            t = time.time()
-            self.lt = self.t
-            self.t = t
-            if self.is_off()
+            self.t = time.time()
+            if self.yokedTank:
+                self.yokedTank.t = self.t
+
+            if self.is_off():
                 self.begin()
-                if not self.is_off():
+                if self.yokedTank and not self.is_off():
                     self.yokedTank.begin()
             else:
-                self.quit(); self.yokedTank.quit()
-                t = time.time(); sel
+                self.quit(); 
+                if self.yokedTank: 
+                    self.yokedTank.quit() 
         except:
             print 'ContextualHelplessnessController:startSwitches failed'
             traceback.print_exc()
@@ -758,9 +805,16 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             elif self.currArenaClick==4:
                 self.arenaMain.ftDisp.clicked.disconnect(self.handleArenaClicks)
                 self.arenaMain.statusBar().showMessage('')
-                [self.arenaMidLine, self.arenaSide1Sign] = self.processArenaCorners(self.arenaCamCorners, .5)
-                self.getArenaMask()
-
+                self.setArenaCamCorners(self.arenaCamCorners)
+               
+    def setArenaCamCorners(self, corners):
+        #corners must be tuple of tuples (not list or np.array)
+        self.currArenaclick=4
+        self.arenaCamCorners = corners
+        [self.arenaMidLine, self.arenaSide1Sign] = self.processArenaCorners(self.arenaCamCorners, .5)
+        self.getArenaMask()
+        self.trackWidget.setBackgroundImage()
+                                             
     def getFishSize(self):
         self.arenaMain.statusBar().showMessage('Click on the tip of the fish tail.')
         self.currFishClick = 0
@@ -860,8 +914,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                                          'shock V':self.masterTank.paramShockV.value(),
                                          'NeutralColor':str(self.masterTank.paramColorNeutral.currentText()),
                                          'AvoidColor':str(self.masterTank.paramColorAvoid.currentText()),
-                                         'EscapeColor':str(self.masterTank.paramColorEscape.currentText()),
-                                         'numFish': self.paramNumFish.value(),
+                                         'EscapeColor':str(self.masterTank.paramColorEscape.currentText()),                                       
                                          'isDynamicEscape':self.masterTank.paramDynamic.isChecked(),
                                          'inDynamicDraw':self.masterTank.paramDynamicDraw.isChecked(),
                                          'fEscapePosition':self.masterTank.paramEscapePos.value(),
@@ -877,7 +930,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                                                  'size':[self.projLen.value(), self.projWid.value()],
                                                  'rotation':self.projRot.value()}
         self.arenaData['tankSize_mm'] = [self.tankLength.value(), self.tankWidth.value()]
-        self.avoidData['trials'] = list() #outcome on each trial
+        self.arenaData['trials'] = list() #outcome on each trial
         self.arenaData['tracking'] = list() #list of tuples (frametime, posx, posy)
         self.arenaData['video'] = list() #list of tuples (frametime, filename)	
         self.arenaData['stateinfo'] = list() #list of times at switch stimulus flipped.
@@ -888,8 +941,9 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         #save experiment images
         self.bcvImgFileName = str(self.infoDir.text()) + os.sep + self.fnResults  + '_BackImg_' + t.strftime('%Y-%m-%d-%H-%M-%S') + '.tiff'
         cv.SaveImage(self.bcvImgFileName, self.trackWidget.getBackgroundImage())	
-        self.fishImgFileName = str(self.infoDir.text()) + os.sep +  self.fnResults + '_FishImg_' + t.strftime('%Y-%m-%d-%H-%M-%S') + '.tiff'
-        cv.SaveImage(self.fishImgFileName, self.fishImg)
+        if self.fishImg:
+            self.fishImgFileName = str(self.infoDir.text()) + os.sep +  self.fnResults + '_FishImg_' + t.strftime('%Y-%m-%d-%H-%M-%S') + '.tiff'
+            cv.SaveImage(self.fishImgFileName, self.fishImg)
 
     def saveResults(self):
         f = open(name=self.jsonFileName, mode='w')
@@ -967,7 +1021,8 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                                                     self.masterTank.paramShockDuration.value(),
                                                     feedbackPin = self.paramCurrChan1.value())
 
-        print 'Shock state changed: state:(%d,%d) curr:(%f,%f)'%(bSide1,bSide2,curr1,curr2)
+        print bSide1, bSide2, curr1, curr2
+        print 'Shock state changed: state:',bSide1,bSide2,' curr:',curr1,curr2
         self.arenaData['shockinfo'].append((time.time(), bSide1, bSide2, curr1, curr2))
 
     def getBrush(self, colorNdx):
@@ -985,3 +1040,6 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             return QtGui.QBrush(QtCore.Qt.black)
         else:
             return QtGui.QBrush(QtCore.Qt.black)
+
+    def useDebugParams(self):
+        pass

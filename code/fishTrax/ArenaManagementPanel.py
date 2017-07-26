@@ -22,11 +22,11 @@ class ArenaManagementPanel(QtGui.QWidget):
         self.manageGroup.setTitle('Manage Arenas')
         self.manageVBox = QtGui.QVBoxLayout()
         self.arenaType = QtGui.QComboBox()
+        self.arenaType.addItem('YokedAvoidance')
+        self.arenaType.addItem('ContextualLH')
         self.arenaType.addItem('Cocaine')
         self.arenaType.addItem('Avoidance')
-        self.arenaType.addItem('YokedAvoidance')
         self.arenaType.addItem('Classical')
-        self.arenaType.addItem('ContextualLH')
         self.arenaType.addItem('RealTimeShock')
         self.arenaType.addItem('Operant')
         self.arenaType.addItem('Temperature')
@@ -110,6 +110,7 @@ class ArenaManagementPanel(QtGui.QWidget):
             self.arenas.append(b)
             self.selArena.addItem('Arena %d'%self.arenaCounter)
             self.arenaStack.addWidget(b)
+            return
         else:
             return
         self.arenaCounter+=1
