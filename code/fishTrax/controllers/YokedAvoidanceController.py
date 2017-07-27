@@ -329,10 +329,9 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                 if not self.is_off():
                     self.fishPosBuffer.append(pos)
                     self.fishPosBufferT.append(time)
-                    if (self.fishPosBufferT[-1] - self.fishPosBufferT[0]) > 20:                       
+                    if (self.fishPosBufferT[-1] - self.fishPosBufferT[0]) > 60:                       
                         self.fishPosBuffer = [np.sqrt((f1[0]-f0[0])**2 + (f1[1]-f0[1])**2) for f0, f1 in pairwise(self.fishPosBuffer)]
                         self.averageSpeed.append(np.mean(self.fishPosBuffer)/(self.fishPosBufferT[-1] - self.fishPosBufferT[0])) #pixels/sec
-                        print self.averageSpeed
                         self.fishPosBuffer = []
                         self.fishPosBufferT = []
 
@@ -342,7 +341,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                 d = [self.frameTime, pos[0], pos[1]]
                 self.arenaData['tracking'].append(tuple(d))
                 img = np.array(self.currCvFrame[:,:]) #convert IplImage into numpy array
-                img = img[self.arenaBB[0][0]:self.arenaBB[1][0], self.arenaBB[0][1]:self.arenaBB[1][1]] 
+                img = img[self.arenaBB[0][1]:self.arenaBB[1][1],self.arenaBB[0][0]:self.arenaBB[1][0]] 
                 self.movie_logger.write_frame(img)
 
             self.arenaView = view
@@ -583,12 +582,14 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                 if not self.is_off() and len(self.averageSpeed)>2:
                     totalDuration = self.masterTank.paramAcclimate.value()+self.masterTank.paramBaseline.value()+self.masterTank.paramPost.value()
                     totalDuration += self.masterTank.paramNumTrials.value() * (self.masterTank.paramITIMax.value() + self.masterTank.paramTrialDura.value())/60.0
-                    totalDuration = totalDuration*(60/20.0) #averaging every 20 seconds (see onnewframe)
+                    totalDuration = totalDuration*(60/60.0) #averaging every 20 seconds (see onnewframe)
                     ndx = np.arange(len(self.averageSpeed))
                     x = (np.arange(len(self.averageSpeed))/totalDuration) 
                     x = x * np.array((self.arenaCamCorners[1][0] - self.arenaCamCorners[0][0])) 
                     x = x + self.arenaCamCorners[0][0]
-                    y = self.arenaCamCorners[0][1] - np.array(self.averageSpeed)
+                    #scale = 75 / np.max(self.averageSpeed)
+                    scale = 1000
+                    y = self.arenaCamCorners[0][1] - (scale * np.array(self.averageSpeed))
                     for ((x1,x2),(y1,y2)) in zip(pairwise(x),pairwise(y)):
                         painter.drawLine(x1,y1,x2,y2)
 
@@ -623,14 +624,14 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         [p, self.fnResults] = os.path.split(self.saveLocation)
         self.fnResults = self.fnResults + '_' + td.strftime('%Y-%m-%d-%H-%M-%S')
         self.jsonFileName = str(self.infoDir.text()) + os.sep + self.fnResults  + '.json'
-        print self.bIsYoked, self.jsonFileName
 
         #prepare to write movie
         self.movieFileName = str(self.infoDir.text()) + os.sep + self.fnResults  + '.mp4'
         from moviepy.video.io.ffmpeg_writer import FFMPEG_VideoWriter as VidWriter
-        width, height = cv.GetSize(self.currCvFrame)
+        print self.arenaBB[1][0] - self.arenaBB[0][0], self.arenaBB[1][1] - self.arenaBB[0][1]
         self.movie_logger = VidWriter(filename=self.movieFileName,
-                                      size=(width,height),
+                                      size=(self.arenaBB[1][0] - self.arenaBB[0][0],
+                                            self.arenaBB[1][1] - self.arenaBB[0][1]),
                                       fps=15,
                                       codec='mpeg4',
                                       preset='ultrafast')
@@ -814,8 +815,15 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.arenaCamCorners = corners
         [self.arenaMidLine, self.arenaSide1Sign] = self.processArenaCorners(self.arenaCamCorners, .5)
         #compute bounding box with vertical and horizontal sides.
-        self.arenaBB = ((min([p[0] for p in corners]), min([p[q] for p in corners])),
-                        (max([p[0] for p in corners]), max([p[q] for p in corners])))
+        self.arenaBB = ((min([p[0] for p in corners]), min([p[1] for p in corners])),
+                        (max([p[0] for p in corners]), max([p[1] for p in corners])))
+        #bounding box needs to have even heights and widths in order to save as mp4
+        if (self.arenaBB[1][0] - self.arenaBB[0][0]) % 2:
+            self.arenaBB[1][0] += 1
+        if (self.arenaBB[1][1] - self.arenaBB[0][1]) % 2:
+            self.arenaBB[1][1] += 1
+
+
         self.getArenaMask()
         self.trackWidget.setBackgroundImage()
                                              
@@ -1025,7 +1033,6 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                                                     self.masterTank.paramShockDuration.value(),
                                                     feedbackPin = self.paramCurrChan1.value())
 
-        print bSide1, bSide2, curr1, curr2
         print 'Shock state changed: state:',bSide1,bSide2,' curr:',curr1,curr2
         self.arenaData['shockinfo'].append((time.time(), bSide1, bSide2, curr1, curr2))
 
