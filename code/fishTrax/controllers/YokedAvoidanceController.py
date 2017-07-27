@@ -342,6 +342,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                 d = [self.frameTime, pos[0], pos[1]]
                 self.arenaData['tracking'].append(tuple(d))
                 img = np.array(self.currCvFrame[:,:]) #convert IplImage into numpy array
+                img = img[self.arenaBB[0][0]:self.arenaBB[1][0], self.arenaBB[0][1]:self.arenaBB[1][1]] 
                 self.movie_logger.write_frame(img)
 
             self.arenaView = view
@@ -812,6 +813,9 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.currArenaclick=4
         self.arenaCamCorners = corners
         [self.arenaMidLine, self.arenaSide1Sign] = self.processArenaCorners(self.arenaCamCorners, .5)
+        #compute bounding box with vertical and horizontal sides.
+        self.arenaBB = ((min([p[0] for p in corners]), min([p[q] for p in corners])),
+                        (max([p[0] for p in corners]), max([p[q] for p in corners])))
         self.getArenaMask()
         self.trackWidget.setBackgroundImage()
                                              
