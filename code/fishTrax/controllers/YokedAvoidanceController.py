@@ -50,6 +50,8 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
     def __init__(self, parent, arenaMain, bIsYoked):
         super(YokedAvoidanceController, self).__init__(parent, arenaMain)
 
+        print type(parent)
+
         #calibration
         self.arenaCamCorners = None
         self.arenaMidLine = []
@@ -106,7 +108,8 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.arenaLayout.setVerticalSpacing(3)
         self.camCalibButton = QtGui.QPushButton('Set Cam Position')
         self.camCalibButton.setMaximumWidth(150)
-        self.camCalibButton.clicked.connect(self.getArenaCameraPosition)      
+        self.camCalibButton.clicked.connect(self.getArenaCameraPosition)
+        self.resetCamCorners = None
         self.projGroup = QtGui.QGroupBox(self.arenaGroup)
         self.projGroup.setTitle('Projector Position')
         self.projLayout = QtGui.QGridLayout(self.projGroup)
@@ -130,20 +133,20 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.projLayout.addWidget(self.projY,1,2)
         self.projX.valueChanged.connect(self.projectorPositionChanged)
         self.projY.valueChanged.connect(self.projectorPositionChanged)
-        self.projSizeL = QtGui.QLabel('Size L,W')
-        self.projLen = QtGui.QSpinBox()
-        self.projLen.setRange(0,1000)
-        self.projLen.setValue(220)
-        self.projLen.setMaximumWidth(50)
+        self.projSizeL = QtGui.QLabel('Size W,L')
         self.projWid = QtGui.QSpinBox()
         self.projWid.setRange(0,1000)
         self.projWid.setValue(115)
         self.projWid.setMaximumWidth(50)
+        self.projLen = QtGui.QSpinBox()
+        self.projLen.setRange(0,1000)
+        self.projLen.setValue(220)
+        self.projLen.setMaximumWidth(50)
         self.projLen.valueChanged.connect(self.projectorPositionChanged)
         self.projWid.valueChanged.connect(self.projectorPositionChanged)
         self.projLayout.addWidget(self.projSizeL,2,0)
-        self.projLayout.addWidget(self.projLen,2,1)
-        self.projLayout.addWidget(self.projWid,2,2)
+        self.projLayout.addWidget(self.projWid,2,1)
+        self.projLayout.addWidget(self.projLen,2,2)
         self.projRotL = QtGui.QLabel('Rotation')
         self.projRot = QtGui.QSpinBox()
         self.projRot.setRange(0,360)
@@ -316,6 +319,24 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         else:
             self.yokedTank = partnerArena
 
+    def configTank(self, ardConfig, camPos, projPos):
+        #config arduino
+        self.paramShockChan1.setValue(ardConfig[0])
+        self.paramShockChan2.setValue(ardConfig[1])
+        self.paramCurrChan1.setValue(ardConfig[2])
+        self.paramCurrChan2.setValue(ardConfig[3])
+        
+        #set tank position in camera
+        self.resetCamCorners = camPos
+
+        #set tank position in projector
+        self.projX.setValue(projPos[0])
+        self.projY.setValue(projPos[1])
+        self.projWid.setValue(projPos[2])
+        self.projLen.setValue(projPos[3])
+        self.projRot.setValue(projPos[4])
+        
+
     #---------------------------------------------------
     # OVERLOADED METHODS
     #---------------------------------------------------
@@ -359,13 +380,9 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
 
             #HACK: couldn't quickly initilize cam corner before currCvFrame is set, so I stuck it here.
             #not a great place since conditoin will be checked frequently
-            if self.arenaCamCorners is None:
-                lowerleft = np.array((np.random.randint(100,900), np.random.randint(500,900)))
-                corners = (tuple(lowerleft),
-                           tuple(lowerleft+(200,0)),
-                           tuple(lowerleft+(200,-400)), 
-                           tuple(lowerleft+(0,-400))) 
-                self.setArenaCamCorners(corners) #corners must be tuple or opencv breaks non-gracefully
+            if self.resetCamCorners is not None:
+                self.setArenaCamCorners(self.resetCamCorners)
+                self.resetCamCorners = None
 
         except:
             print 'ClassicalConditioningController:onNewFrame failed'
@@ -824,6 +841,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         #corners must be tuple of tuples (not list or np.array)
         self.currArenaclick=4
         self.arenaCamCorners = corners
+        print corners
         [self.arenaMidLine, self.arenaSide1Sign] = self.processArenaCorners(self.arenaCamCorners, .5)
         #compute bounding box with vertical and horizontal sides.
         self.arenaBB = [[min([p[0] for p in corners]), min([p[1] for p in corners])],

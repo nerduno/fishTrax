@@ -6,6 +6,17 @@ import controllers.ContextualHelplessnessController as ContextualHelplessnessCon
 import controllers.RealTimeShockController as RealTimeShockController
 import controllers.YokedAvoidanceController as YokedAvoidanceController
 
+
+#relay pin side1, relay pin side 2, analonIn pin side 1, analogIn pin side 2
+defaultTankChannels = {0:(53,52,15,14), 
+                       1:(51,50, 9, 8), 
+                       2:(48,49, 7, 6),
+                       3:(46,47, 0, 1),
+                       4:(43,42,13,12),
+                       5:(41,40,10,11),
+                       6:(38,39, 4, 5),
+                       7:(44,45, 2, 3)}
+
 class ArenaManagementPanel(QtGui.QWidget):
     """
     A settings panel that allows for adding removing and configuring ArenaControllers.
@@ -98,10 +109,15 @@ class ArenaManagementPanel(QtGui.QWidget):
         elif str(self.arenaType.currentText()) == 'RealTimeShock':
             a = RealTimeShockController.RealTimeShockController(self, self.arenaMain)
         elif str(self.arenaType.currentText()) == 'YokedAvoidance':
+            #create and config two tank
             a = YokedAvoidanceController.YokedAvoidanceController(self, self.arenaMain, False)
             b = YokedAvoidanceController.YokedAvoidanceController(self, self.arenaMain, True)
             a.setPartnerTank(b)
             b.setPartnerTank(a)
+            #Todo make config apply to all tank types not just Yoked
+            a.configTank(*self.grid2TankConfig(len(self.arenas)%4, len(self.arenas)/4))
+            b.configTank(*self.grid2TankConfig((len(self.arenas)+1)%4, (len(self.arenas)+1)/4))
+            #add the tanks to management panel
             self.arenaCounter+=1
             self.arenas.append(a)
             self.selArena.addItem('Arena %d'%self.arenaCounter)
@@ -166,4 +182,33 @@ class ArenaManagementPanel(QtGui.QWidget):
         for a in self.arenas:
             a.stop()
 
+    #Helper methods for quickly configuring tanks 
+    def grid2CamCoords(self, px,py):
+        #hard coded for now, but should GUI set x0, y0, plus rotation and scale.
+        y0 = 10
+        x0 = 140
+        xSp = 60
+        ySp = 60
+        tW = 205
+        tH = 440 
+        return (( x0+(tW+xSp)*px   , y0+(tH+ySp)*py+tH), #Lower Left
+                ( x0+(tW+xSp)*px+tW, y0+(tH+ySp)*py+tH), #Lower Right (y flipped)
+                ( x0+(tW+xSp)*px+tW, y0+(tH+ySp)*py   ), #UpperRight
+                ( x0+(tW+xSp)*px   , y0+(tH+ySp)*py   )) #UpperLeft
+
+    def grid2Proj(self, px,py):
+        x0 = 245
+        y0 = 220
+        tW = 110
+        tH = 215
+        rot = 270
+        xSp = 32
+        ySp = 32
+        return (x0+(tW+xSp)*px, y0+(tH+ySp)*py, tW, tH, rot)
+
+    def grid2ArduinoConfig(self, px,py):
+        return defaultTankChannels[px+4*py]
     
+    def grid2TankConfig(self, px,py):
+        return self.grid2ArduinoConfig(px,py), self.grid2CamCoords(px,py), self.grid2Proj(px,py)
+                
