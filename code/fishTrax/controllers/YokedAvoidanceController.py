@@ -25,10 +25,15 @@ from utility_widgets import PathSelectorWidget
 from utility_widgets import LabeledSpinBox
 from transitions import Machine
 
-# Set up logging
+# Set up state machine logging to std out
 import logging
 from transitions import logger
 logger.setLevel(logging.INFO)
+ch = logging.StreamHandler(sys.stdout)
+ch.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 from itertools import tee, izip
 def pairwise(iterable):
@@ -144,14 +149,14 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.projRot.setRange(0,360)
         self.projRot.setValue(270)
         self.projRot.setMaximumWidth(50)
-        self.projLayout.addWidget(self.projRotL,2,3)
-        self.projLayout.addWidget(self.projRot,2,4)
+        self.projLayout.addWidget(self.projRotL,3,0)
+        self.projLayout.addWidget(self.projRot,3,1)
         self.projRot.valueChanged.connect(self.projectorPositionChanged)
         
         self.tankLength = LabeledSpinBox(None, 'Tank Len (mm)', 0,100,46,60)
-        self.projLayout.addWidget(self.tankLength, 3,0,1,2)
+        self.projLayout.addWidget(self.tankLength, 4,0,1,2)
         self.tankWidth = LabeledSpinBox(None, 'Tank Wid (mm)', 0,100,21,60)
-        self.projLayout.addWidget(self.tankWidth, 3,2,1,2)
+        self.projLayout.addWidget(self.tankWidth, 4,2,1,2)
 
         self.projLayout.setColumnStretch(6,1)
         self.projGroup.setLayout(self.projLayout)
@@ -169,6 +174,10 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.startButton.clicked.connect(self.startstop)
         if self.bIsYoked:
             self.startButton.setDisabled(True)
+        
+        #whether to save movie  
+        self.paramSaveMovie = QtGui.QCheckBox('Save Movie')
+            
 
         #experimental parameters groupbox
         self.paramGroup = QtGui.QGroupBox()
@@ -181,9 +190,9 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.paramLayout.addWidget(self.paramShockChan1, 0,0,1,2)
         self.paramShockChan2 = LabeledSpinBox(None, 'ShockChan2', 0,10000,52,60)
         self.paramLayout.addWidget(self.paramShockChan2, 0,2,1,2)
-        self.paramCurrChan1 = LabeledSpinBox(None, 'CurrChan Side 1', 0,16,15,60)
+        self.paramCurrChan1 = LabeledSpinBox(None, 'CurrChan1', 0,16,15,60)
         self.paramLayout.addWidget(self.paramCurrChan1,1,0,1,2)
-        self.paramCurrChan2 = LabeledSpinBox(None, 'CurrChan Side 2', 0,16,14,60)
+        self.paramCurrChan2 = LabeledSpinBox(None, 'CurrChan2', 0,16,14,60)
         self.paramLayout.addWidget(self.paramCurrChan2,1,2,1,2)
 
         if not self.bIsYoked:
@@ -208,7 +217,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             self.paramLayout.addWidget(self.paramITIMin, 6,0,1,2)
             self.paramITIMax = LabeledSpinBox(None, 'ITI Max (s)',0,3600,30,60)
             self.paramLayout.addWidget(self.paramITIMax, 6,2,1,2)
-            self.paramShockPeriod = LabeledSpinBox(None, 'ShockPeriod (ms)', 0,5000,1000,60)
+            self.paramShockPeriod = LabeledSpinBox(None, 'ShockITI (ms)', 0,5000,1000,60)
             self.paramLayout.addWidget(self.paramShockPeriod, 7,0,1,2)
             self.paramShockDuration = LabeledSpinBox(None, 'ShockPulse (ms)', 0,1000,50,60)
             self.paramLayout.addWidget(self.paramShockDuration, 7,2,1,2)
@@ -278,6 +287,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.settingsLayout.addWidget(self.trackWidget,1,0,1,2)
         self.settingsLayout.addWidget(self.infoGroup,2,0,1,2)
         self.settingsLayout.addWidget(self.startButton,3,0,1,1)
+        self.settingsLayout.addWidget(self.paramSaveMovie,3,1,1,1)
         self.settingsLayout.addWidget(self.paramGroup,4,0,1,2)
         self.setLayout(self.settingsLayout)
 
@@ -340,9 +350,10 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                 self.arenaData['video'].append((self.frameTime, None)) 
                 d = [self.frameTime, pos[0], pos[1]]
                 self.arenaData['tracking'].append(tuple(d))
-                img = np.array(self.currCvFrame[:,:]) #convert IplImage into numpy array
-                img = img[self.arenaBB[0][1]:self.arenaBB[1][1],self.arenaBB[0][0]:self.arenaBB[1][0]] 
-                self.movie_logger.write_frame(img)
+                if self.paramSaveMovie.isChecked():                
+                    img = np.array(self.currCvFrame[:,:]) #convert IplImage into numpy array
+                    img = img[self.arenaBB[0][1]:self.arenaBB[1][1],self.arenaBB[0][0]:self.arenaBB[1][0]] 
+                    self.movie_logger.write_frame(img)
 
             self.arenaView = view
 
@@ -588,7 +599,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                     x = x * np.array((self.arenaCamCorners[1][0] - self.arenaCamCorners[0][0])) 
                     x = x + self.arenaCamCorners[0][0]
                     #scale = 75 / np.max(self.averageSpeed)
-                    scale = 1000
+                    scale = 3000
                     y = self.arenaCamCorners[0][1] - (scale * np.array(self.averageSpeed))
                     for ((x1,x2),(y1,y2)) in zip(pairwise(x),pairwise(y)):
                         painter.drawLine(x1,y1,x2,y2)
@@ -626,15 +637,15 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.jsonFileName = str(self.infoDir.text()) + os.sep + self.fnResults  + '.json'
 
         #prepare to write movie
-        self.movieFileName = str(self.infoDir.text()) + os.sep + self.fnResults  + '.mp4'
-        from moviepy.video.io.ffmpeg_writer import FFMPEG_VideoWriter as VidWriter
-        print self.arenaBB[1][0] - self.arenaBB[0][0], self.arenaBB[1][1] - self.arenaBB[0][1]
-        self.movie_logger = VidWriter(filename=self.movieFileName,
-                                      size=(self.arenaBB[1][0] - self.arenaBB[0][0],
-                                            self.arenaBB[1][1] - self.arenaBB[0][1]),
-                                      fps=15,
-                                      codec='mpeg4',
-                                      preset='ultrafast')
+        if self.paramSaveMovie.isChecked():
+            self.movieFileName = str(self.infoDir.text()) + os.sep + self.fnResults  + '.mp4'
+            from moviepy.video.io.ffmpeg_writer import FFMPEG_VideoWriter as VidWriter
+            self.movie_logger = VidWriter(filename=self.movieFileName,
+                                          size=(self.arenaBB[1][0] - self.arenaBB[0][0],
+                                                self.arenaBB[1][1] - self.arenaBB[0][1]),
+                                          fps=15,
+                                          codec='mpeg4',
+                                          preset='ultrafast')
 
         self.initArenaData()
         self.averageSpeed = []
@@ -727,8 +738,8 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.setShockState(False,False)
 
         #note: the projector colors will be reset on call to after_state_change
-
-        self.movie_logger.close()
+        if self.paramSaveMovie.isChecked():
+            self.movie_logger.close()
 
         #experiment has ended so enable parts of UI
         self.paramGroup.setDisabled(False)
@@ -815,8 +826,8 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.arenaCamCorners = corners
         [self.arenaMidLine, self.arenaSide1Sign] = self.processArenaCorners(self.arenaCamCorners, .5)
         #compute bounding box with vertical and horizontal sides.
-        self.arenaBB = ((min([p[0] for p in corners]), min([p[1] for p in corners])),
-                        (max([p[0] for p in corners]), max([p[1] for p in corners])))
+        self.arenaBB = [[min([p[0] for p in corners]), min([p[1] for p in corners])],
+                        [max([p[0] for p in corners]), max([p[1] for p in corners])]]
         #bounding box needs to have even heights and widths in order to save as mp4
         if (self.arenaBB[1][0] - self.arenaBB[0][0]) % 2:
             self.arenaBB[1][0] += 1
