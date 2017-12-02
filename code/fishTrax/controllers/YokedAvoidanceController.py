@@ -220,9 +220,9 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             self.paramLayout.addWidget(self.paramITIMin, 6,0,1,2)
             self.paramITIMax = LabeledSpinBox(None, 'ITI Max (s)',0,3600,30,60)
             self.paramLayout.addWidget(self.paramITIMax, 6,2,1,2)
-            self.paramShockPeriod = LabeledSpinBox(None, 'ShockITI (ms)', 0,5000,1000,60)
+            self.paramShockPeriod = LabeledSpinBox(None, 'ShockITI (ms)', 0,301000,1000,60)
             self.paramLayout.addWidget(self.paramShockPeriod, 7,0,1,2)
-            self.paramShockDuration = LabeledSpinBox(None, 'ShockPulse (ms)', 0,1000,50,60)
+            self.paramShockDuration = LabeledSpinBox(None, 'ShockPulse (ms)', 0,301000,50,60)
             self.paramLayout.addWidget(self.paramShockDuration, 7,2,1,2)
 
             self.paramShockV = LabeledSpinBox(None, 'ShockV', 0,100, 5,60)
@@ -252,6 +252,21 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             self.paramDebug.setCheckable(True)
             self.paramLayout.addWidget(self.paramDebug,12,2,1,2)
             self.paramDebug.clicked.connect(self.useDebugParams)
+
+            #Optostim parameters (optional)
+            self.paramOptoStim = QtGui.QCheckBox('Optostim During Shock')
+            self.paramOptoStim.setChecked(False)
+            self.paramLayout.addWidget(self.paramOptoStim,13,0,1,2)
+            self.paramOptoChan = LabeledSpinBox(None, 'OptoChan', 0,10000,30,60)
+            self.paramLayout.addWidget(self.paramOptoChan, 13,2,1,2)
+            self.paramOptoPeriod = LabeledSpinBox(None, 'OptoPeriod (ms)', 0,3601000,1000,60)
+            self.paramLayout.addWidget(self.paramOptoPeriod, 14,0,1,2)
+            self.paramOptoDuration = LabeledSpinBox(None, 'OptoPulse (ms)', 0,3601000,50,60)
+            self.paramLayout.addWidget(self.paramOptoDuration, 14,2,1,2)
+            self.paramOptoStimPost = QtGui.QCheckBox('Optostim after Shock')
+            self.paramOptoStimPost.setChecked(False)
+            self.paramLayout.addWidget(self.paramOptoStimPost,15,0,1,2)
+
         else:
             self.paramYokedLabel = QtGui.QLabel('Other params are yoked to another tank')
             self.paramLayout.addWidget(self.paramYokedLabel,3,0,1,4)
@@ -933,10 +948,12 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.arenaData['fishstrain'] = str(self.infoType.text())
         self.arenaData['fishsize'] = self.fishSize
 
-
+        partnerTankInfo = 'None'
+        if self.partnerTank:
+            partnerTankInfo = str(self.partnerTank.infoDir.text())
 
         self.arenaData['parameters'] = { 'bIsYoked': self.bIsYoked,
-                                         'partnerTank': str(self.partnerTank.infoDir.text()),
+                                         'partnerTank': partnerTankInfo,
                                          'Acclimate (m)':self.masterTank.paramAcclimate.value(),
                                          'Baseline (m)':self.masterTank.paramBaseline.value(),
                                          'NumTrials':self.masterTank.paramNumTrials.value(),
@@ -1027,6 +1044,10 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             curr1 = 0
             self.arenaMain.ard.pinLow(self.paramShockChan2.value())
             curr2 = 0
+            #Turn of optostim
+            if self.masterTank.paramOptoStim.isChecked():
+                self.arenaMain.ard.pinLow(self.masterTank.paramOptoChan.value())
+
         elif bSide1 and not bSide2:
             curr1 = self.arenaMain.ard.pinPulse(self.paramShockChan1.value(), 
                                         self.masterTank.paramShockPeriod.value(),
@@ -1042,6 +1063,12 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                                            self.masterTank.paramShockDuration.value(),
                                            feedbackPin = self.paramCurrChan2.value())
         elif bSide1 and bSide2:
+            if self.masterTank.paramOptoStim.isChecked():
+                #Start Opto Stim
+                self.arenaMain.ard.pinPulse(self.masterTank.paramOptoChan.value(),
+                                            self.masterTank.paramOptoPeriod.value(),
+                                            self.masterTank.paramOptoDuration.value())
+
             #turn on in random order and measure current for second one (since measuring current add 7ms delay)
             curr1 = -1
             curr2 = -1
@@ -1049,21 +1076,30 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                 self.arenaMain.ard.pinPulse(self.paramShockChan1.value(),
                                             self.masterTank.paramShockPeriod.value(),
                                             self.masterTank.paramShockDuration.value())
-                curr2 = self.arenaMain.ard.pinPulse(self.paramShockChan2.value(),
-                                                    self.masterTank.paramShockPeriod.value(),
-                                                    self.masterTank.paramShockDuration.value(),
-                                                    feedbackPin = self.paramCurrChan2.value())
+                self.arenaMain.ard.pinPulse(self.paramShockChan2.value(),
+                                            self.masterTank.paramShockPeriod.value(),
+                                            self.masterTank.paramShockDuration.value())
+                #curr2 = self.arenaMain.ard.pinPulse(self.paramShockChan2.value(),
+                #                                    self.masterTank.paramShockPeriod.value(),
+                #                                    self.masterTank.paramShockDuration.value(),
+                #                                    feedbackPin = self.paramCurrChan2.value())
             else:
                 self.arenaMain.ard.pinPulse(self.paramShockChan2.value(),
                                             self.masterTank.paramShockPeriod.value(),
                                             self.masterTank.paramShockDuration.value())
-                curr1 = self.arenaMain.ard.pinPulse(self.paramShockChan1.value(),
-                                                    self.masterTank.paramShockPeriod.value(),
-                                                    self.masterTank.paramShockDuration.value(),
-                                                    feedbackPin = self.paramCurrChan1.value())
+                self.arenaMain.ard.pinPulse(self.paramShockChan1.value(),
+                                            self.masterTank.paramShockPeriod.value(),
+                                            self.masterTank.paramShockDuration.value())
+                #curr1 = self.arenaMain.ard.pinPulse(self.paramShockChan1.value(),
+                #                                    self.masterTank.paramShockPeriod.value(),
+                #                                    self.masterTank.paramShockDuration.value(),
+                #                                    feedbackPin = self.paramCurrChan1.value())
+           
 
         print 'Shock state changed: state:',bSide1,bSide2,' curr:',curr1,curr2
         self.arenaData['shockinfo'].append((time.time(), bSide1, bSide2, curr1, curr2))
+
+
 
     def getBrush(self, colorNdx):
         if colorNdx == 0:

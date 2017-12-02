@@ -99,7 +99,8 @@ class ArenaManagementPanel(QtGui.QWidget):
 
     def addArena(self,bEvent):
         if str(self.arenaType.currentText()) == 'Avoidance':
-            a = AvoidanceController.AvoidanceController(self, self.arenaMain)
+            a = YokedAvoidanceController.YokedAvoidanceController(self, self.arenaMain, False)
+            a.configTank(*self.grid2TankConfig(len(self.arenas)%4, len(self.arenas)/4))
         elif str(self.arenaType.currentText()) == 'Cocaine':
             a = CocaineController.CocaineController(self, self.arenaMain)
         elif str(self.arenaType.currentText()) == 'Classical':
@@ -185,25 +186,25 @@ class ArenaManagementPanel(QtGui.QWidget):
     #Helper methods for quickly configuring tanks 
     def grid2CamCoords(self, px,py):
         #hard coded for now, but should GUI set x0, y0, plus rotation and scale.
-        y0 = 10
-        x0 = 140
-        xSp = 60
-        ySp = 60
-        tW = 205
-        tH = 440 
+        y0 = 17
+        x0 = 106
+        xSp = 44
+        ySp = 45
+        tW = 207
+        tH = 431 
         return (( x0+(tW+xSp)*px   , y0+(tH+ySp)*py+tH), #Lower Left
                 ( x0+(tW+xSp)*px+tW, y0+(tH+ySp)*py+tH), #Lower Right (y flipped)
                 ( x0+(tW+xSp)*px+tW, y0+(tH+ySp)*py   ), #UpperRight
                 ( x0+(tW+xSp)*px   , y0+(tH+ySp)*py   )) #UpperLeft
 
     def grid2Proj(self, px,py):
-        x0 = 245
-        y0 = 220
-        tW = 110
-        tH = 215
+        x0 = 280
+        y0 = 222
+        tW = 105
+        tH = 213
         rot = 270
-        xSp = 32
-        ySp = 32
+        xSp = 19
+        ySp = 10
         return (x0+(tW+xSp)*px, y0+(tH+ySp)*py, tW, tH, rot)
 
     def grid2ArduinoConfig(self, px,py):

@@ -43,7 +43,7 @@ class SerialArduinoController:
     @staticmethod
     def static_getDefaultPortName():
         if os.name == 'posix':
-            return '/dev/ttyACM0'
+            return '/Dev/ttyACM0'
         elif os.name == 'mac':
             return '/dev//dev/tty.usbmodemfd121'
 
@@ -107,13 +107,18 @@ class SerialArduinoController:
             return self.readAnalogIn(scale)
         else:
             self.ser.write('%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_HIGH,cmd_END))
-            return self.confirmMessageRecv()
+            #return self.confirmMessageRecv()
+            #For speed reasons, don't bother confirming success
+            return True
 
     def pinLow(self,pinNumber):
         if not self.isConnected(): return False
         if not pinNumber in validPins: print 'Invalid Pin'; return False
         self.ser.write('%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_LOW,cmd_END))
-        return self.confirmMessageRecv()
+        #return self.confirmMessageRecv()
+        #For speed reasons, don't bother confirming success
+        return True
+
 
     def pinPulse(self,pinNumber, pulsePeriod=1000, pulseDuration=50, 
                  feedbackPin=-1, scale=(0,5)):
@@ -129,7 +134,9 @@ class SerialArduinoController:
             self.ser.write('%d,%d,%d,%d,%d%s'%(cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,
                                            pulseDuration,cmd_END))
             #print cmd_type_SET,pinNumber,cmd_set_PULSE,pulsePeriod,pulseDuration,cmd_END
-            return self.confirmMessageRecv()	
+            #return self.confirmMessageRecv()	
+            #For speed reasons, don't bother confirming success
+            return True
 
     def analogRead(self, pinNumber, scale=(0,5)):
         if not self.isConnected(): return None

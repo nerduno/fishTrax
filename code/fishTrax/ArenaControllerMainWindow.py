@@ -314,9 +314,9 @@ class ArenaControllerMainWindow(QtGui.QMainWindow):
 def main(ardPortName=None, cameraId=None): 
     app = QtGui.QApplication(sys.argv)
     ex = ArenaControllerMainWindow()
-    if ardPortName:
+    if ardPortName is not None:
         ex.connectToArduino(ardPortName)
-    if cameraId:
+    if cameraId is not None:
         ex.connectToCamera(cameraId)
     sys.exit(app.exec_())
 
