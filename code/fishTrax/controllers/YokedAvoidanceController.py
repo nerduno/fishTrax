@@ -64,7 +64,8 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
 
         #state
         self.mutex = Lock()
-        states = ['off', 'acclimate', 'baseline', 'trial_running', 'trial_CS', 'trial_CS_and_US', 'trial_US', 'trial_between','post']
+        states = ['off', 'acclimate', 'baseline', 'trial_running', 'trial_CS', 'trial_CS_and_US', 'trial_US', 
+                  'trial_between','post', 'post_stim', 'post_post']
         Machine.__init__(self, states=states, initial='off', after_state_change='update_and_save')
         self.add_transition('begin', 'off', 'acclimate', conditions='isReadyToStart')
         self.add_transition('next', 'acclimate', 'baseline')
@@ -78,6 +79,9 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.add_transition('start_trial', 'trial_between', 'trial_running')
         self.add_transition('next', 'trial_between','post')
         self.add_transition('next', 'post', 'off')
+        self.add_transition('start_post_stim', 'post', 'post_stim') #optional if post stim checked, optostim during post
+        self.add_transition('end_post_stim', 'post_stim', 'post_post') #post_post is after optostim complete
+        self.add_transition('next', ['post_stim','post_post'], 'off') 
         self.add_transition('quit', '*', 'off')
         self.fishPosUpdate = False
         self.fishPos = (0,0)
@@ -263,9 +267,11 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             self.paramLayout.addWidget(self.paramOptoPeriod, 14,0,1,2)
             self.paramOptoDuration = LabeledSpinBox(None, 'OptoPulse (ms)', 0,3601000,50,60)
             self.paramLayout.addWidget(self.paramOptoDuration, 14,2,1,2)
-            self.paramOptoStimPost = QtGui.QCheckBox('Optostim after Shock')
+            self.paramOptoStimPost = QtGui.QCheckBox('Optostim after Shock') #occurs in middle of post
             self.paramOptoStimPost.setChecked(False)
             self.paramLayout.addWidget(self.paramOptoStimPost,15,0,1,2)
+            self.paramOptoStimPostDura = LabeledSpinBox(None, 'Post stim duration (s)', 0,10000,120,60)
+            self.paramLayout.addWidget(self.paramOptoStimPostDura, 15,2,1,2)
 
         else:
             self.paramYokedLabel = QtGui.QLabel('Other params are yoked to another tank')
@@ -473,6 +479,17 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                             self.next(); 
                             if self.yokedTank: 
                                 self.yokedTank.next()
+            
+                #If we are post shock, handle post shock optogenetic stim:
+                if self.is_post() and self.t > self.startPostStimTime:
+                    self.start_post_stim()
+                    if self.yokedTank:
+                        self.yokedTank.start_post_stim()
+                if self.is_post_stim() and self.t > self.stopPostStimTime:
+                    self.end_post_stim()
+                    if self.yokedTank:
+                        self.yokedTank.end_post_stim()
+
             except:
                 print 'ContextualHelplessnessController:updateState failed'
                 traceback.print_exc()
@@ -618,21 +635,31 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                 if self.is_trial_between():
                     statustext = statustext + ": %d/%d %d %0.1f"%(self.nTrial, self.masterTank.paramNumTrials.value(), self.nEscape, self.nextTrialTime-self.t)
                 if self.is_post():
+                    statustext = statustext + ": %0.1f %d stimstart: %0.1f"%(self.nextStateTime-self.t, self.nEscape, self.startPostStimTime-self.t)
+                if self.is_post_stim():
+                    statustext = statustext + ": %0.1f %d stimend: %0.1f"%(self.nextStateTime-self.t, self.nEscape, self.stopPostStimTime-self.t)
+                if self.is_post_post():
                     statustext = statustext + ": %0.1f %d"%(self.nextStateTime-self.t, self.nEscape)
+
                 painter.drawText(self.arenaCamCorners[0][0],self.arenaCamCorners[0][1],statustext)
 
                 #Plot average speed of fish overtime
                 if not self.is_off() and len(self.averageSpeed)>2:
+                    ac = np.array(self.arenaCamCorners)
+                    plt_b = np.max(ac[:,1]) #Plot bottom
+                    plt_l = np.min(ac[:,0]) #Plot left
+                    plt_r = np.max(ac[:,0]) #Plot right
+
                     totalDuration = self.masterTank.paramAcclimate.value()+self.masterTank.paramBaseline.value()+self.masterTank.paramPost.value()
                     totalDuration += self.masterTank.paramNumTrials.value() * (self.masterTank.paramITIMax.value() + self.masterTank.paramTrialDura.value())/60.0
                     totalDuration = totalDuration*(60/60.0) #averaging every 20 seconds (see onnewframe)
                     ndx = np.arange(len(self.averageSpeed))
                     x = (np.arange(len(self.averageSpeed))/totalDuration) 
-                    x = x * np.array((self.arenaCamCorners[1][0] - self.arenaCamCorners[0][0])) 
-                    x = x + self.arenaCamCorners[0][0]
+                    x = x * (plt_r - plt_l) 
+                    x = x + plt_l
                     #scale = 75 / np.max(self.averageSpeed)
                     scale = 3000
-                    y = self.arenaCamCorners[0][1] - (scale * np.array(self.averageSpeed))
+                    y = plt_b - (scale * np.array(self.averageSpeed))
                     for ((x1,x2),(y1,y2)) in zip(pairwise(x),pairwise(y)):
                         painter.drawLine(x1,y1,x2,y2)
 
@@ -762,6 +789,23 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
 
     def on_enter_post(self):
         self.nextStateTime = self.t + self.masterTank.paramPost.value() * 60
+        if self.masterTank.paramOptoStimPost.isChecked():
+            post_stim_duration = self.masterTank.paramOptoStimPostDura.value()
+            self.startPostStimTime = self.t + (self.masterTank.paramPost.value()*60/2.0) - (post_stim_duration/2.0)
+            self.stopPostStimTime = self.t + (self.masterTank.paramPost.value()*60/2.0) + (post_stim_duration/2.0)
+        else:
+            self.startPostStimTime = np.inf 
+            self.stopPostStimTime = np.inf
+
+    def on_enter_post_stim(self):
+        #Start Opto Stim
+        self.arenaMain.ard.pinPulse(self.masterTank.paramOptoChan.value(),
+                                    self.masterTank.paramOptoPeriod.value(),
+                                    self.masterTank.paramOptoDuration.value())
+
+    def on_exit_post_stim(self):
+        #Stop Opto Stim
+        self.arenaMain.ard.pinLow(self.masterTank.paramOptoChan.value())
 
     def on_enter_off(self):
         self.nextStateTime = None
@@ -909,7 +953,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
             return 8
         elif self.state.startswith('trial'):
             return 12
-        elif self.state == 'post':
+        elif self.state.startswith('post'):
             return 20
         raise('State not recognized')
 
@@ -977,6 +1021,12 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
                                          'inDynamicDraw':self.masterTank.paramDynamicDraw.isChecked(),
                                          'fEscapePosition':self.masterTank.paramEscapePos.value(),
                                          'states':self.states.keys(),
+                                         'optoStimChan':self.masterTank.paramOptoChan.value(),
+                                         'optoStimPeriod':self.masterTank.paramOptoPeriod.value(),
+                                         'optoStimPulseDura':self.masterTank.paramOptoDuration.value(),
+                                         'optoStimDuringShock':self.masterTank.paramOptoStim.isChecked(),
+                                         'optoStimPostShock':self.masterTank.paramOptoStimPost.isChecked(),
+                                         'optoStimPostShockDuration':self.masterTank.paramOptoStimPostDura.value(),
                                          'state2num': [(key, self.getStateNumber(key)) for key in self.states.keys()],
                                          'CodeVersion':None }
 

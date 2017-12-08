@@ -5,7 +5,7 @@ import controllers.ClassicalConditioningController as ClassicalConditioningContr
 import controllers.ContextualHelplessnessController as ContextualHelplessnessController
 import controllers.RealTimeShockController as RealTimeShockController
 import controllers.YokedAvoidanceController as YokedAvoidanceController
-
+import controllers.OMRController as OMRController
 
 #relay pin side1, relay pin side 2, analonIn pin side 1, analogIn pin side 2
 defaultTankChannels = {0:(53,52,15,14), 
@@ -34,9 +34,10 @@ class ArenaManagementPanel(QtGui.QWidget):
         self.manageVBox = QtGui.QVBoxLayout()
         self.arenaType = QtGui.QComboBox()
         self.arenaType.addItem('YokedAvoidance')
+        self.arenaType.addItem('Avoidance')
+        self.arenaType.addItem('OMR')
         self.arenaType.addItem('ContextualLH')
         self.arenaType.addItem('Cocaine')
-        self.arenaType.addItem('Avoidance')
         self.arenaType.addItem('Classical')
         self.arenaType.addItem('RealTimeShock')
         self.arenaType.addItem('Operant')
@@ -100,6 +101,9 @@ class ArenaManagementPanel(QtGui.QWidget):
     def addArena(self,bEvent):
         if str(self.arenaType.currentText()) == 'Avoidance':
             a = YokedAvoidanceController.YokedAvoidanceController(self, self.arenaMain, False)
+            a.configTank(*self.grid2TankConfig(len(self.arenas)%4, len(self.arenas)/4))
+        elif str(self.arenaType.currentText()) == 'OMR':
+            a = OMRController.OMRController(self, self.arenaMain)
             a.configTank(*self.grid2TankConfig(len(self.arenas)%4, len(self.arenas)/4))
         elif str(self.arenaType.currentText()) == 'Cocaine':
             a = CocaineController.CocaineController(self, self.arenaMain)
