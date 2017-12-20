@@ -66,7 +66,7 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
         self.mutex = Lock()
         states = ['off', 'acclimate', 'baseline', 'trial_running', 'trial_CS', 'trial_CS_and_US', 'trial_US', 
                   'trial_between','post', 'post_stim', 'post_post']
-        Machine.__init__(self, states=states, initial='off', after_state_change='update_and_save')
+        Machine.__init__(self, states=states, initial='off', after_state_change='update_state_data')
         self.add_transition('begin', 'off', 'acclimate', conditions='isReadyToStart')
         self.add_transition('next', 'acclimate', 'baseline')
         self.add_transition('next', 'baseline', 'trial_running')
@@ -676,11 +676,11 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
     # STATE MACHINE CALLBACK METHODS
     #---------------------------------------------------
 
-    def update_and_save(self):
+    def update_state_data(self):
         # runs on every state transition...
         self.updateProjectorDisplay()
         self.arenaData['stateinfo'].append((self.t, self.getStateNumber(self.state), self.getSide1ColorName(), self.getSide2ColorName(), self.state))
-        self.saveResults()
+        #self.saveResults() #program is stage so just save at end of experiment. saving between states causes long interframe intervals
 
     def on_enter_acclimate(self):
         #experiment has started so disable parts of UI
@@ -812,6 +812,8 @@ class YokedAvoidanceController(ArenaController.ArenaController, Machine):
 
         #the off state can be forced by a button click, so we need to disable shock incase this occured mid trial.
         self.setShockState(False,False)
+
+        self.saveResults()
 
         #note: the projector colors will be reset on call to after_state_change
         if self.paramSaveMovie.isChecked():

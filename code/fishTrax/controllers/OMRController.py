@@ -65,7 +65,7 @@ class OMRController(ArenaController.ArenaController, Machine):
         #state
         self.mutex = Lock()
         states = ['off', 'between_session', 'omr_to_s1', 'no_omr_post_s1', 'omr_to_s2', 'no_omr_post_s2'] # off between L-N-R-N-L-N-R between LNRNLNR between off
-        Machine.__init__(self, states=states, initial='off', after_state_change='update_and_save')
+        Machine.__init__(self, states=states, initial='off', after_state_change='update_state_data')
 
         self.add_transition('begin', 'off', 'between_session', conditions='isReadyToStart')
         self.add_transition('start_session', 'between_session', 'omr_to_s1')
@@ -546,11 +546,11 @@ class OMRController(ArenaController.ArenaController, Machine):
     # STATE MACHINE CALLBACK METHODS
     #---------------------------------------------------
 
-    def update_and_save(self):
+    def update_state_data(self):
         # runs on every state transition...
         self.updateProjectorDisplay()
         self.arenaData['stateinfo'].append((self.t, 0, 0, 0, self.state))
-        self.saveResults()
+        #self.saveResults() #just save at end to avoid long interframe intervals
 
     def on_exit_off(self):
         #experiment has started so disable parts of UI
@@ -614,6 +614,8 @@ class OMRController(ArenaController.ArenaController, Machine):
     def on_enter_off(self):
         self.nextStateTime = None
         self.updateProjectorDisplay()
+
+        self.saveResults()
 
         #note: the projector colors will be reset on call to after_state_change
         if self.paramSaveMovie.isChecked():
