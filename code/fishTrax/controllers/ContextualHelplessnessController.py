@@ -167,7 +167,7 @@ class ContextualHelplessnessController(ArenaController.ArenaController):
         self.paramPreOMR = QtGui.QCheckBox('PreOMR')
         self.paramPreOMR.setCheckState(2)
         self.paramLayout.addWidget(self.paramPreOMR,1,2,1,2)
-        self.paramNumTrain = LabeledSpinBox(None,'NumTrain',0,100,30,60)
+        self.paramNumTrain = LabeledSpinBox(None,'NumTrain',0,500,30,60)
         self.paramLayout.addWidget(self.paramNumTrain,2,0,1,2)
         self.paramTrainOMR = QtGui.QCheckBox('TrainOMR')
         self.paramTrainOMR.setCheckState(2)

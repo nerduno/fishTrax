@@ -4,6 +4,18 @@ import controllers.CocaineController as CocaineController
 import controllers.ClassicalConditioningController as ClassicalConditioningController
 import controllers.ContextualHelplessnessController as ContextualHelplessnessController
 import controllers.RealTimeShockController as RealTimeShockController
+import controllers.YokedAvoidanceController as YokedAvoidanceController
+import controllers.OMRController as OMRController
+
+#relay pin side1, relay pin side 2, analonIn pin side 1, analogIn pin side 2
+defaultTankChannels = {0:(53,52,15,14), 
+                       1:(51,50, 9, 8), 
+                       2:(48,49, 7, 6),
+                       3:(46,47, 0, 1),
+                       4:(43,42,13,12),
+                       5:(41,40,10,11),
+                       6:(38,39, 4, 5),
+                       7:(44,45, 2, 3)}
 
 class ArenaManagementPanel(QtGui.QWidget):
     """
@@ -21,10 +33,12 @@ class ArenaManagementPanel(QtGui.QWidget):
         self.manageGroup.setTitle('Manage Arenas')
         self.manageVBox = QtGui.QVBoxLayout()
         self.arenaType = QtGui.QComboBox()
-        self.arenaType.addItem('Cocaine')
+        self.arenaType.addItem('YokedAvoidance')
         self.arenaType.addItem('Avoidance')
-        self.arenaType.addItem('Classical')
+        self.arenaType.addItem('OMR')
         self.arenaType.addItem('ContextualLH')
+        self.arenaType.addItem('Cocaine')
+        self.arenaType.addItem('Classical')
         self.arenaType.addItem('RealTimeShock')
         self.arenaType.addItem('Operant')
         self.arenaType.addItem('Temperature')
@@ -86,7 +100,11 @@ class ArenaManagementPanel(QtGui.QWidget):
 
     def addArena(self,bEvent):
         if str(self.arenaType.currentText()) == 'Avoidance':
-            a = AvoidanceController.AvoidanceController(self, self.arenaMain)
+            a = YokedAvoidanceController.YokedAvoidanceController(self, self.arenaMain, False)
+            a.configTank(*self.grid2TankConfig(len(self.arenas)%4, len(self.arenas)/4))
+        elif str(self.arenaType.currentText()) == 'OMR':
+            a = OMRController.OMRController(self, self.arenaMain)
+            a.configTank(*self.grid2TankConfig(len(self.arenas)%4, len(self.arenas)/4))
         elif str(self.arenaType.currentText()) == 'Cocaine':
             a = CocaineController.CocaineController(self, self.arenaMain)
         elif str(self.arenaType.currentText()) == 'Classical':
@@ -95,6 +113,25 @@ class ArenaManagementPanel(QtGui.QWidget):
             a = ContextualHelplessnessController.ContextualHelplessnessController(self, self.arenaMain)
         elif str(self.arenaType.currentText()) == 'RealTimeShock':
             a = RealTimeShockController.RealTimeShockController(self, self.arenaMain)
+        elif str(self.arenaType.currentText()) == 'YokedAvoidance':
+            #create and config two tank
+            a = YokedAvoidanceController.YokedAvoidanceController(self, self.arenaMain, False)
+            b = YokedAvoidanceController.YokedAvoidanceController(self, self.arenaMain, True)
+            a.setPartnerTank(b)
+            b.setPartnerTank(a)
+            #Todo make config apply to all tank types not just Yoked
+            a.configTank(*self.grid2TankConfig(len(self.arenas)%4, len(self.arenas)/4))
+            b.configTank(*self.grid2TankConfig((len(self.arenas)+1)%4, (len(self.arenas)+1)/4))
+            #add the tanks to management panel
+            self.arenaCounter+=1
+            self.arenas.append(a)
+            self.selArena.addItem('Arena %d'%self.arenaCounter)
+            self.arenaStack.addWidget(a)
+            self.arenaCounter+=1
+            self.arenas.append(b)
+            self.selArena.addItem('Arena %d'%self.arenaCounter)
+            self.arenaStack.addWidget(b)
+            return
         else:
             return
         self.arenaCounter+=1
@@ -150,4 +187,33 @@ class ArenaManagementPanel(QtGui.QWidget):
         for a in self.arenas:
             a.stop()
 
+    #Helper methods for quickly configuring tanks 
+    def grid2CamCoords(self, px,py):
+        #hard coded for now, but should GUI set x0, y0, plus rotation and scale.
+        y0 = 17
+        x0 = 106
+        xSp = 44
+        ySp = 45
+        tW = 207
+        tH = 431 
+        return (( x0+(tW+xSp)*px   , y0+(tH+ySp)*py+tH), #Lower Left
+                ( x0+(tW+xSp)*px+tW, y0+(tH+ySp)*py+tH), #Lower Right (y flipped)
+                ( x0+(tW+xSp)*px+tW, y0+(tH+ySp)*py   ), #UpperRight
+                ( x0+(tW+xSp)*px   , y0+(tH+ySp)*py   )) #UpperLeft
+
+    def grid2Proj(self, px,py):
+        x0 = 280
+        y0 = 222
+        tW = 105
+        tH = 213
+        rot = 270
+        xSp = 19
+        ySp = 10
+        return (x0+(tW+xSp)*px, y0+(tH+ySp)*py, tW, tH, rot)
+
+    def grid2ArduinoConfig(self, px,py):
+        return defaultTankChannels[px+4*py]
     
+    def grid2TankConfig(self, px,py):
+        return self.grid2ArduinoConfig(px,py), self.grid2CamCoords(px,py), self.grid2Proj(px,py)
+                

@@ -160,10 +160,10 @@ class ArenaControllerMainWindow(QtGui.QMainWindow):
         exitAction.triggered.connect(self.close)
 
         camAction = QtGui.QAction('Camera',self)
-        camAction.triggered.connect(self.connectToCamera)
+        camAction.triggered.connect(self.connectToCameraDialog)
 
         ardAction = QtGui.QAction('Arduino',self)
-        ardAction.triggered.connect(self.connectToArduino)
+        ardAction.triggered.connect(self.connectToArduinoDialog)
 
         self.playAction = QtGui.QAction('Play/Pause',self)
         self.playAction.setCheckable(True)
@@ -224,17 +224,24 @@ class ArenaControllerMainWindow(QtGui.QMainWindow):
         if self.projWin: 
             self.projWin.close()
 
-    def connectToCamera(self):
+    def connectToCameraDialog(self):
         cameraId, ok = QtGui.QInputDialog.getInt(self, 'Camera Info', 'Enter a Camera ID (try 0,1,-1, or 2):', value=0)
         if ok:
-            self.cam = CameraDevice(cameraId=cameraId, parent=self)
-            self.cam.newFrame.connect(self.onNewFrame)
-            self.cam.paused = False
-            self.statusBar().showMessage('Camera connected.')
+            self.connectToCamera(cameraId)
 
-    def connectToArduino(self):
+    def connectToCamera(self, cameraId):
+        self.cam = CameraDevice(cameraId=cameraId, parent=self)
+        self.cam.newFrame.connect(self.onNewFrame)
+        self.cam.paused = False
+        self.statusBar().showMessage('Camera connected.')
+
+    def connectToArduinoDialog(self):
         portName, ok = QtGui.QInputDialog.getText(self, 'Arduino Port', 'Enter the arduino port:',
                                   text=aac.SerialArduinoController.static_getDefaultPortName())
+        if ok:
+            self.connectToArduino(portName)
+    
+    def connectToArduino(self, portName):
         portName = str(portName)
         self.statusBar().showMessage('Restart the arduino to complete the connection.')
         if self.ard == None:
@@ -304,10 +311,14 @@ class ArenaControllerMainWindow(QtGui.QMainWindow):
     def timerEvent(self, event):
         self.arenaPanel.updateState()
 
-def main(): 
+def main(ardPortName=None, cameraId=None): 
     app = QtGui.QApplication(sys.argv)
     ex = ArenaControllerMainWindow()
+    if ardPortName is not None:
+        ex.connectToArduino(ardPortName)
+    if cameraId is not None:
+        ex.connectToCamera(cameraId)
     sys.exit(app.exec_())
 
-if __name__ == '__main__':
-    main()
+#if __name__ == '__main__':
+#    main()

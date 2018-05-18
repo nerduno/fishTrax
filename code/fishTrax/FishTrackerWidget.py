@@ -66,6 +66,7 @@ class FishTrackerWidget(QtGui.QGroupBox):
         self.trackMinArea = LabeledSpinBox(None,'MinArea',0,600000,0,75)
         self.trackMaxArea = LabeledSpinBox(None,'MaxArea',0,600000,600000,75)
         self.updateCheckbox = QtGui.QCheckBox('Use Updating BG')
+        self.updateCheckbox.setChecked(True)
         self.numFish = LabeledSpinBox(None,'NumFish',0,20,1,60)
         self.fishSize = LabeledSpinBox(None,'FG Size',0,1000,30,60)
         self.learningRate = LabeledDoubleSpinBox(None,'Learning rate',0,1,0.1,60)
@@ -121,7 +122,6 @@ class FishTrackerWidget(QtGui.QGroupBox):
         self.maskBoundedR0 = np.min(np.nonzero(np.max(maskArray,1))) #Y = height = rows
         self.maskBoundedWidth = np.max(np.nonzero(np.max(maskArray,0))) - self.maskBoundedC0 + 1
         self.maskBoundedHeight = np.max(np.nonzero(np.max(maskArray,1))) - self.maskBoundedR0 + 1
-        print self.maskBoundedC0, self.maskBoundedR0, self.maskBoundedWidth, self.maskBoundedHeight
         self.maskG = cv.CreateImage((self.maskBoundedWidth, self.maskBoundedHeight), cv.IPL_DEPTH_8U, 1)
         cv.CvtColor(self.arenaCvMask[self.maskBoundedR0:self.maskBoundedR0+self.maskBoundedHeight, 
                                      self.maskBoundedC0:self.maskBoundedC0+self.maskBoundedWidth], self.maskG, cv.CV_BGR2GRAY)
