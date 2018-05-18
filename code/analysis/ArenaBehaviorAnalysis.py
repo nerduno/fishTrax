@@ -1,5 +1,5 @@
 import sys, os
-import math, random, time, logging, datetime, json, cv
+import math, random, time, logging, datetime, json
 import numpy as np
 import scipy.stats as stats
 import matplotlib as mpl
@@ -25,14 +25,14 @@ def loadDataFromFile(filename, arena_mm = defArena, bAcqArenaPoly = False):
     jsonData['fishimg'] = os.path.join(p, f + '_FishImg_' + f.split('_')[-1] + '.tiff')
 
     #Add tank size if not in dataset (true of older data sets)
-    if 'tankSize_mm' in jsonData.keys():
+    if arena_mm is not None:
+        jsonData['tankSize_mm'] = [arena_mm[2][0], arena_mm[2][1]]
+    elif 'tankSize_mm' in jsonData.keys():
         arena_mm = [(0                           ,0),
                     (0                           ,jsonData['tankSize_mm'][1]),
                     (jsonData['tankSize_mm'][0]  ,jsonData['tankSize_mm'][1]),
                     (jsonData['tankSize_mm'][0]  ,0)]
         print 'Ignoring arena_mm.  Using tankSize_mm field.'
-    else:
-        jsonData['tankSize_mm'] = [arena_mm[2][0], arena_mm[2][1]]
 
     #Acquire precision tank border if requested.
     if bAcqArenaPoly:
@@ -78,8 +78,11 @@ def loadDataFromFile_UI(filename, arena_mm=defArena):
     jsonData = loadDataFromFile(f, arena_mm)
     return jsonData
 
-def loadDataSmart(datestr,fishNum, arena_mm=defArena, bAuto=False):
-    smartdir = os.path.expanduser('~'+os.sep+'Dropbox'+os.sep+'ConchisData'+os.sep+datestr+os.sep)
+def loadDataSmart(datestr,fishNum, arena_mm=defArena, bAuto=False, root=None, dropbox='Dropbox'):
+    if root is None:
+        root = '~'
+
+    smartdir = os.path.expanduser(root+os.sep+dropbox+os.sep+'ConchisData'+os.sep+datestr+os.sep)
     datedirlist = glob.glob(smartdir+'f%05d'%fishNum+'*.json')
     fishdirlist = glob.glob(smartdir+'f%05d'%fishNum+os.sep+'f%05d'%fishNum+'*.json')
     print '\nSearch string: '+smartdir+'f%05d'%fishNum+os.sep+'f%05d'%fishNum+'*.json'
@@ -114,7 +117,10 @@ def loadDataSmart(datestr,fishNum, arena_mm=defArena, bAuto=False):
         print("Invalid selection")
         return (None,None)
 
-def loadMultipleDataFiles_Smart(arena_mm=defArena):
+def loadMultipleDataFiles_Smart(arena_mm=defArena, root=None, dropbox='Dropbox'):
+    if root is None:
+        root = '~'
+
     datasets = []
     filenames = []
     
@@ -125,7 +131,7 @@ def loadMultipleDataFiles_Smart(arena_mm=defArena):
         datestr = raw_input('Enter a date folder name (-1 to quit):')
         if datestr=='-1':
             break
-        datedir = os.path.expanduser('~'+os.sep+'Dropbox'+os.sep+'ConchisData'+os.sep+datestr+os.sep)
+        datedir = os.path.expanduser(root+os.sep+dropbox+os.sep+'ConchisData'+os.sep+datestr+os.sep)
         try:
             dlist = os.listdir(datedir)
         except:
@@ -137,7 +143,7 @@ def loadMultipleDataFiles_Smart(arena_mm=defArena):
             if fishstr=='-1':
                 break
             try:
-                [d,filename] = loadDataSmart(datestr,int(fishstr),arena_mm)
+                [d,filename] = loadDataSmart(datestr,int(fishstr),arena_mm, root=root, dropbox=dropbox)
                 if d:
                     datasets.append(d)
                     filenames.append(filename)
@@ -219,6 +225,11 @@ def plotFishPath(jsonData, trange = None, tracking = [], color='k', style ='-', 
     if not trange:
         tndx = range(tracking.shape[0])
     else:
+        if trange[0]<0:
+            trange[0] = max(tracking[:,0]) - tracking[0,0] + trange[0]
+        if trange[1]<0 or (trange[1]==0 and trange[1]<trange[0]):    
+            trange[1] = max(tracking[:,0]) - tracking[0,0] + trange[1]
+
         trange = trange + tracking[0,0]
         tndx = np.logical_and(tracking[:,0]>=trange[0], tracking[:,0]<trange[1])
 
